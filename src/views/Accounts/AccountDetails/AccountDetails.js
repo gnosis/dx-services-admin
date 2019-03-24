@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Card, CardBody, CardHeader, Col, Row, ListGroup, ListGroupItem, Badge, Media } from 'reactstrap';
+import { Card, CardBody, CardHeader, Col, Row, ListGroup, ListGroupItem, Badge, FormGroup, Label, Input } from 'reactstrap';
 import Blockies from 'react-blockies'
 import getDxService from '../../../services/dxService'
 
@@ -7,7 +7,8 @@ const qrCodeUrl = 'https://chart.googleapis.com/chart?chs=300x300&cht=qr&choe=UT
 
 class AccountDetails extends Component {
   state = {
-    balances: []
+    balances: [],
+    hideTokensWithoutBalance: false
   }
 
   async componentDidMount() {
@@ -58,8 +59,8 @@ class AccountDetails extends Component {
                 <strong>Account information</strong>
               </CardHeader>
               <CardBody>
-                <div class="d-flex flex-row bd-highlight mb-3">
-                  <div class="p-2 bd-highlight">
+                <div className="d-flex flex-row bd-highlight mb-3">
+                  <div className="p-2 bd-highlight">
                     <Blockies
                       seed="Jeremy"
                       size={11}
@@ -70,10 +71,10 @@ class AccountDetails extends Component {
                       className="border m-3"
                     />
                   </div>
-                  <div class="p-2 bd-highlight">
+                  <div className="p-2 bd-highlight">
                     <img className="mt-1" src={qrCodeUrl + address} width="100" height="100" alt="QR Code" />
                   </div>
-                  <div class="p-2 bd-highlight">
+                  <div className="p-2 bd-highlight">
                     <h3 className="mt-2"><small>{address}</small></h3>
                     <a target="blank" href={'http://etherscan.io/address/' + address}>View in Etherscan.com</a>
                   </div>
@@ -82,23 +83,47 @@ class AccountDetails extends Component {
 
 
                 <h2>Balances</h2>
-                <Badge color="success" className="my-4 m-1 ml-3" pill>Balance in DutchX</Badge>
-                <Badge color="warning" className="my-4 m-1" pill>Balance of user (out of DutchX)</Badge>
-
+                <FormGroup check>
+                  <Label check>
+                    <Input
+                      type="checkbox"
+                      checked={this.state.hideTokensWithoutBalance}
+                      onChange={event => this.setState({ hideTokensWithoutBalance: event.target.checked })}
+                    />{' '}
+                    Hide tokens with no balance
+                  </Label>
+                </FormGroup>
                 <ListGroup>
-                  {balances.map(({ symbol, name, address, decimals, balance, balanceErc20 }) => (
-                    <ListGroupItem className="justify-content-between">
-                      {symbol}&nbsp;
-                      <Badge color="success" pill>{balance.toFixed(2)}</Badge>&nbsp;
-                      <Badge color="warning" pill>{balanceErc20.toFixed(2)}</Badge>
-                    </ListGroupItem>
-                  ))}
+                  {balances.map(balance => this.renderTokenBalance(balance))}
                 </ListGroup>
               </CardBody>
             </Card>
           </Col>
         </Row>
       </div>
+    )
+  }
+
+  renderTokenBalance({ symbol, name, address, decimals, balance, balanceErc20 }) {
+    const hasBalance = (balance + balanceErc20) > 0
+    const showTokenBalance = !this.state.hideTokensWithoutBalance || hasBalance
+
+    return showTokenBalance && (
+      <ListGroupItem style={{ backgroundColor: hasBalance ? '#ffeeee' : '#f9f9f9' }}
+        key={'token-' + symbol}
+        className={(hasBalance ? '' : 'secondary ') + 'justify-content-between'}>
+        <Badge
+          color="primary"
+          className="p-2 mr-2"
+          pill>
+          {symbol}
+        </Badge>
+        &nbsp;{name}
+        <ul>
+          <li>DutchX: <Badge color={balance > 0 ? 'success' : 'secondary'} pill>{balance.toFixed(2)}</Badge></li>
+          <li>ERC20: <Badge color={balanceErc20 > 0 ? 'warning' : 'secondary'} pill>{balanceErc20.toFixed(2)}</Badge></li>
+        </ul>
+      </ListGroupItem>
     )
   }
 }

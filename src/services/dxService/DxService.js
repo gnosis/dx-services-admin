@@ -39,10 +39,17 @@ class DxService {
 
   getTokenBalanceDx({ account, tokenAddress }) {
     // https://dutchx.d.exchange/api/v1/accounts/0x2dd2afa618f497efdb3a8c1707b06dc00b31fa19/tokens/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2
+    if (Math.random() > 0.6) {
+      return 0
+    }
+
     return Math.random() * 40
   }
 
   getTokenBalanceErc20({ account, tokenAddress }) {
+    if (Math.random() > 0.3) {
+      return 0
+    }
     // https://dutchx.d.exchange/api/v1/accounts/0x2dd2afa618f497efdb3a8c1707b06dc00b31fa19/tokens/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2
     return Math.random() * 40
   }
