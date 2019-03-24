@@ -1,0 +1,6 @@
+{
+  "name": "BotsInfo",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./BotsInfo.js"
+}
