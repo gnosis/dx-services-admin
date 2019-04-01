@@ -4,8 +4,6 @@ import { Card, CardBody, CardHeader, Col, Row, Button, Form, FormGroup, Label, I
 import { FIXED_DECIMALS } from '../../../globals'
 
 function CheckBalances(props) {
-  console.debug('checkBalances Props', props)
-
   const [inputAcct, setInputAcct] = useState(null)
   const [accountBalance, setAccountBalance] = useState(null)
 
@@ -25,10 +23,7 @@ function CheckBalances(props) {
     }
   }
 
-  const handleInputChange = async ({ target }) => {
-    console.debug(target.value)
-    setInputAcct(target.value)
-  }
+  const handleInputChange = async ({ target }) => setInputAcct(target.value)
 
   return (
     <div className="animated fadeIn">
@@ -50,12 +45,13 @@ function CheckBalances(props) {
                       placeholder="0x0000000000000000000000000000000000000000"
                       onChange={handleInputChange}
                     />
-                    <strong style={{ padding: '25px 0px' }}>Address Balance: {accountBalance}</strong>
+                    <strong>Address Balance: {accountBalance || '-'}</strong>
                   </Col>
                 </FormGroup>
                 <FormGroup check row>
                   <Col sm={{ size: 10, offset: 2 }}>
                     <Button
+                      title="Enter public address to get ETH balance. Defaults to your current Web3 account address"
                       onClick={handleClick}
                     >
                       Check balances
