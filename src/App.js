@@ -1,53 +1,29 @@
-import React, { Component } from 'react';
-import { HashRouter, Route, Switch } from 'react-router-dom';
-// import { renderRoutes } from 'react-router-config';
-import Loadable from 'react-loadable';
-import './App.scss';
+import React, { useEffect, useState } from 'react';
+import AppRouter from './AppRouter'
 
-const loading = () => <div className="animated fadeIn pt-3 text-center">Loading...</div>;
+import getWeb3API from './services/web3Service'
 
-// Containers
-const DefaultLayout = Loadable({
-  loader: () => import('./containers/DefaultLayout'),
-  loading
-});
+const useWeb3Init = () => {
+    const [web3API, setWeb3API] = useState(false)
+    const [appLoadStatus, setAppLoadStatus] = useState(false)
 
-// Pages
-const Login = Loadable({
-  loader: () => import('./views/Pages/Login'),
-  loading
-});
+    useEffect(() => {
+        const initWeb3API = async () => {
+            const W3 = await getWeb3API()
+            setAppLoadStatus(true)
+            setWeb3API(W3)
+        }
+        initWeb3API()
+    }, [])
 
-const Register = Loadable({
-  loader: () => import('./views/Pages/Register'),
-  loading
-});
+    return { appLoadStatus, web3API }
+}
 
-const Page404 = Loadable({
-  loader: () => import('./views/Pages/Page404'),
-  loading
-});
+function App() {
+    const { appLoadStatus, web3API } = useWeb3Init()
 
-const Page500 = Loadable({
-  loader: () => import('./views/Pages/Page500'),
-  loading
-});
-
-class App extends Component {
-
-  render() {
-    return (
-      <HashRouter>
-          <Switch>
-            <Route exact path="/login" name="Login Page" component={Login} />
-            <Route exact path="/register" name="Register Page" component={Register} />
-            <Route exact path="/404" name="Page 404" component={Page404} />
-            <Route exact path="/500" name="Page 500" component={Page500} />
-            <Route path="/" name="Home" component={DefaultLayout} />
-          </Switch>
-      </HashRouter>
-    );
-  }
+    return appLoadStatus && web3API ? <AppRouter web3={web3API} /> : <div>LOADING...</div>
 }
 
 export default App;
+

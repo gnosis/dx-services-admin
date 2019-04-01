@@ -24,7 +24,6 @@ const DefaultFooter = React.lazy(() => import('./DefaultFooter'));
 const DefaultHeader = React.lazy(() => import('./DefaultHeader'));
 
 class DefaultLayout extends Component {
-
   loading = () => <div className="animated fadeIn pt-1 text-center">Loading...</div>
 
   signOut(e) {
@@ -33,6 +32,7 @@ class DefaultLayout extends Component {
   }
 
   render() {
+    console.debug(this.props)
     return (
       <div className="app">
         <AppHeader fixed>
@@ -63,7 +63,7 @@ class DefaultLayout extends Component {
                         exact={route.exact}
                         name={route.name}
                         render={props => (
-                          <route.component {...props} />
+                          <route.component {...props} {...this.props} />
                         )} />
                     ) : (null);
                   })}
