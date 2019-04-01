@@ -5,22 +5,27 @@ import markets from '../../data/mock/markets.json'
 
 // FIXME, this should be injected in the repo layer using env vars
 const BASE_API_DX = 'https://dutchx.d.exchange/api'
-const BASE_API_BOTS = 'https://dx-services.staging.gnosisdev.com/api'
+const MAINNET_BASE_API_BOTS = 'https://dx-services-bots.gnosis.pm/api/'
+const RINKEBY_BASE_API_BOTS = 'https://dx-services-bots.staging.gnosisdev.com/api/'
 
 class DxService {
-  // constructor() {
-  //   // it should be injected the repos, for now we don't implement the repo layer
-  // }
+  constructor({ network }) {
+    // it should be injected the repos, for now we don't implement the repo layer
+    console.debug('DX_SERVICES CONSTRUCTOR = ', network)
+    this.network = network
+  }
 
   getAbout() {
     //httpLib.get(BASE_API + '/about')
     return botsAbout
   }
 
-  getBots() {
+  async getBots() {
     // TODO: Implement endpoint only for bot information
     //httpLib.get(BASE_API + '/about').then(about => )
-    const bots = botsAbout.bots
+    console.debug(`${(this.network === 1 ? MAINNET_BASE_API_BOTS : RINKEBY_BASE_API_BOTS)}/about`)
+    const { bots } = await httpLib.get(`${(this.network === '1' ? MAINNET_BASE_API_BOTS : RINKEBY_BASE_API_BOTS)}/about`)
+		console.log("TCL: getBots -> bots", bots)
 
     // Add an artificial id to the bots
     return bots.map((bot, index) => ({

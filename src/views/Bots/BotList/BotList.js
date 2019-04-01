@@ -22,9 +22,10 @@ class BotList extends Component {
   }
 
   async componentDidMount() {
-    const dxService = await getDxService()
+    const network = await this.props.web3.getNetworkId()
+    const dxService = await getDxService(network)
 
-    let bots = dxService.getBots()
+    let bots = await dxService.getBots()
     const { botTypes, tokens, botAddress } = getBotMasters(bots)
 
     this.setState({
@@ -36,6 +37,7 @@ class BotList extends Component {
   }
 
   render() {
+    console.debug('BotList Props = ', this.props)
     const {
       // Data
       bots,
@@ -69,7 +71,7 @@ class BotList extends Component {
 
     // Filter by token
     if (token) {
-      filteredBots = filteredBots.filter(({ name, markets, tokens }) => {
+      filteredBots = filteredBots.filter(({ markets, tokens }) => {
         if (!tokens && !markets) {
           return false
         }

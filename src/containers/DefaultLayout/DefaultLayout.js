@@ -32,12 +32,11 @@ class DefaultLayout extends Component {
   }
 
   render() {
-    console.debug(this.props)
     return (
       <div className="app">
         <AppHeader fixed>
           <Suspense fallback={this.loading()}>
-            <DefaultHeader onLogout={e => this.signOut(e)} />
+            <DefaultHeader onLogout={e => this.signOut(e)} networkName={this.props.web3.networkName}/>
           </Suspense>
         </AppHeader>
         <div className="app-body">

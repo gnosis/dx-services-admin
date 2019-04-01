@@ -114,11 +114,14 @@ async function init() {
 
     if (process.env.NODE_ENV === 'development') window.web3 = web3
 
+    const networkName = await getNetwork()
+
     return {
         web3,
         get currentProvider() {
             return web3.currentProvider
         },
+        networkName,
         getBlockInfo,
         getCurrentAccount,
         getCurrentBalance,
