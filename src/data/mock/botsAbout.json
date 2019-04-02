@@ -55,7 +55,7 @@
   },
   "bots": [
     {
-      "name": "[DX Services v2.0.1] Main buyer bot: RDN",
+      "name": "[v2.0.1] Main buyer bot: RDN",
       "type": "BuyLiquidityBot",
       "startTime": "2019-03-05T12:58:03.851Z",
       "botAddress": "0x2dd2afa618f497efdb3a8c1707b06dc00b31fa19",
@@ -103,7 +103,7 @@
       ]
     },
     {
-      "name": "[DX Services v2.0.1] Backup buyer bot",
+      "name": "[v2.0.1] Backup buyer bot",
       "type": "BuyLiquidityBot",
       "startTime": "2019-03-05T12:58:03.852Z",
       "botAddress": "0xdc102852b2bc57b860d4a47ab112374f2bf0c944",
@@ -141,7 +141,7 @@
       ]
     },
     {
-      "name": "[DX Services v2.0.1] Main seller bot",
+      "name": "[v2.0.1] Main seller bot",
       "type": "SellLiquidityBot",
       "startTime": "2019-03-05T12:58:03.852Z",
       "botAddress": "0x2dd2afa618f497efdb3a8c1707b06dc00b31fa19",
@@ -167,7 +167,7 @@
       ]
     },
     {
-      "name": "[DX Services v2.0.1] Balance check bot",
+      "name": "[v2.0.1] Balance check bot",
       "type": "BalanceCheckBot",
       "startTime": "2019-03-05T12:58:03.852Z",
       "botAddress": "0x2dd2afa618f497efdb3a8c1707b06dc00b31fa19",
@@ -189,7 +189,7 @@
       "lastSlackTokenBalanceNotification": null
     },
     {
-      "name": "[DX Services v2.0.1] Backup Balance check bot",
+      "name": "[v2.0.1] Backup Balance check bot",
       "type": "BalanceCheckBot",
       "startTime": "2019-03-05T12:58:03.854Z",
       "botAddress": "0xdc102852b2bc57b860d4a47ab112374f2bf0c944",
@@ -212,7 +212,7 @@
       "lastSlackTokenBalanceNotification": null
     },
     {
-      "name": "[DX Services v2.0.1] Deposit bot",
+      "name": "[v2.0.1] Deposit bot",
       "type": "DepositBot",
       "startTime": "2019-03-05T12:58:03.854Z",
       "botAddress": "0x2dd2afa618f497efdb3a8c1707b06dc00b31fa19",
@@ -249,7 +249,7 @@
       "checkTimeInMilliseconds": 300000
     },
     {
-      "name": "[DX Services v2.0.1] Deposit Backup bot",
+      "name": "[v2.0.1] Deposit Backup bot",
       "type": "DepositBot",
       "startTime": "2019-03-05T12:58:03.940Z",
       "botAddress": "0xdc102852b2bc57b860d4a47ab112374f2bf0c944",
@@ -286,7 +286,7 @@
       "checkTimeInMilliseconds": 300000
     },
     {
-      "name": "[DX Services v2.0.1] Watch events bot",
+      "name": "[v2.0.1] Watch events bot",
       "type": "WatchEventsBot",
       "startTime": null,
       "markets": [
@@ -306,7 +306,7 @@
       "watchingFilter": {}
     },
     {
-      "name": "[DX Services v2.0.1] Main buyer bot: RDN",
+      "name": "[v2.0.1] Main buyer bot: RDN",
       "type": "BuyLiquidityBot",
       "startTime": "2019-03-05T12:58:03.851Z",
       "botAddress": "0x2dd2afa618f497efdb3a8c1707b06dc00b31fa19",
@@ -354,7 +354,7 @@
       ]
     },
     {
-      "name": "[DX Services v2.0.1] Backup buyer bot",
+      "name": "[v2.0.1] Backup buyer bot",
       "type": "BuyLiquidityBot",
       "startTime": "2019-03-05T12:58:03.852Z",
       "botAddress": "0xdc102852b2bc57b860d4a47ab112374f2bf0c944",
@@ -388,7 +388,7 @@
       ]
     },
     {
-      "name": "[DX Services v2.0.1] Main seller bot",
+      "name": "[v2.0.1] Main seller bot",
       "type": "SellLiquidityBot",
       "startTime": "2019-03-05T12:58:03.852Z",
       "botAddress": "0x2dd2afa618f497efdb3a8c1707b06dc00b31fa19",
@@ -410,7 +410,7 @@
       ]
     },
     {
-      "name": "[DX Services v2.0.1] Balance check bot",
+      "name": "[v2.0.1] Balance check bot",
       "type": "BalanceCheckBot",
       "startTime": "2019-03-05T12:58:03.852Z",
       "botAddress": "0x2dd2afa618f497efdb3a8c1707b06dc00b31fa19",
@@ -434,7 +434,7 @@
       "lastSlackTokenBalanceNotification": null
     },
     {
-      "name": "[DX Services v2.0.1] Backup Balance check bot",
+      "name": "[v2.0.1] Backup Balance check bot",
       "type": "BalanceCheckBot",
       "startTime": "2019-03-05T12:58:03.854Z",
       "botAddress": "0xdc102852b2bc57b860d4a47ab112374f2bf0c944",
@@ -458,7 +458,7 @@
       "lastSlackTokenBalanceNotification": null
     },
     {
-      "name": "[DX Services v2.0.1] Deposit bot",
+      "name": "[v2.0.1] Deposit bot",
       "type": "DepositBot",
       "startTime": "2019-03-05T12:58:03.854Z",
       "botAddress": "0x2dd2afa618f497efdb3a8c1707b06dc00b31fa19",
@@ -497,7 +497,7 @@
       "checkTimeInMilliseconds": 300000
     },
     {
-      "name": "[DX Services v2.0.1] High sell volume bot",
+      "name": "[v2.0.1] High sell volume bot",
       "type": "HighSellVolumeBot",
       "startTime": "2019-03-05T12:58:03.940Z",
       "botAddress": "0x2dd2afa618f497efdb3a8c1707b06dc00b31fa19",

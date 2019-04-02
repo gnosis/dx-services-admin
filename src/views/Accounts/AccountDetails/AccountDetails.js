@@ -118,7 +118,7 @@ class AccountDetails extends Component {
           pill>
           {symbol}
         </Badge>
-        &nbsp;{name}
+        &nbsp;<strong>{name}</strong>
         <ul>
           <li>DutchX: <Badge color={balance > 0 ? 'success' : 'secondary'} pill>{balance.toFixed(2)}</Badge></li>
           <li>ERC20: <Badge color={balanceErc20 > 0 ? 'warning' : 'secondary'} pill>{balanceErc20.toFixed(2)}</Badge></li>
