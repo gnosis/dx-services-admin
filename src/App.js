@@ -1,29 +1,55 @@
-import React, { useEffect, useState } from 'react';
-import AppRouter from './AppRouter'
+import React from 'react';
+import { HashRouter, Route, Switch } from 'react-router-dom';
 
-import getWeb3API from './services/web3Service'
+import Web3HOC from './HOCs/Web3HOC'
+import Loadable from 'react-loadable';
 
-const useWeb3Init = () => {
-    const [web3API, setWeb3API] = useState(false)
-    const [appLoadStatus, setAppLoadStatus] = useState(false)
+import './App.scss';
 
-    useEffect(() => {
-        const initWeb3API = async () => {
-            const W3 = await getWeb3API()
-            setAppLoadStatus(true)
-            setWeb3API(W3)
-        }
-        initWeb3API()
-    }, [])
+const loading = () => <div className="animated fadeIn pt-3 text-center">Loading...</div>;
 
-    return { appLoadStatus, web3API }
-}
+// Containers
+const DefaultLayout = Loadable({
+  loader: () => import('./containers/DefaultLayout/DefaultLayout'),
+  loading
+});
 
-function App() {
-    const { appLoadStatus, web3API } = useWeb3Init()
+// Pages
+const Login = Loadable({
+  loader: () => import('./views/Pages/Login/Login'),
+  loading
+});
 
-    return appLoadStatus && web3API ? <AppRouter web3={web3API} /> : <div>LOADING...</div>
-}
+const Register = Loadable({
+  loader: () => import('./views/Pages/Register/Register'),
+  loading
+});
 
-export default App;
+const Page404 = Loadable({
+  loader: () => import('./views/Pages/Page404/Page404'),
+  loading
+});
+
+const Page500 = Loadable({
+  loader: () => import('./views/Pages/Page500/Page500'),
+  loading
+});
+
+const App = props => {
+  return (<HashRouter>
+      <Switch>
+        <Route exact path="/login" name="Login Page" component={Login} />
+        <Route exact path="/register" name="Register Page" component={Register} />
+        <Route exact path="/404" name="Page 404" component={Page404} />
+        <Route exact path="/500" name="Page 500" component={Page500} />
+        <Route 
+          path="/" 
+          name="Home" 
+          render={(routeProps) => (
+            <DefaultLayout {...routeProps} {...props} />
+          )}/>
+      </Switch>
+  </HashRouter>)}
+
+export default Web3HOC(App);
 
