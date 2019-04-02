@@ -1,9 +1,12 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
-import { Card, CardBody, CardHeader, Col, Row, Table, Badge, FormGroup, Input, InputGroupAddon, InputGroup, Label, Form } from 'reactstrap';
-import moment from 'moment'
+
+import { Card, CardBody, CardHeader, Col, Row, Table, Badge, FormGroup, Input, InputGroupAddon, InputGroup, Form } from 'reactstrap';
+import Web3HOC from '../../../HOCs/Web3HOC'
 
 import getDxService from '../../../services/dxService'
+
+import moment from 'moment'
+
 const STATES = [
   { label: 'Waiting for funding', value: 'WAITING_FOR_FUNDING', color: 'secondary' },
   { label: 'Waiting for auction to start', value: 'WAITING_FOR_AUCTION_TO_START', color: 'warning' },
@@ -26,7 +29,8 @@ class MarketList extends Component {
   }
 
   async componentDidMount() {
-    const dxService = await getDxService()
+    const network = await this.props.web3.getNetworkId()
+    const dxService = await getDxService(network)
 
     let markets = await dxService.getMarkets()
     markets = await Promise.all(markets.map(async (market, index) => {
@@ -295,4 +299,5 @@ class MarketList extends Component {
 }
 
 
-export default MarketList
+export default Web3HOC(MarketList)
+

@@ -23,9 +23,7 @@ class DxService {
   async getBots() {
     // TODO: Implement endpoint only for bot information
     //httpLib.get(BASE_API + '/about').then(about => )
-    console.debug(`${(this.network === 1 ? MAINNET_BASE_API_BOTS : RINKEBY_BASE_API_BOTS)}/about`)
     const { bots } = await httpLib.get(`${(this.network === '1' ? MAINNET_BASE_API_BOTS : RINKEBY_BASE_API_BOTS)}/about`)
-		console.log("TCL: getBots -> bots", bots)
 
     // Add an artificial id to the bots
     return bots.map((bot, index) => ({

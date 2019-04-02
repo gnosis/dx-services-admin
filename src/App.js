@@ -35,21 +35,21 @@ const Page500 = Loadable({
   loading
 });
 
-const App = props => {
-  return (<HashRouter>
-      <Switch>
-        <Route exact path="/login" name="Login Page" component={Login} />
-        <Route exact path="/register" name="Register Page" component={Register} />
-        <Route exact path="/404" name="Page 404" component={Page404} />
-        <Route exact path="/500" name="Page 500" component={Page500} />
-        <Route 
-          path="/" 
-          name="Home" 
-          render={(routeProps) => (
-            <DefaultLayout {...routeProps} {...props} />
-          )}/>
-      </Switch>
-  </HashRouter>)}
+const App = props =>
+  <HashRouter>
+    <Switch>
+      <Route exact path="/login" name="Login Page" component={Login} />
+      <Route exact path="/register" name="Register Page" component={Register} />
+      <Route exact path="/404" name="Page 404" component={Page404} />
+      <Route exact path="/500" name="Page 500" component={Page500} />
+      <Route
+        path="/"
+        name="Home"
+        render={(routeProps) => (
+          <DefaultLayout {...routeProps} {...props} />
+        )} />
+    </Switch>
+  </HashRouter>
 
 export default Web3HOC(App);
 

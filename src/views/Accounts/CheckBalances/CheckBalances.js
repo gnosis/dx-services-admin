@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Card, CardBody, CardHeader, Col, Row, Button, Form, FormGroup, Label, Input } from 'reactstrap';
 
+import Web3HOC from '../../../HOCs/Web3HOC'
+
 import { FIXED_DECIMALS } from '../../../globals'
 
 function CheckBalances(props) {
@@ -67,4 +69,4 @@ function CheckBalances(props) {
   )
 }
 
-export default CheckBalances;
+export default Web3HOC(CheckBalances);
