@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
 import { Card, CardBody, CardHeader, Col, Row, ListGroup, ListGroupItem, Badge, FormGroup, Label, Input } from 'reactstrap';
 import Blockies from 'react-blockies'
+
+import Web3HOC from '../../../HOCs/Web3HOC'
+
 import getDxService from '../../../services/dxService'
 
 const qrCodeUrl = 'https://chart.googleapis.com/chart?chs=300x300&cht=qr&choe=UTF-8&chl='
@@ -12,8 +15,11 @@ class AccountDetails extends Component {
   }
 
   async componentDidMount() {
-    const dxService = await getDxService()
-    let tokens = dxService.getTokens()
+    const { web3 } = this.props
+
+    const network = await web3.getNetworkId()
+    const dxService = await getDxService(network, web3)
+    let tokens = await dxService.getTokens()
 
     const account = this.props.match.params.address
     const balancePromises = tokens.map(async token => {
@@ -36,6 +42,7 @@ class AccountDetails extends Component {
       }
     })
 
+    console.warn(await Promise.all(balancePromises))
 
     this.setState({
       balances: await Promise.all(balancePromises)
@@ -120,12 +127,12 @@ class AccountDetails extends Component {
         </Badge>
         &nbsp;<strong>{name}</strong>
         <ul>
-          <li>DutchX: <Badge color={balance > 0 ? 'success' : 'secondary'} pill>{balance.toFixed(2)}</Badge></li>
-          <li>ERC20: <Badge color={balanceErc20 > 0 ? 'warning' : 'secondary'} pill>{balanceErc20.toFixed(2)}</Badge></li>
+          <li>DutchX: <Badge color={balance > 0 ? 'success' : 'secondary'} pill>{Number(balance).toFixed(2)}</Badge></li>
+          <li>ERC20: <Badge color={balanceErc20 > 0 ? 'warning' : 'secondary'} pill>{Number(balanceErc20).toFixed(2)}</Badge></li>
         </ul>
       </ListGroupItem>
     )
   }
 }
 
-export default AccountDetails;
+export default Web3HOC(AccountDetails);

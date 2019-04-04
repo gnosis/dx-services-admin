@@ -1,29 +1,39 @@
-import httpLib from '../../utils/httpLib'
-import botsAbout from '../../data/mock/botsAbout.json'
-import tokens from '../../data/mock/tokens.json'
-import markets from '../../data/mock/markets.json'
-
 // FIXME, this should be injected in the repo layer using env vars
-const BASE_API_DX = 'https://dutchx.d.exchange/api'
-const MAINNET_BASE_API_BOTS = 'https://dx-services-bots.gnosis.pm/api/'
-const RINKEBY_BASE_API_BOTS = 'https://dx-services-bots.staging.gnosisdev.com/api/'
+const MAINNET_BASE_API_DX = process.env.REACT_APP_MAINNET_BASE_API_DX
+const RINKEBY_BASE_API_DX = process.env.REACT_APP_RINKEBY_BASE_API_DX
+const MAINNET_BASE_API_BOTS = process.env.REACT_APP_MAINNET_BASE_API_BOTS
+const RINKEBY_BASE_API_BOTS = process.env.REACT_APP_RINKEBY_BASE_API_BOTS
 
 class DxService {
-  constructor({ network }) {
+  constructor({ network, web3 }) {
     // it should be injected the repos, for now we don't implement the repo layer
-    console.debug('DX_SERVICES CONSTRUCTOR = ', network)
     this.network = network
+    this.web3 = web3
+
+    // Network specific API URLs
+    this.botsApiURL = network === 1 ? MAINNET_BASE_API_BOTS : RINKEBY_BASE_API_BOTS
+    this.dxApiURL = network === 1 ? MAINNET_BASE_API_DX : RINKEBY_BASE_API_DX
+
+    // Auth Header (BOTS API)
+    this.botsAuthorizationHeader = {
+      method: 'GET',
+      headers: {
+        "Authorization": network === 1 ? process.env.REACT_APP_MAINNET_DX_BOTS_API_AUTH : process.env.REACT_APP_RINKEBY_DX_BOTS_API_AUTH,
+        "Content-Type": "application/json"
+      }
+    }
   }
 
-  getAbout() {
-    //httpLib.get(BASE_API + '/about')
-    return botsAbout
+  async getAbout() {
+    const apiURL = `${this.botsApiURL}/about`
+    
+    return (await fetch(apiURL, this.botsAuthorizationHeader)).json()
   }
 
   async getBots() {
-    // TODO: Implement endpoint only for bot information
-    //httpLib.get(BASE_API + '/about').then(about => )
-    const { bots } = await httpLib.get(`${(this.network === '1' ? MAINNET_BASE_API_BOTS : RINKEBY_BASE_API_BOTS)}/about`)
+    const apiURL = `${this.botsApiURL}/about`
+    
+    const { bots } = await (await fetch(apiURL, this.botsAuthorizationHeader)).json()
 
     // Add an artificial id to the bots
     return bots.map((bot, index) => ({
@@ -32,16 +42,21 @@ class DxService {
     }))
   }
 
-  getTokens() {
-    return tokens.data
+  async getTokens() {
+    const apiURL = `${this.dxApiURL}/v1/tokens`
+    const { data } = await (await fetch(apiURL)).json()
+
+    return data
   }
 
-  getMarkets() {
+  async getMarkets() {
+    const apiURL = `${this.dxApiURL}/v1/markets`
+    const markets = await (await fetch(apiURL)).json()
+
     return markets.data
   }
 
   getTokenBalanceDx({ account, tokenAddress }) {
-    // https://dutchx.d.exchange/api/v1/accounts/0x2dd2afa618f497efdb3a8c1707b06dc00b31fa19/tokens/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2
     if (Math.random() > 0.6) {
       return 0
     }
@@ -49,12 +64,34 @@ class DxService {
     return Math.random() * 40
   }
 
-  getTokenBalanceErc20({ account, tokenAddress }) {
-    if (Math.random() > 0.3) {
-      return 0
-    }
-    // https://dutchx.d.exchange/api/v1/accounts/0x2dd2afa618f497efdb3a8c1707b06dc00b31fa19/tokens/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2
-    return Math.random() * 40
+  async getTokenBalanceErc20({ account, tokenAddress }) {
+    const erc20Token = await this.web3.getToken(tokenAddress)
+
+    return erc20Token.methods.balanceOf(account).call()
+  }
+
+  async getMarketSellVolume(sellToken, buyToken) {
+    const res = await (await fetch(`${this.dxApiURL}/v1/markets/${sellToken.toLowerCase()}-${buyToken.toLowerCase()}/sell-volume`)).json()
+    
+    return res
+  }
+
+  async getMarketBuyVolume(sellToken, buyToken) {
+    const res = await (await fetch(`${this.dxApiURL}/v1/markets/${sellToken.toLowerCase()}-${buyToken.toLowerCase()}/buy-volume`)).json()
+    
+    return res
+  }
+
+  async getMarketState(sellToken, buyToken) {
+    const res = await (await fetch(`${this.dxApiURL}/v1/markets/${sellToken.toLowerCase()}-${buyToken.toLowerCase()}/state`)).json()
+    
+    return res
+  }
+
+  async getMarketStartTime(sellToken, buyToken) {
+    const res = await (await fetch(`${this.dxApiURL}/v1/markets/${sellToken.toLowerCase()}-${buyToken.toLowerCase()}/auction-start`)).json()
+    
+    return res
   }
 }
 

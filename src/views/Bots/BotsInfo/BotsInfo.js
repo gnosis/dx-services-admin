@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Card, CardBody, CardHeader, Col, Row, Table } from 'reactstrap';
 
+import Web3HOC from '../../../HOCs/Web3HOC'
 import getDxService from '../../../services/dxService'
 
 class BotsInfo extends Component {
@@ -9,7 +10,10 @@ class BotsInfo extends Component {
   }
 
   async componentDidMount() {
-    const dxService = await getDxService()
+    const network = await this.props.web3.getNetworkId()
+    
+    const dxService = await getDxService(network, this.props.web3)
+    
     const about = await dxService.getAbout()
     this.setState({ about })
   }
@@ -182,4 +186,4 @@ class BotsInfo extends Component {
   }
 }
 
-export default BotsInfo;
+export default Web3HOC(BotsInfo);

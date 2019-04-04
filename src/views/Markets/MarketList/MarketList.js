@@ -13,6 +13,7 @@ const STATES = [
   { label: 'Pending close theoretical', value: 'PENDING_CLOSE_THEORETICAL', color: 'danger' },
   { label: 'One auction has closed', value: 'ONE_AUCTION_HAS_CLOSED', color: 'primary' },
   { label: 'Running', value: 'RUNNING', color: 'success' },
+  { label: 'Not currently running', value: false, color: 'warning' },
 ]
 const HIGH_RUNNING_TIME = 1000 * 60 * 60 * 6.5
 const NEAR_CLOSING_TIME = 1000 * 60 * 60 * 5
@@ -30,35 +31,32 @@ class MarketList extends Component {
 
   async componentDidMount() {
     const network = await this.props.web3.getNetworkId()
-    const dxService = await getDxService(network)
+    const dxService = await getDxService(network, this.props.web3)
 
     let markets = await dxService.getMarkets()
-    markets = await Promise.all(markets.map(async (market, index) => {
+    
+    markets = await Promise.all(markets.map(async ({tokenA, tokenB}, index) => {
       // TODO: Get sell volume, buyVolume, etc.. (use dxService)      
-      let state, sellVolume, buyVolume, startTime
-      if (Math.random() > 0.4) {
-        state = 'RUNNING'
-        sellVolume = Math.random() * 5000
-        buyVolume = Math.random() * 5000
-        startTime = new Date(new Date().getTime() - Math.random() * 500 * 60 * 1000)
-      } else {
-        state = 'WAITING_FOR_FUNDING'
-        sellVolume = Math.random() * 100
-        buyVolume = 0
-        startTime = null
-      }
+      const [state, sellVolume, buyVolume, startTime] = await Promise.all([
+        dxService.getMarketState(tokenA.symbol, tokenB.symbol),
+        dxService.getMarketSellVolume(tokenA.symbol, tokenB.symbol),
+        dxService.getMarketBuyVolume(tokenA.symbol, tokenB.symbol),
+        dxService.getMarketStartTime(tokenA.symbol, tokenB.symbol)
+      ])
+
+      const checkApiRes = val => (typeof val === 'object' && val.status) ? false : val
 
       return {
         id: index,
-        sellVolume,
-        buyVolume,
-        state,
-        startTime,
+        sellVolume: checkApiRes(sellVolume),
+        buyVolume: checkApiRes(buyVolume),
+        state: checkApiRes(state),
+        startTime: checkApiRes(startTime),
 
-        ...market
+        ...{tokenA, tokenB}
       }
     }))
-
+    
     markets = markets.sort((marketA, marketB) => {
       if (!marketA.startTime) {
         return 1
@@ -80,7 +78,6 @@ class MarketList extends Component {
       }
       return acc
     }, [])
-
 
     this.setState({
       markets,
@@ -200,7 +197,7 @@ class MarketList extends Component {
     if (!startTime) {
       backgroundColor = '#f9f9f9'
     } else {
-      const runningTime = now.getTime() - startTime.getTime()
+      const runningTime = now.getTime() - new Date(startTime).getTime()
       if (runningTime > HIGH_RUNNING_TIME) {
         backgroundColor = '#ffeeee'
       } else if (runningTime > NEAR_CLOSING_TIME) {
@@ -229,9 +226,9 @@ class MarketList extends Component {
           </Badge>
           <ul>
             {this.renderDateRow('Start time', startTime)}
-            {sellVolume && this.renderAmontRow('Sell volume', sellVolume.toFixed(2), tokenA.symbol)}
-            {buyVolume > 0 && this.renderAmontRow('Buy volume', buyVolume.toFixed(2), tokenB.symbol)}
-            {buyVolume > 0 && this.renderAmontRow('Oustanding volume', buyVolume.toFixed(2), tokenB.symbol)}
+            {sellVolume && this.renderAmontRow('Sell volume', Number(sellVolume).toFixed(2), tokenA.symbol)}
+            {buyVolume > 0 && this.renderAmontRow('Buy volume', Number(buyVolume).toFixed(2), tokenB.symbol)}
+            {buyVolume > 0 && this.renderAmontRow('Oustanding volume', Number(buyVolume).toFixed(2), tokenB.symbol)}
           </ul>
         </td>
       </tr>

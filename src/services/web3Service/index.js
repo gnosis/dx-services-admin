@@ -7,6 +7,7 @@ import Web3 from 'web3'
 import { netIdToName, windowLoaded } from '../../utils'
 
 let appWeb3
+let contractsMap = {}
 
 export const getWeb3API = async () => {
     if (appWeb3) return (console.debug('CACHED WEB3'), appWeb3)
@@ -112,10 +113,31 @@ async function init() {
     const toBN = amount => utils.toBN(amount)
 
     const getBlockInfo = async (blockNumber = "pending") => web3.eth.getBlock(blockNumber)
+    
+    /*
+     * ERC20 Token
+     */
+    const getToken = async (address) => {
+		console.warn("TCL: getToken -> address", address)
+        if (!address) throw new Error('No Token address passed')
+        if (contractsMap[address]) return contractsMap[address]
+        
+        try {
+            const ERC20Artifact = require('./ERC20.json')
+            const defaultAccount = await getCurrentAccount()
 
-    if (process.env.NODE_ENV === 'development') window.web3 = web3
+            contractsMap[address] = await new web3.eth.Contract(ERC20Artifact.abi, address, { from: defaultAccount })
+            
+            return contractsMap[address]
+        } catch (error) {
+            throw new Error(error.message)
+        }
+    }
 
+    // Get NetworkName
     const networkName = await getNetwork()
+    
+    if (process.env.NODE_ENV === 'development') window.web3 = web3
 
     return {
         web3,
@@ -132,6 +154,7 @@ async function init() {
         toBN,
         fromWei,
         toWei,
+        getToken,
     }
 }
 

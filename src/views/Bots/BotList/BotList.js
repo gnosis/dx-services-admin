@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardBody, CardHeader, Col, Row, Table, Badge, FormGroup, Input, InputGroupAddon, InputGroup, Label, Form } from 'reactstrap';
+import Web3HOC from '../../../HOCs/Web3HOC'
+
 import moment from 'moment'
 
 import getBotMasters from '../../../utils/getBotMasters'
@@ -23,7 +25,7 @@ class BotList extends Component {
 
   async componentDidMount() {
     const network = await this.props.web3.getNetworkId()
-    const dxService = await getDxService(network)
+    const dxService = await getDxService(network, this.props.web3)
 
     let bots = await dxService.getBots()
     const { botTypes, tokens, botAddress } = getBotMasters(bots)
@@ -37,7 +39,6 @@ class BotList extends Component {
   }
 
   render() {
-    console.debug('BotList Props = ', this.props)
     const {
       // Data
       bots,
@@ -382,4 +383,4 @@ function colorByBotType(botType) {
   }
 }
 
-export default BotList;
+export default Web3HOC(BotList);
