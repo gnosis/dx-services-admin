@@ -56,12 +56,11 @@ class DxService {
     return markets.data
   }
 
-  getTokenBalanceDx({ account, tokenAddress }) {
-    if (Math.random() > 0.6) {
-      return 0
-    }
+  async getTokenBalanceDx({ account, tokenAddress }) {
+    const res = await (await fetch(`${this.dxApiURL}/v1/accounts/${account}/tokens/${tokenAddress}`)).json()
+    console.debug(res)
 
-    return Math.random() * 40
+    return res
   }
 
   async getTokenBalanceErc20({ account, tokenAddress }) {
