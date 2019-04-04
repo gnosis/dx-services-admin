@@ -25,7 +25,7 @@ class AccountDetails extends Component {
     const balancePromises = tokens.map(async token => {
       const balance = await dxService.getTokenBalanceDx({
         account,
-        tokenAddress: token.address
+        token,
       })
 
       const balanceErc20 = await dxService.getTokenBalanceErc20({

@@ -56,8 +56,11 @@ class DxService {
     return markets.data
   }
 
-  async getTokenBalanceDx({ account, tokenAddress }) {
-    const res = await (await fetch(`${this.dxApiURL}/v1/accounts/${account}/tokens/${tokenAddress}`)).json()
+  async getTokenBalanceDx({ account, token }) {
+    // TODO: remove - workaround for API mainnet behaviour
+    const tokenParam = this.network === 1 ? token.symbol : token.address
+
+    const res = await (await fetch(`${this.dxApiURL}/v1/accounts/${account}/tokens/${tokenParam}`)).json()
     console.debug(res)
 
     return res
