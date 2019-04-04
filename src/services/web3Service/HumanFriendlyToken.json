@@ -1,0 +1,712 @@
+{
+    "contractName": "HumanFriendlyToken",
+    "abi": [
+      {
+        "constant": false,
+        "inputs": [
+          {
+            "name": "spender",
+            "type": "address"
+          },
+          {
+            "name": "value",
+            "type": "uint256"
+          }
+        ],
+        "name": "approve",
+        "outputs": [
+          {
+            "name": "",
+            "type": "bool"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "constant": true,
+        "inputs": [],
+        "name": "totalSupply",
+        "outputs": [
+          {
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "constant": false,
+        "inputs": [
+          {
+            "name": "from",
+            "type": "address"
+          },
+          {
+            "name": "to",
+            "type": "address"
+          },
+          {
+            "name": "value",
+            "type": "uint256"
+          }
+        ],
+        "name": "transferFrom",
+        "outputs": [
+          {
+            "name": "",
+            "type": "bool"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "constant": true,
+        "inputs": [
+          {
+            "name": "owner",
+            "type": "address"
+          }
+        ],
+        "name": "balanceOf",
+        "outputs": [
+          {
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "constant": false,
+        "inputs": [
+          {
+            "name": "to",
+            "type": "address"
+          },
+          {
+            "name": "value",
+            "type": "uint256"
+          }
+        ],
+        "name": "transfer",
+        "outputs": [
+          {
+            "name": "",
+            "type": "bool"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "constant": true,
+        "inputs": [
+          {
+            "name": "owner",
+            "type": "address"
+          },
+          {
+            "name": "spender",
+            "type": "address"
+          }
+        ],
+        "name": "allowance",
+        "outputs": [
+          {
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "name": "from",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "name": "to",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "name": "value",
+            "type": "uint256"
+          }
+        ],
+        "name": "Transfer",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "name": "owner",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "name": "spender",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "name": "value",
+            "type": "uint256"
+          }
+        ],
+        "name": "Approval",
+        "type": "event"
+      },
+      {
+        "constant": true,
+        "inputs": [],
+        "name": "name",
+        "outputs": [
+          {
+            "name": "",
+            "type": "string"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "constant": true,
+        "inputs": [],
+        "name": "symbol",
+        "outputs": [
+          {
+            "name": "",
+            "type": "string"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "constant": true,
+        "inputs": [],
+        "name": "decimals",
+        "outputs": [
+          {
+            "name": "",
+            "type": "uint8"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+      }
+    ],
+    "bytecode": "0x",
+    "deployedBytecode": "0x",
+    "sourceMap": "",
+    "deployedSourceMap": "",
+    "source": "/// Implements ERC 20 Token standard including extra accessors for human readability.\n/// See: https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20-token-standard.md\npragma solidity ^0.5.2;\nimport \"./Token.sol\";\n\n/// @title Abstract human-friendly token contract - Functions to be implemented by token contracts\ncontract HumanFriendlyToken is Token {\n    /*\n     *  Public functions\n     */\n    function name() public view returns (string memory);\n    function symbol() public view returns (string memory);\n    function decimals() public view returns (uint8);\n}\n",
+    "sourcePath": "/Users/anxo/code/gnosis/util-contracts/contracts/HumanFriendlyToken.sol",
+    "ast": {
+      "absolutePath": "/Users/anxo/code/gnosis/util-contracts/contracts/HumanFriendlyToken.sol",
+      "exportedSymbols": {
+        "HumanFriendlyToken": [
+          334
+        ]
+      },
+      "id": 335,
+      "nodeType": "SourceUnit",
+      "nodes": [
+        {
+          "id": 315,
+          "literals": [
+            "solidity",
+            "^",
+            "0.5",
+            ".2"
+          ],
+          "nodeType": "PragmaDirective",
+          "src": "170:23:2"
+        },
+        {
+          "absolutePath": "/Users/anxo/code/gnosis/util-contracts/contracts/Token.sol",
+          "file": "./Token.sol",
+          "id": 316,
+          "nodeType": "ImportDirective",
+          "scope": 335,
+          "sourceUnit": 1626,
+          "src": "194:21:2",
+          "symbolAliases": [],
+          "unitAlias": ""
+        },
+        {
+          "baseContracts": [
+            {
+              "arguments": null,
+              "baseName": {
+                "contractScope": null,
+                "id": 317,
+                "name": "Token",
+                "nodeType": "UserDefinedTypeName",
+                "referencedDeclaration": 1625,
+                "src": "347:5:2",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_contract$_Token_$1625",
+                  "typeString": "contract Token"
+                }
+              },
+              "id": 318,
+              "nodeType": "InheritanceSpecifier",
+              "src": "347:5:2"
+            }
+          ],
+          "contractDependencies": [
+            1625
+          ],
+          "contractKind": "contract",
+          "documentation": "@title Abstract human-friendly token contract - Functions to be implemented by token contracts",
+          "fullyImplemented": false,
+          "id": 334,
+          "linearizedBaseContracts": [
+            334,
+            1625
+          ],
+          "name": "HumanFriendlyToken",
+          "nodeType": "ContractDefinition",
+          "nodes": [
+            {
+              "body": null,
+              "documentation": null,
+              "id": 323,
+              "implemented": false,
+              "kind": "function",
+              "modifiers": [],
+              "name": "name",
+              "nodeType": "FunctionDefinition",
+              "parameters": {
+                "id": 319,
+                "nodeType": "ParameterList",
+                "parameters": [],
+                "src": "412:2:2"
+              },
+              "returnParameters": {
+                "id": 322,
+                "nodeType": "ParameterList",
+                "parameters": [
+                  {
+                    "constant": false,
+                    "id": 321,
+                    "name": "",
+                    "nodeType": "VariableDeclaration",
+                    "scope": 323,
+                    "src": "436:13:2",
+                    "stateVariable": false,
+                    "storageLocation": "memory",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_memory_ptr",
+                      "typeString": "string"
+                    },
+                    "typeName": {
+                      "id": 320,
+                      "name": "string",
+                      "nodeType": "ElementaryTypeName",
+                      "src": "436:6:2",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_string_storage_ptr",
+                        "typeString": "string"
+                      }
+                    },
+                    "value": null,
+                    "visibility": "internal"
+                  }
+                ],
+                "src": "435:15:2"
+              },
+              "scope": 334,
+              "src": "399:52:2",
+              "stateMutability": "view",
+              "superFunction": null,
+              "visibility": "public"
+            },
+            {
+              "body": null,
+              "documentation": null,
+              "id": 328,
+              "implemented": false,
+              "kind": "function",
+              "modifiers": [],
+              "name": "symbol",
+              "nodeType": "FunctionDefinition",
+              "parameters": {
+                "id": 324,
+                "nodeType": "ParameterList",
+                "parameters": [],
+                "src": "471:2:2"
+              },
+              "returnParameters": {
+                "id": 327,
+                "nodeType": "ParameterList",
+                "parameters": [
+                  {
+                    "constant": false,
+                    "id": 326,
+                    "name": "",
+                    "nodeType": "VariableDeclaration",
+                    "scope": 328,
+                    "src": "495:13:2",
+                    "stateVariable": false,
+                    "storageLocation": "memory",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_memory_ptr",
+                      "typeString": "string"
+                    },
+                    "typeName": {
+                      "id": 325,
+                      "name": "string",
+                      "nodeType": "ElementaryTypeName",
+                      "src": "495:6:2",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_string_storage_ptr",
+                        "typeString": "string"
+                      }
+                    },
+                    "value": null,
+                    "visibility": "internal"
+                  }
+                ],
+                "src": "494:15:2"
+              },
+              "scope": 334,
+              "src": "456:54:2",
+              "stateMutability": "view",
+              "superFunction": null,
+              "visibility": "public"
+            },
+            {
+              "body": null,
+              "documentation": null,
+              "id": 333,
+              "implemented": false,
+              "kind": "function",
+              "modifiers": [],
+              "name": "decimals",
+              "nodeType": "FunctionDefinition",
+              "parameters": {
+                "id": 329,
+                "nodeType": "ParameterList",
+                "parameters": [],
+                "src": "532:2:2"
+              },
+              "returnParameters": {
+                "id": 332,
+                "nodeType": "ParameterList",
+                "parameters": [
+                  {
+                    "constant": false,
+                    "id": 331,
+                    "name": "",
+                    "nodeType": "VariableDeclaration",
+                    "scope": 333,
+                    "src": "556:5:2",
+                    "stateVariable": false,
+                    "storageLocation": "default",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint8",
+                      "typeString": "uint8"
+                    },
+                    "typeName": {
+                      "id": 330,
+                      "name": "uint8",
+                      "nodeType": "ElementaryTypeName",
+                      "src": "556:5:2",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint8",
+                        "typeString": "uint8"
+                      }
+                    },
+                    "value": null,
+                    "visibility": "internal"
+                  }
+                ],
+                "src": "555:7:2"
+              },
+              "scope": 334,
+              "src": "515:48:2",
+              "stateMutability": "view",
+              "superFunction": null,
+              "visibility": "public"
+            }
+          ],
+          "scope": 335,
+          "src": "316:249:2"
+        }
+      ],
+      "src": "170:396:2"
+    },
+    "legacyAST": {
+      "absolutePath": "/Users/anxo/code/gnosis/util-contracts/contracts/HumanFriendlyToken.sol",
+      "exportedSymbols": {
+        "HumanFriendlyToken": [
+          334
+        ]
+      },
+      "id": 335,
+      "nodeType": "SourceUnit",
+      "nodes": [
+        {
+          "id": 315,
+          "literals": [
+            "solidity",
+            "^",
+            "0.5",
+            ".2"
+          ],
+          "nodeType": "PragmaDirective",
+          "src": "170:23:2"
+        },
+        {
+          "absolutePath": "/Users/anxo/code/gnosis/util-contracts/contracts/Token.sol",
+          "file": "./Token.sol",
+          "id": 316,
+          "nodeType": "ImportDirective",
+          "scope": 335,
+          "sourceUnit": 1626,
+          "src": "194:21:2",
+          "symbolAliases": [],
+          "unitAlias": ""
+        },
+        {
+          "baseContracts": [
+            {
+              "arguments": null,
+              "baseName": {
+                "contractScope": null,
+                "id": 317,
+                "name": "Token",
+                "nodeType": "UserDefinedTypeName",
+                "referencedDeclaration": 1625,
+                "src": "347:5:2",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_contract$_Token_$1625",
+                  "typeString": "contract Token"
+                }
+              },
+              "id": 318,
+              "nodeType": "InheritanceSpecifier",
+              "src": "347:5:2"
+            }
+          ],
+          "contractDependencies": [
+            1625
+          ],
+          "contractKind": "contract",
+          "documentation": "@title Abstract human-friendly token contract - Functions to be implemented by token contracts",
+          "fullyImplemented": false,
+          "id": 334,
+          "linearizedBaseContracts": [
+            334,
+            1625
+          ],
+          "name": "HumanFriendlyToken",
+          "nodeType": "ContractDefinition",
+          "nodes": [
+            {
+              "body": null,
+              "documentation": null,
+              "id": 323,
+              "implemented": false,
+              "kind": "function",
+              "modifiers": [],
+              "name": "name",
+              "nodeType": "FunctionDefinition",
+              "parameters": {
+                "id": 319,
+                "nodeType": "ParameterList",
+                "parameters": [],
+                "src": "412:2:2"
+              },
+              "returnParameters": {
+                "id": 322,
+                "nodeType": "ParameterList",
+                "parameters": [
+                  {
+                    "constant": false,
+                    "id": 321,
+                    "name": "",
+                    "nodeType": "VariableDeclaration",
+                    "scope": 323,
+                    "src": "436:13:2",
+                    "stateVariable": false,
+                    "storageLocation": "memory",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_memory_ptr",
+                      "typeString": "string"
+                    },
+                    "typeName": {
+                      "id": 320,
+                      "name": "string",
+                      "nodeType": "ElementaryTypeName",
+                      "src": "436:6:2",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_string_storage_ptr",
+                        "typeString": "string"
+                      }
+                    },
+                    "value": null,
+                    "visibility": "internal"
+                  }
+                ],
+                "src": "435:15:2"
+              },
+              "scope": 334,
+              "src": "399:52:2",
+              "stateMutability": "view",
+              "superFunction": null,
+              "visibility": "public"
+            },
+            {
+              "body": null,
+              "documentation": null,
+              "id": 328,
+              "implemented": false,
+              "kind": "function",
+              "modifiers": [],
+              "name": "symbol",
+              "nodeType": "FunctionDefinition",
+              "parameters": {
+                "id": 324,
+                "nodeType": "ParameterList",
+                "parameters": [],
+                "src": "471:2:2"
+              },
+              "returnParameters": {
+                "id": 327,
+                "nodeType": "ParameterList",
+                "parameters": [
+                  {
+                    "constant": false,
+                    "id": 326,
+                    "name": "",
+                    "nodeType": "VariableDeclaration",
+                    "scope": 328,
+                    "src": "495:13:2",
+                    "stateVariable": false,
+                    "storageLocation": "memory",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_memory_ptr",
+                      "typeString": "string"
+                    },
+                    "typeName": {
+                      "id": 325,
+                      "name": "string",
+                      "nodeType": "ElementaryTypeName",
+                      "src": "495:6:2",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_string_storage_ptr",
+                        "typeString": "string"
+                      }
+                    },
+                    "value": null,
+                    "visibility": "internal"
+                  }
+                ],
+                "src": "494:15:2"
+              },
+              "scope": 334,
+              "src": "456:54:2",
+              "stateMutability": "view",
+              "superFunction": null,
+              "visibility": "public"
+            },
+            {
+              "body": null,
+              "documentation": null,
+              "id": 333,
+              "implemented": false,
+              "kind": "function",
+              "modifiers": [],
+              "name": "decimals",
+              "nodeType": "FunctionDefinition",
+              "parameters": {
+                "id": 329,
+                "nodeType": "ParameterList",
+                "parameters": [],
+                "src": "532:2:2"
+              },
+              "returnParameters": {
+                "id": 332,
+                "nodeType": "ParameterList",
+                "parameters": [
+                  {
+                    "constant": false,
+                    "id": 331,
+                    "name": "",
+                    "nodeType": "VariableDeclaration",
+                    "scope": 333,
+                    "src": "556:5:2",
+                    "stateVariable": false,
+                    "storageLocation": "default",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint8",
+                      "typeString": "uint8"
+                    },
+                    "typeName": {
+                      "id": 330,
+                      "name": "uint8",
+                      "nodeType": "ElementaryTypeName",
+                      "src": "556:5:2",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint8",
+                        "typeString": "uint8"
+                      }
+                    },
+                    "value": null,
+                    "visibility": "internal"
+                  }
+                ],
+                "src": "555:7:2"
+              },
+              "scope": 334,
+              "src": "515:48:2",
+              "stateMutability": "view",
+              "superFunction": null,
+              "visibility": "public"
+            }
+          ],
+          "scope": 335,
+          "src": "316:249:2"
+        }
+      ],
+      "src": "170:396:2"
+    },
+    "compiler": {
+      "name": "solc",
+      "version": "0.5.2+commit.1df8f40c.Emscripten.clang"
+    },
+    "networks": {},
+    "schemaVersion": "3.0.1",
+    "updatedAt": "2019-02-07T17:56:10.249Z",
+    "devdoc": {
+      "methods": {},
+      "title": "Abstract human-friendly token contract - Functions to be implemented by token contracts"
+    },
+    "userdoc": {
+      "methods": {}
+    }
+  }
