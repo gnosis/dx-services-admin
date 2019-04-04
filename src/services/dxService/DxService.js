@@ -79,6 +79,9 @@ class DxService {
   }
 
   async getMarketBuyVolume(sellToken, buyToken) {
+    console.debug('URL = ', this.dxApiURL)
+    console.debug('sellToken ', sellToken)
+    console.debug('buyToken ', buyToken)
     const res = await (await fetch(`${this.dxApiURL}/v1/markets/${sellToken.toLowerCase()}-${buyToken.toLowerCase()}/buy-volume`)).json()
     
     return res
