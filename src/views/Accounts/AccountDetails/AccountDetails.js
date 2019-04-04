@@ -33,16 +33,12 @@ class AccountDetails extends Component {
         tokenAddress: token.address
       })
 
-      // TODO: Get ERC20 token balance
-
       return {
         balance,
         balanceErc20,
         ...token
       }
     })
-
-    console.warn(await Promise.all(balancePromises))
 
     this.setState({
       balances: await Promise.all(balancePromises)

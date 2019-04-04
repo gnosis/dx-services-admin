@@ -22,7 +22,7 @@ const Web3HOC = Component =>
     function WrappedComponent(props) {
         const { appLoadStatus, web3API } = useWeb3Init()
 
-        return appLoadStatus && web3API ? <Component web3={web3API} {...props}/> : <h1 style={{ padding: 50 }}>L O A D I N G . . .</h1>
+        return appLoadStatus && web3API && <Component web3={web3API} {...props}/>/*  : <h1 style={{ padding: 50 }}>L O A D I N G . . .</h1> */
     }
 
 
