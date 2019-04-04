@@ -123,8 +123,8 @@ class AccountDetails extends Component {
         </Badge>
         &nbsp;<strong>{name}</strong>
         <ul>
-          <li>DutchX: <Badge color={balance > 0 ? 'success' : 'secondary'} pill>{Number(balance).toFixed(2)}</Badge></li>
-          <li>ERC20: <Badge color={balanceErc20 > 0 ? 'warning' : 'secondary'} pill>{Number(balanceErc20).toFixed(2)}</Badge></li>
+          <li>DutchX: <Badge color={balance > 0 ? 'success' : 'secondary'} pill>{Number(balance / (10**decimals)).toFixed(2)}</Badge></li>
+          <li>ERC20: <Badge color={balanceErc20 > 0 ? 'warning' : 'secondary'} pill>{Number(balanceErc20 / (10**decimals)).toFixed(2)}</Badge></li>
         </ul>
       </ListGroupItem>
     )

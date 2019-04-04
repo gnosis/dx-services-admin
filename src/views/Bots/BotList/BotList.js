@@ -236,8 +236,8 @@ class BotList extends Component {
             {this.renderDateRow('Last sell', lastSell)}
             {this.renderDateRow('Last deposit', lastDeposit)}
             {this.renderDateRow('Running since', startTime)}
-            {this.renderAmontRow('Minimun amount for Ether', minimumAmountForEther, 'Ether')}
-            {this.renderAmontRow('Minimun USD amount for tokens', minimumAmountInUsdForToken, '$')}
+            {this.renderAmontRow('Minimum amount for Ether', minimumAmountForEther && minimumAmountForEther / 10**18, 'Ether')}
+            {this.renderAmontRow('Minimum USD amount for tokens', minimumAmountInUsdForToken, '$')}
             {this.renderNotifications(name, notifications)}
             {checkTimeInMilliseconds && this.renderAmontRow('Check frecuency', checkTimeInMilliseconds / 1000, 'seconds')}
           </ul>
