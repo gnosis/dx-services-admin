@@ -15,6 +15,21 @@ export const windowLoaded = new Promise((resolve) => {
     })
 })
 
+export const network2Color = (networkName) => {
+    switch(networkName) {
+        case 'Mainnet':
+            return 'linear-gradient(90deg, rgba(26,152,140,1) 49%, rgba(255,255,255,1) 93%)'
+        case 'Rinkeby':
+            return 'linear-gradient(90deg, #efc55b 49%, rgba(255,255,255,1) 93%)'
+        case 'Kovan':
+            return 'linear-gradient(90deg, #8568d7 49%, rgba(255,255,255,1) 93%)'
+        case 'Ropsten':
+            return 'linear-gradient(90deg, #d15480 49%, rgba(255,255,255,1) 93%)'
+        default:
+            return 'linear-gradient(90deg, #d5d5d5 49%, rgba(255,255,255,1) 93%)'
+    }
+}
+
 export const netIdToName = (id) => {
     switch (id) {
         case 1:

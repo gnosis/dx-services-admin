@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import { Card, CardBody, CardHeader, Col, Row, Table, Badge, FormGroup, Input, InputGroupAddon, InputGroup, Label, Form } from 'reactstrap';
+import { Card, CardBody, CardHeader, Col, Row, Table, Badge, FormGroup, Input, InputGroupAddon, InputGroup, Form } from 'reactstrap';
 import Web3HOC from '../../../HOCs/Web3HOC'
 
 import moment from 'moment'
@@ -236,8 +236,8 @@ class BotList extends Component {
             {this.renderDateRow('Last sell', lastSell)}
             {this.renderDateRow('Last deposit', lastDeposit)}
             {this.renderDateRow('Running since', startTime)}
-            {this.renderAmontRow('Minimun amount for Ether', minimumAmountForEther, 'Ether')}
-            {this.renderAmontRow('Minimun USD amount for tokens', minimumAmountInUsdForToken, '$')}
+            {this.renderAmontRow('Minimum amount for Ether', minimumAmountForEther && minimumAmountForEther / 10**18, 'Ether')}
+            {this.renderAmontRow('Minimum USD amount for tokens', minimumAmountInUsdForToken, '$')}
             {this.renderNotifications(name, notifications)}
             {checkTimeInMilliseconds && this.renderAmontRow('Check frecuency', checkTimeInMilliseconds / 1000, 'seconds')}
           </ul>

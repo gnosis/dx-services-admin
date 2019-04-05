@@ -118,7 +118,6 @@ async function init() {
      * ERC20 Token
      */
     const getToken = async (address) => {
-		console.warn("TCL: getToken -> address", address)
         if (!address) throw new Error('No Token address passed')
         if (contractsMap[address]) return contractsMap[address]
         

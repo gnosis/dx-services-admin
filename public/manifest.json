@@ -1,11 +1,11 @@
 {
-  "short_name": "CoreUI-React",
-  "name": "CoreUI-React sample",
+  "short_name": "DX Services Admin",
+  "name": "DutchX Services Admin",
   "icons": [
     {
-      "src": "./assets/img/favicon.png",
+      "src": "./assets/img/favicon.svg",
       "sizes": "100x100",
-      "type": "image/png"
+      "type": "svg"
     }
   ],
   "start_url": ".",

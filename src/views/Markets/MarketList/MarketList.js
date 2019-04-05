@@ -226,9 +226,9 @@ class MarketList extends Component {
           </Badge>
           <ul>
             {this.renderDateRow('Start time', startTime)}
-            {sellVolume && this.renderAmontRow('Sell volume', Number(sellVolume).toFixed(2), tokenA.symbol)}
-            {buyVolume > 0 && this.renderAmontRow('Buy volume', Number(buyVolume).toFixed(2), tokenB.symbol)}
-            {buyVolume > 0 && this.renderAmontRow('Oustanding volume', Number(buyVolume).toFixed(2), tokenB.symbol)}
+            {sellVolume && this.renderAmontRow('Sell volume', Number(sellVolume / (10**tokenA.decimals)).toFixed(2), tokenA.symbol)}
+            {buyVolume > 0 && this.renderAmontRow('Buy volume', Number(buyVolume / (10**tokenB.decimals)).toFixed(2), tokenB.symbol)}
+            {buyVolume > 0 && this.renderAmontRow('Oustanding volume', Number(buyVolume / (10**tokenB.decimals)).toFixed(2), tokenB.symbol)}
           </ul>
         </td>
       </tr>

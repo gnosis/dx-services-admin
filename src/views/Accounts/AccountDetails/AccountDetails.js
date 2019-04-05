@@ -25,7 +25,7 @@ class AccountDetails extends Component {
     const balancePromises = tokens.map(async token => {
       const balance = await dxService.getTokenBalanceDx({
         account,
-        tokenAddress: token.address
+        token,
       })
 
       const balanceErc20 = await dxService.getTokenBalanceErc20({
@@ -33,16 +33,12 @@ class AccountDetails extends Component {
         tokenAddress: token.address
       })
 
-      // TODO: Get ERC20 token balance
-
       return {
         balance,
         balanceErc20,
         ...token
       }
     })
-
-    console.warn(await Promise.all(balancePromises))
 
     this.setState({
       balances: await Promise.all(balancePromises)
@@ -127,8 +123,8 @@ class AccountDetails extends Component {
         </Badge>
         &nbsp;<strong>{name}</strong>
         <ul>
-          <li>DutchX: <Badge color={balance > 0 ? 'success' : 'secondary'} pill>{Number(balance).toFixed(2)}</Badge></li>
-          <li>ERC20: <Badge color={balanceErc20 > 0 ? 'warning' : 'secondary'} pill>{Number(balanceErc20).toFixed(2)}</Badge></li>
+          <li>DutchX: <Badge color={balance > 0 ? 'success' : 'secondary'} pill>{Number(balance / (10**decimals)).toFixed(2)}</Badge></li>
+          <li>ERC20: <Badge color={balanceErc20 > 0 ? 'warning' : 'secondary'} pill>{Number(balanceErc20 / (10**decimals)).toFixed(2)}</Badge></li>
         </ul>
       </ListGroupItem>
     )
