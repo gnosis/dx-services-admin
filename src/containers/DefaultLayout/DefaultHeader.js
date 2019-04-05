@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 
 import { AppNavbarBrand, AppSidebarToggler } from '@coreui/react';
 import logo from '../../assets/img/brand/logo.svg'
-import sygnet from '../../assets/img/brand/sygnet.svg'
 
 import { network2Color } from '../../utils'
 
@@ -24,10 +23,10 @@ class DefaultHeader extends Component {
         <AppSidebarToggler className="d-lg-none" display="md" mobile />
         <AppNavbarBrand
           full={{ src: logo, width: 89, height: 25, alt: 'DutchX Logo' }}
-          minimized={{ src: sygnet, width: 30, height: 30, alt: 'DutchX Logo' }}
+          minimized={{ width: 30, height: 30 }}
         />
         <div className="headerNetworkName"><h5>{this.props.networkName.toUpperCase()}</h5></div>
-        <AppSidebarToggler className="d-md-down-none" display="lg" color="dark"/>
+        <AppSidebarToggler className="d-md-down-none" display="lg" />
       </div>
     );
   }
