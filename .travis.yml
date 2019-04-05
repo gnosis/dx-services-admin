@@ -4,7 +4,6 @@ language: node_js
 before_install:
   - npm install -g npm@^6.0.0
   # Needed to deploy pull request and releases
-  #- sudo apt-get -y install python-pip python-dev
   - pip install awscli --upgrade --user
 cache:
   directories:
@@ -38,7 +37,7 @@ deploy:
     skip_cleanup: true
     local_dir: dist
     on:
-      branch: develop
+      branch: travis-deployment
       node: '9'
 
   # STAGING deployment
@@ -50,7 +49,7 @@ deploy:
     local_dir: dist
     upload-dir: current
     on:
-      branch: master
+      branch: travis-deployment
       node: '9'
 
   # Prepare PRODUCTION deployment
