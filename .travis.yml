@@ -1,6 +1,7 @@
 #if: (branch = develop) OR (branch = master) OR (type = pull_request) OR (tag IS present)
 dist: xenial
 language: node_js
+node_js: '9'
 before_install:
   - npm install -g npm@^6.0.0
   # Needed to deploy pull request and releases
@@ -14,10 +15,8 @@ matrix:
   include:
   - if: branch =~ /^master$/ OR tag IS present
     env: NODE_ENV=production
-    node_js: '9'
   - if: NOT (branch =~ /^master$/) AND NOT (tag IS present)
     env: NODE_ENV=development
-    node_js: '9'
 before_script:
   - npm run build
 
@@ -38,7 +37,6 @@ deploy:
     local_dir: dist
     on:
       branch: travis-deployment
-      node: '9'
 
   # STAGING deployment
   - provider: s3
@@ -50,7 +48,6 @@ deploy:
     upload-dir: current
     on:
       branch: travis-deployment
-      node: '9'
 
   # Prepare PRODUCTION deployment
   - provider: s3
@@ -62,9 +59,7 @@ deploy:
     upload-dir: releases/$TRAVIS_TAG
     on:
       tags: true
-      node: '9'
   - provider: script
     script: bash travis/prepare_production_deployment.sh
     on:
       tags: true
-      node: '9'
