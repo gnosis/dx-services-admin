@@ -10,8 +10,6 @@ const propTypes = {
   children: PropTypes.node,
 };
 
-const defaultProps = {};
-
 class DefaultHeader extends Component {
   render() {
 
@@ -20,19 +18,18 @@ class DefaultHeader extends Component {
     const headerBackgroundColor = network2Color(this.props.networkName)
     return (
       <div className="headerContainer" style={{ background: headerBackgroundColor }}>
-        <AppSidebarToggler className="d-lg-none" display="md" mobile />
         <AppNavbarBrand
           full={{ src: logo, width: 89, height: 25, alt: 'DutchX Logo' }}
           minimized={{ width: 30, height: 30 }}
-        />
+          />
         <div className="headerNetworkName"><h5>{this.props.networkName.toUpperCase()}</h5></div>
-        <AppSidebarToggler className="d-md-down-none" display="lg" />
+        <AppSidebarToggler className="d-lg-none" display="md" mobile />
+        <AppSidebarToggler className="d-md-down-none" display="lg"/>
       </div>
     );
   }
 }
 
 DefaultHeader.propTypes = propTypes;
-DefaultHeader.defaultProps = defaultProps;
 
 export default DefaultHeader;
