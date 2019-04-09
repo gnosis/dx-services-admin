@@ -117,15 +117,16 @@ async function init() {
     /*
      * ERC20 Token
      */
-    const getToken = async (address) => {
+    const getToken = async (address, type, customAccount) => {
         if (!address) throw new Error('No Token address passed')
         if (contractsMap[address]) return contractsMap[address]
         
         try {
-            const ERC20Artifact = require('./ERC20.json')
-            const defaultAccount = await getCurrentAccount()
+            const tokenArtifact = type === 'OWL' ? require('./TokenOWL.json') : type === 'MGN' ? require('./TokenFRT.json') : require('./ERC20.json')
+			console.debug("TCL: getToken -> tokenArtifact", tokenArtifact.contractName)
+            const defaultAccount = customAccount || await getCurrentAccount()
 
-            contractsMap[address] = await new web3.eth.Contract(ERC20Artifact.abi, address, { from: defaultAccount })
+            contractsMap[address] = await new web3.eth.Contract(tokenArtifact.abi, address, { from: defaultAccount })
             
             return contractsMap[address]
         } catch (error) {

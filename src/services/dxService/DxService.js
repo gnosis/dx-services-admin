@@ -24,6 +24,9 @@ class DxService {
     }
   }
 
+  /**
+   * GENERAL API GRAB
+   */
   async getAbout() {
     const apiURL = `${this.botsApiURL}/about`
     
@@ -42,6 +45,9 @@ class DxService {
     }))
   }
 
+  /**
+   * TOKEN BALANCES - DX & ERC20 & MGN
+   */
   async getTokens() {
     const apiURL = `${this.dxApiURL}/v1/tokens`
     const { data } = await (await fetch(apiURL)).json()
@@ -49,19 +55,11 @@ class DxService {
     return data
   }
 
-  async getMarkets() {
-    const apiURL = `${this.dxApiURL}/v1/markets`
-    const markets = await (await fetch(apiURL)).json()
-
-    return markets.data
-  }
-
   async getTokenBalanceDx({ account, token }) {
     // TODO: remove - workaround for API mainnet behaviour
     const tokenParam = this.network === 1 ? token.symbol : token.address
 
     const res = await (await fetch(`${this.dxApiURL}/v1/accounts/${account}/tokens/${tokenParam}`)).json()
-    console.debug(res)
 
     return res
   }
@@ -72,6 +70,16 @@ class DxService {
     return erc20Token.methods.balanceOf(account).call()
   }
 
+  /**
+   * MARKET INFORMATION -  SELL, BUY VOLUMES, START TIMES, STATE
+   */
+  async getMarkets() {
+    const apiURL = `${this.dxApiURL}/v1/markets`
+    const markets = await (await fetch(apiURL)).json()
+
+    return markets.data
+  }
+
   async getMarketSellVolume(sellToken, buyToken) {
     const res = await (await fetch(`${this.dxApiURL}/v1/markets/${sellToken.toLowerCase()}-${buyToken.toLowerCase()}/sell-volume`)).json()
     
@@ -79,9 +87,6 @@ class DxService {
   }
 
   async getMarketBuyVolume(sellToken, buyToken) {
-    console.debug('URL = ', this.dxApiURL)
-    console.debug('sellToken ', sellToken)
-    console.debug('buyToken ', buyToken)
     const res = await (await fetch(`${this.dxApiURL}/v1/markets/${sellToken.toLowerCase()}-${buyToken.toLowerCase()}/buy-volume`)).json()
     
     return res
@@ -96,6 +101,26 @@ class DxService {
   async getMarketStartTime(sellToken, buyToken) {
     const res = await (await fetch(`${this.dxApiURL}/v1/markets/${sellToken.toLowerCase()}-${buyToken.toLowerCase()}/auction-start`)).json()
     
+    return res
+  }
+
+  /*
+   * LIQUIDITY CONTRIBUTION 
+   */
+  async getLiquidityContribution(accountAddress) {
+    const res = await (await fetch(`${this.dxApiURL}/v1/accounts/${accountAddress}/current-liquidity-contribution-ratio`)).json()
+    
+    return res
+  }
+
+  /* 
+   * SAFE MODULES
+   */
+  async getSafeModules() {
+    const { default: res } = await new Promise(acc => {
+      return setTimeout(() => acc(require('../../data/mock/safes')), 3000)
+    })
+
     return res
   }
 }
