@@ -1,3 +1,5 @@
 import DefaultLayout from './DefaultLayout';
+import PageFilter from './PageFilter';
+import PageWrapper from './PageWrapper';
 
-export { DefaultLayout };
+export { DefaultLayout, PageFilter, PageWrapper };
