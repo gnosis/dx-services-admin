@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import { Card, CardBody, CardHeader, Col, Row, Table, Badge, FormGroup, Input, InputGroupAddon, InputGroup, Form } from 'reactstrap';
+
+import { Col, Table, Badge, FormGroup, Form } from 'reactstrap';
+import { PageWrapper, PageFilter } from '../../../containers'
 import Web3HOC from '../../../HOCs/Web3HOC'
 
 import moment from 'moment'
@@ -20,7 +22,10 @@ class BotList extends Component {
     bots: [],
     botTypes: [],
     tokens: [],
-    botAddress: []
+    botAddress: [],
+
+    // Web3
+    network: 'UNKNOWN NETWORK',
   }
 
   async componentDidMount() {
@@ -34,7 +39,8 @@ class BotList extends Component {
       bots,
       botTypes,
       tokens,
-      botAddress
+      botAddress,
+      network,
     })
   }
 
@@ -96,100 +102,67 @@ class BotList extends Component {
     }
 
     return (
-      <div className="animated fadeIn">
-        <Row>
-          <Col lg={12}>
-            <Card>
-              <CardHeader>
-                <strong>DutchX Bots</strong>
-              </CardHeader>
-              <CardBody>
-                <Form>
-                  <FormGroup row>
-                    <Col lg={4} sm={6} className="py-2">
-                      <InputGroup>
-                        <InputGroupAddon addonType="prepend">Bot Type</InputGroupAddon>
-                        <Input
-                          type="select"
-                          name="botType"
-                          id="botType"
-                          value={this.state.botType}
-                          onChange={event => this.setState({ botType: event.target.value })}>
-                          <option value=""></option>
-                          {botTypes.map(type => (
-                            <option key={type} value={type}>{type}</option>
-                          ))}
-                        </Input>
-                      </InputGroup>
-                    </Col>
+      <PageWrapper pageTitle="DutchX Bots">
+        <Form>
+          <FormGroup row>
+            <Col lg={4} sm={6} className="py-2">
+              <PageFilter 
+                type="select"
+                title="Bot Type"
+                filterWhat={botTypes}
+                showWhat={botType}
+                changeFunction={event => this.setState({ botType: event.target.value })}
+                inputName="botType"
+              />
+            </Col>
 
-                    <Col lg={4} sm={6} className="py-2">
-                      <InputGroup>
-                        <InputGroupAddon addonType="prepend">Token</InputGroupAddon>
-                        <Input
-                          type="select"
-                          value={this.state.token}
-                          onChange={event => this.setState({ token: event.target.value })}
-                          name="token"
-                          id="token">
-                          <option value=""></option>
-                          {tokens.map(token => (
-                            <option key={token} value={token}>{token}</option>
-                          ))}
-                        </Input>
-                      </InputGroup>
-                    </Col>
+            <Col lg={4} sm={6} className="py-2">
+              <PageFilter 
+                type="select"
+                title="Token"
+                filterWhat={tokens}
+                showWhat={token}
+                changeFunction={event => this.setState({ token: event.target.value })}
+                inputName="token"
+              />
+            </Col>
 
-                    <Col lg={4} sm={6} className="py-2">
-                      <InputGroup>
-                        <InputGroupAddon addonType="prepend">Address</InputGroupAddon>
-                        <Input
-                          type="select"
-                          value={this.state.address}
-                          onChange={event => this.setState({ address: event.target.value })}
-                          name="token"
-                          id="token">
-                          <option></option>
-                          {botAddress.map(address => (
-                            <option key={address} value={address}>{address}</option>
-                          ))}
-                        </Input>
-                      </InputGroup>
-                    </Col>
+            <Col lg={4} sm={6} className="py-2">
+              <PageFilter
+                type="select"
+                title="Address"
+                filterWhat={botAddress}
+                showWhat={address}
+                changeFunction={event => this.setState({ address: event.target.value })}
+                inputName="address"
+              />
+            </Col>
 
-                    <Col lg={12} sm={6} className="py-2">
-                      <InputGroup>
-                        <Input
-                          value={this.state.botName}
-                          onChange={event => this.setState({ botName: event.target.value })}
-                          placeholder="Filter by bot name" />
-                        <InputGroupAddon addonType="append">
-                          <button className="btn btn-outline-secondary" type="button">
-                            <i className="fa fa-search"></i>
-                          </button>
-                        </InputGroupAddon>
-                      </InputGroup>
-                    </Col>
-                  </FormGroup>
-                </Form>
+            <Col lg={12} sm={6} className="py-2">
+              <PageFilter
+                title="Bot Name"
+                showWhat={botName}
+                changeFunction={event => this.setState({ botName: event.target.value })}
+                placeholder="Filter by bot name"
+                inputName="token"
+              />
+            </Col>
+          </FormGroup>
+        </Form>
 
-                <Table responsive striped hover>
-                  <thead>
-                    <tr>
-                      <th>Type</th>
-                      <th>Name</th>
-                      <th>State</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredBots.map(bot => this.renderRow(bot))}
-                  </tbody>
-                </Table>
-              </CardBody>
-            </Card>
-          </Col>
-        </Row>
-      </div>
+        <Table responsive striped hover>
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Name</th>
+              <th>State</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredBots.map(bot => this.renderRow(bot))}
+          </tbody>
+        </Table>
+      </PageWrapper>
     )
   }
 

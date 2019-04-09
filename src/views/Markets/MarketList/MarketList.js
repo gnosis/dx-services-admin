@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
 
-import { Card, CardBody, CardHeader, Col, Row, Table, Badge, FormGroup, Input, InputGroupAddon, InputGroup, Form } from 'reactstrap';
+import { Col, Table, Badge, FormGroup, Form } from 'reactstrap';
+
+import { PageWrapper, PageFilter } from '../../../containers'
+
 import Web3HOC from '../../../HOCs/Web3HOC'
 
 import getDxService from '../../../services/dxService'
@@ -26,7 +29,10 @@ class MarketList extends Component {
 
     // Data
     markets: [],
-    tokens: []
+    tokens: [],
+
+    // Web3
+    network: 'UNKNOWN NETWORK',
   }
 
   async componentDidMount() {
@@ -81,101 +87,9 @@ class MarketList extends Component {
 
     this.setState({
       markets,
-      tokens
-    })
-  }
-
-  render() {
-    const {
-      // Data
-      markets,
       tokens,
-
-      // Filters
-      token,
-      state
-    } = this.state
-
-    // Filter by type
-    let filteredMarkets = markets
-    if (state) {
-      filteredMarkets = filteredMarkets.filter(market => market.state && market.state === state)
-    }
-
-    // Filter by token
-    if (token) {
-      filteredMarkets = filteredMarkets.filter(({ tokenA, tokenB }) => {
-        return tokenA.symbol === token || tokenB.symbol === token
-      })
-    }
-
-    return (
-      <div className="animated fadeIn">
-        <Row>
-          <Col lg={12}>
-            <Card>
-              <CardHeader>
-                <strong>DutchX Markets</strong>
-              </CardHeader>
-              <CardBody>
-                <Form>
-                  <FormGroup row>
-                    <Col sm={6} className="py-2">
-                      <InputGroup>
-                        <InputGroupAddon addonType="prepend">Token</InputGroupAddon>
-                        <Input
-                          type="select"
-                          value={this.state.token}
-                          onChange={event => this.setState({ token: event.target.value })}
-                          name="token"
-                          id="token">
-                          <option value=""></option>
-                          {tokens.map(token => (
-                            <option key={token} value={token}>{token}</option>
-                          ))}
-                        </Input>
-                      </InputGroup>
-                    </Col>
-
-                    <Col sm={6} className="py-2">
-                      <InputGroup>
-                        <InputGroupAddon addonType="prepend">State</InputGroupAddon>
-                        <Input
-                          type="select"
-                          value={this.state.state}
-                          onChange={event => this.setState({ state: event.target.value })}
-                          name="token"
-                          id="token">
-                          <option value=""></option>
-                          {STATES.map(({ label, value }) => (
-                            <option key={value} value={value}>{label}</option>
-                          ))}
-                        </Input>
-                      </InputGroup>
-                    </Col>
-                  </FormGroup>
-                </Form>
-
-                <Table responsive hover>
-                  <thead>
-                    <tr>
-                      <th>Market</th>
-                      <th>Token A</th>
-                      <th>Token B</th>
-                      <th>State</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredMarkets.map(market => this.renderRow(market))}
-                  </tbody>
-                </Table>
-              </CardBody>
-            </Card>
-          </Col>
-        </Row>
-      </div>
-    )
+      network
+    })
   }
 
   renderRow(market) {
@@ -237,9 +151,7 @@ class MarketList extends Component {
 
   renderEtherscanLink({ name, address }) {
     return (
-      <a href={'https://etherscan.io/address/' + address} target="_blank" rel="noopener noreferrer">
-        {name}
-      </a>
+      <a href={`https://${this.state.network == '4' ? 'rinkeby.etherscan' : 'etherscan'}.io/address/${address}`} target="_blank" rel="noopener noreferrer">{name}</a>
     )
   }
 
@@ -266,33 +178,75 @@ class MarketList extends Component {
     )
   }
 
-  // renderAddressRow(label, address) {
-  //   return address && (
-  //     <li><strong>{label}</strong>:&nbsp;
-  //     <Link to={'/accounts/' + address}>{address}</Link></li>
-  //   )
-  // }
+  render() {
+    const {
+      // Data
+      markets,
+      tokens,
 
-  // renderRules(name, rules) {
-  //   return rules && (
-  //     <li>
-  //       <strong>Rules</strong>:
-  //       <ul>
-  //         {rules.map(({ buyRatio, marketPriceRatio }, index) => (
-  //           <li key={name + '-rules-' + index}>Buy&nbsp;
-  //             <Badge color="success" pill>
-  //               {Math.round(100 * buyRatio.numerator / buyRatio.denominator)}%
-  //             </Badge>
-  //             &nbsp;at price&nbsp;
-  //             <Badge color="warning" pill>
-  //               {Math.round(100 * marketPriceRatio.numerator / marketPriceRatio.denominator - 100)}%
-  //             </Badge>
-  //           </li>
-  //         ))}
-  //       </ul>
-  //     </li>
-  //   )
-  // }
+      // Filters
+      token,
+      state
+    } = this.state
+
+    // Filter by type
+    let filteredMarkets = markets
+    if (state) {
+      filteredMarkets = filteredMarkets.filter(market => market.state && market.state === state)
+    }
+
+    // Filter by token
+    if (token) {
+      filteredMarkets = filteredMarkets.filter(({ tokenA, tokenB }) => {
+        return tokenA.symbol === token || tokenB.symbol === token
+      })
+    }
+
+    return (
+      <PageWrapper pageTitle="DutchX Markets">
+        <Form>
+          <FormGroup row>
+            <Col sm={6} className="py-2">
+              <PageFilter
+                type="select"
+                title="Token"
+                filterWhat={tokens}
+                showWhat={token}
+                changeFunction={event => this.setState({ token: event.target.value })}
+                inputName="token"
+              />
+            </Col>
+
+            <Col sm={6} className="py-2">
+              <PageFilter
+                  type="select"
+                  title="State" 
+                  showWhat={state}
+                  changeFunction={event => this.setState({ state: event.target.value })}
+                  inputName="state"
+                  render={STATES.map(({ label, value }) => <option key={value} value={value}>{label}</option>)}
+                />
+            </Col>
+          </FormGroup>
+        </Form>
+
+        <Table responsive hover>
+          <thead>
+            <tr>
+              <th>Market</th>
+              <th>Token A</th>
+              <th>Token B</th>
+              <th>State</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredMarkets.map(market => this.renderRow(market))}
+          </tbody>
+        </Table>
+      </PageWrapper>
+    )
+  }
 }
 
 
