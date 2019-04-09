@@ -7,6 +7,7 @@ const BotsInfo = React.lazy(() => import('./views/Bots/BotsInfo/BotsInfo'));
 const BotsList = React.lazy(() => import('./views/Bots/BotList/BotList'));
 const CheckBalances = React.lazy(() => import('./views/Accounts/CheckBalances/CheckBalances'));
 const AccountDetails = React.lazy(() => import('./views/Accounts/AccountDetails/AccountDetails'));
+const Safes = React.lazy(() => import('./views/Safes'));
 
 // https://github.com/ReactTraining/react-router/tree/master/packages/react-router-config
 const routes = [
@@ -16,7 +17,8 @@ const routes = [
   { path: '/bots', exact: true, name: 'Bots', component: BotsInfo },
   { path: '/bots/list', name: 'List', component: BotsList },
   { path: '/accounts', exact: true, name: 'Accounts', component: CheckBalances },
-  { path: '/accounts/:address', exact: true, name: 'Balances', component: AccountDetails }
+  { path: '/accounts/:address', exact: true, name: 'Balances', component: AccountDetails },
+  { path: '/safes', exact: true, name: 'DutchX Safes', component: Safes },
 ];
 
 export default routes;
