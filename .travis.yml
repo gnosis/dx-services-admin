@@ -1,4 +1,4 @@
-#if: (branch = develop) OR (branch = master) OR (type = pull_request) OR (tag IS present)
+if: (branch = develop) OR (branch = master) OR (type = pull_request) OR (tag IS present)
 dist: xenial
 language: node_js
 node_js: '9'
