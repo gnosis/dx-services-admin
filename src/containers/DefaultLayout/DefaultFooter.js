@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
+import { version as appVersion } from '../../../package.json'
+
 const propTypes = {
   children: PropTypes.node,
 };
@@ -14,10 +16,10 @@ class DefaultFooter extends Component {
     const { children, ...attributes } = this.props;
 
     return (
-      <React.Fragment>
-        {/* <span><a href="https://coreui.io">CoreUI</a> &copy; 2018 creativeLabs.</span>
-        <span className="ml-auto">Powered by <a href="https://coreui.io/react">CoreUI for React</a></span> */}
-      </React.Fragment>
+      <>
+        <span><a href="https://gnosis.io" target="_blank" rel="noopener noreferrer">Gnosis Ltd.</a> &copy; 2019 Gnosis.</span>
+        <span className="ml-auto">Version {appVersion}</span> 
+      </>
     );
   }
 }
