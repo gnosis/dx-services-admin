@@ -36,6 +36,7 @@ function Safes({ web3 }) {
         fakeAsyncLoad()
     }, [])
 
+    // eslint-disable-next-line eqeqeq
     const renderEtherscanLink = address => <a href={`https://${network == '4' ? 'rinkeby.etherscan' : 'etherscan'}.io/address/${address}`} target="_blank" rel="noopener noreferrer">{address}</a>
     
     const renderAccountLink = address => address && <Link to={'/accounts/' + address}>{address}</Link>

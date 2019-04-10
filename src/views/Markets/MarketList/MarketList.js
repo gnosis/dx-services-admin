@@ -151,6 +151,7 @@ class MarketList extends Component {
 
   renderEtherscanLink({ name, address }) {
     return (
+      // eslint-disable-next-line eqeqeq
       <a href={`https://${this.state.network == '4' ? 'rinkeby.etherscan' : 'etherscan'}.io/address/${address}`} target="_blank" rel="noopener noreferrer">{name}</a>
     )
   }
