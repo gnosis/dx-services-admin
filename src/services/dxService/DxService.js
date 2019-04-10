@@ -18,7 +18,6 @@ class DxService {
     this.botsAuthorizationHeader = {
       method: 'GET',
       headers: {
-        "Authorization": network === 1 ? process.env.REACT_APP_MAINNET_DX_BOTS_API_AUTH : process.env.REACT_APP_RINKEBY_DX_BOTS_API_AUTH,
         "Content-Type": "application/json"
       }
     }
