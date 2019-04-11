@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Card, CardBody, CardHeader, Col, Row, ListGroup, ListGroupItem, Badge, FormGroup, Label, Input } from 'reactstrap';
+import { ListGroup, ListGroupItem, Badge, FormGroup, Label, Input } from 'reactstrap';
 import Blockies from 'react-blockies'
 
 import Web3HOC from '../../../HOCs/Web3HOC'
@@ -7,6 +7,7 @@ import Web3HOC from '../../../HOCs/Web3HOC'
 import getDxService from '../../../services/dxService'
 
 import { MGN_PROXY_ADDRESSES, OWL_PROXY_ADDRESSES } from '../../../globals'
+import PageWrapper from '../../../containers/PageWrapper';
 
 const qrCodeUrl = 'https://chart.googleapis.com/chart?chs=300x300&cht=qr&choe=UTF-8&chl='
 
@@ -93,106 +94,95 @@ class AccountDetails extends Component {
 
     const address = this.props.match.params.address
     return (
-      <div className="animated fadeIn">
-        <Row>
-          <Col xs="12">
-            <Card>
-              <CardHeader>
-                <strong>Account information</strong>
-              </CardHeader>
-              <CardBody>
-                <div className="d-flex flex-row bd-highlight mb-3">
-                  <div className="p-2 bd-highlight">
-                    <Blockies
-                      seed="Jeremy"
-                      size={11}
-                      scale={7}
-                      color="#a05800"
-                      bgColor="#003da0"
-                      spotColor="#abc"
-                      className="border m-3"
-                    />
-                  </div>
-                  <div className="p-2 bd-highlight">
-                    <img className="mt-1" src={qrCodeUrl + address} width="100" height="100" alt="QR Code" />
-                  </div>
-                  <div className="p-2 bd-highlight">
-                    <h3 className="mt-2"><small>{address}</small></h3>
-                    {/* eslint-disable-next-line eqeqeq */}
-                    <a href={`https://${network == '4' ? 'rinkeby.etherscan' : 'etherscan'}.io/address/${address}`} target="_blank" rel="noopener noreferrer">View on Etherscan</a>
-                  </div>
-                </div>
+      <PageWrapper colSize={{ xs: "12" }} pageTitle="Account Information">
+        <div className="d-flex flex-row bd-highlight mb-3">
+          <div className="p-2 bd-highlight">
+            <Blockies
+              seed="Jeremy"
+              size={11}
+              scale={7}
+              color="#a05800"
+              bgColor="#003da0"
+              spotColor="#abc"
+              className="border m-3"
+            />
+          </div>
+          <div className="p-2 bd-highlight">
+            <img className="mt-1" src={qrCodeUrl + address} width="100" height="100" alt="QR Code" />
+          </div>
+          <div className="p-2 bd-highlight">
+            <h3 className="mt-2"><small>{address}</small></h3>
+            {/* eslint-disable-next-line eqeqeq */}
+            <a href={`https://${network == '4' ? 'rinkeby.etherscan' : 'etherscan'}.io/address/${address}`} target="_blank" rel="noopener noreferrer">View on Etherscan</a>
+          </div>
+        </div>
 
-                <h2>LC, MGN, OWL</h2>
-                <ListGroup>
+        <h2>LC, MGN, OWL</h2>
+        <ListGroup>
 
-                  {/* Liq. Contr. */}
-                  {liquidityContribution &&
-                  <ListGroupItem style={{ backgroundColor: '#eef8ff' }}>
-                    <Badge
-                      color="primary"
-                      className="p-2 mr-2"
-                      pill>
-                      L.C
-                    </Badge>
-                    <strong>{typeof liquidityContribution !== 'undefined' && (`${liquidityContribution * 100}%`)}</strong>
-                  </ListGroupItem>}
+          {/* Liq. Contr. */}
+          {liquidityContribution &&
+          <ListGroupItem style={{ backgroundColor: '#eef8ff' }}>
+            <Badge
+              color="primary"
+              className="p-2 mr-2"
+              pill>
+              L.C
+            </Badge>
+            <strong>{typeof liquidityContribution !== 'undefined' && (`${liquidityContribution * 100}%`)}</strong>
+          </ListGroupItem>}
 
-                  {/* MGN */}
-                  {mgnLockedBalance &&
-                  <ListGroupItem style={{ backgroundColor: '#eef8ff' }}
-                    className='justify-content-between'>
-                    <Badge
-                      color="primary"
-                      className="p-2 mr-2"
-                      pill>
-                      MGN
-                    </Badge>
-                    &nbsp;<strong>Magnolia Token</strong>
-                    <ul>
-                      <li>Locked Balance: <Badge color={mgnLockedBalance > 0 ? 'success' : 'secondary'} pill>{Number(mgnLockedBalance / (10 ** 18)).toFixed(2)}</Badge></li>
-                      <li>Unlocked Balance: <Badge color={mgnUnlockedBalance > 0 ? 'warning' : 'secondary'} pill>{Number(mgnUnlockedBalance / (10 ** 18)).toFixed(2)}</Badge></li>
-                    </ul>
-                  </ListGroupItem>}
+          {/* MGN */}
+          {mgnLockedBalance &&
+          <ListGroupItem style={{ backgroundColor: '#eef8ff' }}
+            className='justify-content-between'>
+            <Badge
+              color="primary"
+              className="p-2 mr-2"
+              pill>
+              MGN
+            </Badge>
+            &nbsp;<strong>Magnolia Token</strong>
+            <ul>
+              <li>Locked Balance: <Badge color={mgnLockedBalance > 0 ? 'success' : 'secondary'} pill>{Number(mgnLockedBalance / (10 ** 18)).toFixed(2)}</Badge></li>
+              <li>Unlocked Balance: <Badge color={mgnUnlockedBalance > 0 ? 'warning' : 'secondary'} pill>{Number(mgnUnlockedBalance / (10 ** 18)).toFixed(2)}</Badge></li>
+            </ul>
+          </ListGroupItem>}
 
-                  {/* OWL */}
-                  {owlBalance &&
-                  <ListGroupItem style={{ backgroundColor: '#eef8ff' }}
-                    className='justify-content-between'>
-                    <Badge
-                      color="primary"
-                      className="p-2 mr-2"
-                      pill>
-                      OWL
-                    </Badge>
-                    &nbsp;<strong>OWL Token</strong>
-                    <ul>
-                      {/* <li>DutchX: <Badge color={owlBalance > 0 ? 'success' : 'secondary'} pill>{Number(balance / (10 ** decimals)).toFixed(2)}</Badge></li> */}
-                      <li>ERC20: <Badge color={owlBalance > 0 ? 'warning' : 'secondary'} pill>{Number(owlBalance / (10 ** 18)).toFixed(2)}</Badge></li>
-                    </ul>
-                  </ListGroupItem>}
-                </ListGroup>
-                <br />
-                <h2>Balances</h2>
-                <FormGroup check>
-                  <Label check>
-                    <Input
-                      type="checkbox"
-                      checked={hideTokensWithoutBalance}
-                      onChange={event => this.setState({ hideTokensWithoutBalance: event.target.checked })}
-                    />{' '}
-                    Hide tokens with no balance
-                  </Label>
-                </FormGroup>
-                {/* TOKEN STATS */}
-                <ListGroup>
-                  {balances.map(balance => this.renderTokenBalance(balance))}
-                </ListGroup>
-              </CardBody>
-            </Card>
-          </Col>
-        </Row>
-      </div>
+          {/* OWL */}
+          {owlBalance &&
+          <ListGroupItem style={{ backgroundColor: '#eef8ff' }}
+            className='justify-content-between'>
+            <Badge
+              color="primary"
+              className="p-2 mr-2"
+              pill>
+              OWL
+            </Badge>
+            &nbsp;<strong>OWL Token</strong>
+            <ul>
+              {/* <li>DutchX: <Badge color={owlBalance > 0 ? 'success' : 'secondary'} pill>{Number(balance / (10 ** decimals)).toFixed(2)}</Badge></li> */}
+              <li>ERC20: <Badge color={owlBalance > 0 ? 'warning' : 'secondary'} pill>{Number(owlBalance / (10 ** 18)).toFixed(2)}</Badge></li>
+            </ul>
+          </ListGroupItem>}
+        </ListGroup>
+        <br />
+        <h2>Balances</h2>
+        <FormGroup check>
+          <Label check>
+            <Input
+              type="checkbox"
+              checked={hideTokensWithoutBalance}
+              onChange={event => this.setState({ hideTokensWithoutBalance: event.target.checked })}
+            />{' '}
+            Hide tokens with no balance
+          </Label>
+        </FormGroup>
+        {/* TOKEN STATS */}
+        <ListGroup>
+          {balances.map(balance => this.renderTokenBalance(balance))}
+        </ListGroup>
+      </PageWrapper>
     )
   }
 
