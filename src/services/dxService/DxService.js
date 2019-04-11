@@ -4,6 +4,9 @@ const RINKEBY_BASE_API_DX = process.env.REACT_APP_RINKEBY_BASE_API_DX
 const MAINNET_BASE_API_BOTS = process.env.REACT_APP_MAINNET_BASE_API_BOTS
 const RINKEBY_BASE_API_BOTS = process.env.REACT_APP_RINKEBY_BASE_API_BOTS
 
+const MAINNET_BOTS_API_AUTH = process.env.REACT_APP_MAINNET_DX_BOTS_API_AUTH
+const RINKEBY_BOTS_API_AUTH = process.env.REACT_APP_RINKEBY_DX_BOTS_API_AUTH
+
 class DxService {
   constructor({ network, web3 }) {
     // it should be injected the repos, for now we don't implement the repo layer
@@ -18,7 +21,8 @@ class DxService {
     this.botsAuthorizationHeader = {
       method: 'GET',
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Authorization": network === 1 ? MAINNET_BOTS_API_AUTH : RINKEBY_BOTS_API_AUTH,
       }
     }
   }
@@ -55,8 +59,7 @@ class DxService {
   }
 
   async getTokenBalanceDx({ account, token }) {
-    // TODO: remove - workaround for API mainnet behaviour
-    const tokenParam = this.network === 1 ? token.symbol : token.address
+    const { address: tokenParam } = token
 
     const res = await (await fetch(`${this.dxApiURL}/v1/accounts/${account}/tokens/${tokenParam}`)).json()
 
