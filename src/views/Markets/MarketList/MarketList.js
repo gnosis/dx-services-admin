@@ -44,13 +44,14 @@ class MarketList extends Component {
     markets = await Promise.all(markets.map(async ({tokenA, tokenB}, index) => {
       // TODO: Get sell volume, buyVolume, etc.. (use dxService)      
       const [state, sellVolume, buyVolume, startTime] = await Promise.all([
-        dxService.getMarketState(tokenA.symbol, tokenB.symbol),
-        dxService.getMarketSellVolume(tokenA.symbol, tokenB.symbol),
-        dxService.getMarketBuyVolume(tokenA.symbol, tokenB.symbol),
-        dxService.getMarketStartTime(tokenA.symbol, tokenB.symbol)
+        dxService.getMarketState(tokenA.address, tokenB.address),
+        dxService.getMarketSellVolume(tokenA.address, tokenB.address),
+        dxService.getMarketBuyVolume(tokenA.address, tokenB.address),
+        dxService.getMarketStartTime(tokenA.address, tokenB.address)
       ])
 
-      const checkApiRes = val => (typeof val === 'object' && val.status) ? false : val
+      // if response is API error object, return false. Else value
+      const checkApiRes = val => (val && typeof val === 'object' && val.status) ? false : val
 
       return {
         id: index,
@@ -62,7 +63,6 @@ class MarketList extends Component {
         ...{tokenA, tokenB}
       }
     }))
-    
     markets = markets.sort((marketA, marketB) => {
       if (!marketA.startTime) {
         return 1

@@ -82,26 +82,26 @@ class DxService {
     return markets.data
   }
 
-  async getMarketSellVolume(sellToken, buyToken) {
-    const res = await (await fetch(`${this.dxApiURL}/v1/markets/${sellToken.toLowerCase()}-${buyToken.toLowerCase()}/sell-volume`)).json()
+  async getMarketSellVolume(stAddress, btAddress) {
+    const res = await (await fetch(`${this.dxApiURL}/v1/markets/${stAddress.toLowerCase()}-${btAddress.toLowerCase()}/sell-volume`)).json()
     
     return res
   }
 
-  async getMarketBuyVolume(sellToken, buyToken) {
-    const res = await (await fetch(`${this.dxApiURL}/v1/markets/${sellToken.toLowerCase()}-${buyToken.toLowerCase()}/buy-volume`)).json()
+  async getMarketBuyVolume(stAddress, btAddress) {
+    const res = await (await fetch(`${this.dxApiURL}/v1/markets/${stAddress.toLowerCase()}-${btAddress.toLowerCase()}/buy-volume`)).json()
     
     return res
   }
 
-  async getMarketState(sellToken, buyToken) {
-    const res = await (await fetch(`${this.dxApiURL}/v1/markets/${sellToken.toLowerCase()}-${buyToken.toLowerCase()}/state`)).json()
+  async getMarketState(stAddress, btAddress) {
+    const res = await (await fetch(`${this.dxApiURL}/v1/markets/${stAddress.toLowerCase()}-${btAddress.toLowerCase()}/state`)).json()
     
     return res
   }
 
-  async getMarketStartTime(sellToken, buyToken) {
-    const res = await (await fetch(`${this.dxApiURL}/v1/markets/${sellToken.toLowerCase()}-${buyToken.toLowerCase()}/auction-start`)).json()
+  async getMarketStartTime(stAddress, btAddress) {
+    const res = await (await fetch(`${this.dxApiURL}/v1/markets/${stAddress.toLowerCase()}-${btAddress.toLowerCase()}/auction-start`)).json()
     
     return res
   }
