@@ -42,9 +42,9 @@ class AccountDetails extends Component {
       owlBalance,
     ] = await Promise.all([
       dxService.getLiquidityContribution(account),
-      web3.getToken(MGN_PROXY_ADDRESSES[network], 'MGN', account).then(token => token.methods.unlockedTokens(account).call()),
-      web3.getToken(MGN_PROXY_ADDRESSES[network], 'MGN', account).then(token => token.methods.lockedTokenBalances(account).call()),
-      web3.getToken(OWL_PROXY_ADDRESSES[network], 'OWL', account).then(token => token.methods.balanceOf(account).call()),
+      web3.getToken(MGN_PROXY_ADDRESSES[network], 'MGN', account).then(token => token.methods.unlockedTokens(account).call()).catch(() => 0),
+      web3.getToken(MGN_PROXY_ADDRESSES[network], 'MGN', account).then(token => token.methods.lockedTokenBalances(account).call()).catch(() => 0),
+      web3.getToken(OWL_PROXY_ADDRESSES[network], 'OWL', account).then(token => token.methods.balanceOf(account).call()).catch(() => 0),
     ])
 
     // Get tokenBalances
