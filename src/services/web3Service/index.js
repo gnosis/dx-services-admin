@@ -86,7 +86,6 @@ async function init() {
     */
     const getCurrentBalance = async (acct) => {
         const account = acct || (await getAccounts())[0]
-		console.log("TCL: getCurrentBalance -> account", account)
 
         return getBalance(account)
     }
@@ -123,7 +122,6 @@ async function init() {
         
         try {
             const tokenArtifact = type === 'OWL' ? require('./TokenOWL.json') : type === 'MGN' ? require('./TokenFRT.json') : require('./ERC20.json')
-			console.debug("TCL: getToken -> tokenArtifact", tokenArtifact.contractName)
             const defaultAccount = customAccount || await getCurrentAccount()
 
             contractsMap[address] = await new web3.eth.Contract(tokenArtifact.abi, address, { from: defaultAccount })
