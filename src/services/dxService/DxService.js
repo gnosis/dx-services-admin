@@ -1,11 +1,8 @@
-// FIXME, this should be injected in the repo layer using env vars
-const MAINNET_BASE_API_DX = process.env.REACT_APP_MAINNET_BASE_API_DX
-const RINKEBY_BASE_API_DX = process.env.REACT_APP_RINKEBY_BASE_API_DX
-const MAINNET_BASE_API_BOTS = process.env.REACT_APP_MAINNET_BASE_API_BOTS
-const RINKEBY_BASE_API_BOTS = process.env.REACT_APP_RINKEBY_BASE_API_BOTS
+const BOTS_API_BASE_URL = '-bots/api'
+const DX_API_BASE_URL = '-dx/api'
 
-const MAINNET_BOTS_API_AUTH = process.env.REACT_APP_MAINNET_DX_BOTS_API_AUTH
-const RINKEBY_BOTS_API_AUTH = process.env.REACT_APP_RINKEBY_DX_BOTS_API_AUTH
+// const MAINNET_BOTS_API_AUTH = process.env.REACT_APP_MAINNET_DX_BOTS_API_AUTH
+// const RINKEBY_BOTS_API_AUTH = process.env.REACT_APP_RINKEBY_DX_BOTS_API_AUTH
 
 class DxService {
   constructor({ network, web3 }) {
@@ -14,15 +11,31 @@ class DxService {
     this.web3 = web3
 
     // Network specific API URLs
-    this.botsApiURL = network === 1 ? MAINNET_BASE_API_BOTS : RINKEBY_BASE_API_BOTS
-    this.dxApiURL = network === 1 ? MAINNET_BASE_API_DX : RINKEBY_BASE_API_DX
+    const useMockApi = process.env.REACT_APP_MOCK === 'true'
+    console.log('process.env.MOCK', process.env.REACT_APP_MOCK)
+    console.log('useMockApi', useMockApi)
+    let networkName
+    if (useMockApi) {
+      networkName = 'local'
+    } else if (network === 1) {
+      networkName = 'mainnet'
+    } else if (network === 4) {
+      networkName = 'rinkeby'
+    }
+
+    if (networkName) {
+      this.botsApiURL = networkName + BOTS_API_BASE_URL
+      this.dxApiURL = networkName + DX_API_BASE_URL
+    } else {
+      console.error('Unknown network: ' + network)
+    }
 
     // Auth Header (BOTS API)
     this.botsAuthorizationHeader = {
       method: 'GET',
       headers: {
         "Content-Type": "application/json",
-        "Authorization": network === 1 ? MAINNET_BOTS_API_AUTH : RINKEBY_BOTS_API_AUTH,
+        // "Authorization": network === 1 ? MAINNET_BOTS_API_AUTH : RINKEBY_BOTS_API_AUTH,
       }
     }
   }
@@ -32,13 +45,13 @@ class DxService {
    */
   async getAbout() {
     const apiURL = `${this.botsApiURL}/about`
-    
+
     return (await fetch(apiURL, this.botsAuthorizationHeader)).json()
   }
 
   async getBots() {
     const apiURL = `${this.botsApiURL}/about`
-    
+
     const { bots } = await (await fetch(apiURL, this.botsAuthorizationHeader)).json()
 
     // Add an artificial id to the bots
@@ -84,25 +97,25 @@ class DxService {
 
   async getMarketSellVolume(stAddress, btAddress) {
     const res = await (await fetch(`${this.dxApiURL}/v1/markets/${stAddress.toLowerCase()}-${btAddress.toLowerCase()}/sell-volume`)).json()
-    
+
     return res
   }
 
   async getMarketBuyVolume(stAddress, btAddress) {
     const res = await (await fetch(`${this.dxApiURL}/v1/markets/${stAddress.toLowerCase()}-${btAddress.toLowerCase()}/buy-volume`)).json()
-    
+
     return res
   }
 
   async getMarketState(stAddress, btAddress) {
     const res = await (await fetch(`${this.dxApiURL}/v1/markets/${stAddress.toLowerCase()}-${btAddress.toLowerCase()}/state`)).json()
-    
+
     return res
   }
 
   async getMarketStartTime(stAddress, btAddress) {
     const res = await (await fetch(`${this.dxApiURL}/v1/markets/${stAddress.toLowerCase()}-${btAddress.toLowerCase()}/auction-start`)).json()
-    
+
     return res
   }
 
@@ -111,7 +124,7 @@ class DxService {
    */
   async getLiquidityContribution(accountAddress) {
     const res = await (await fetch(`${this.dxApiURL}/v1/accounts/${accountAddress}/current-liquidity-contribution-ratio`)).json()
-    
+
     return res
   }
 
@@ -119,10 +132,10 @@ class DxService {
    * SAFE MODULES
    */
   async getSafeModules() {
-    const { default: res } = await new Promise(acc => {
+    const res = await new Promise(acc => {
       return setTimeout(() => acc(require('../../data/mock/safes')), 3000)
     })
-
+    
     return res
   }
 }

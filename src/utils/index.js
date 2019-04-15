@@ -25,6 +25,8 @@ export const network2Color = (networkName) => {
             return 'linear-gradient(90deg, #8568d7 49%, rgba(255,255,255,1) 93%)'
         case 'Ropsten':
             return 'linear-gradient(90deg, #d15480 49%, rgba(255,255,255,1) 93%)'
+        case 'Mock Mode':
+            return 'linear-gradient(90deg, #ff8989 49%, rgba(255,255,255,1) 93%)'
         default:
             return 'linear-gradient(90deg, #d5d5d5 49%, rgba(255,255,255,1) 93%)'
     }

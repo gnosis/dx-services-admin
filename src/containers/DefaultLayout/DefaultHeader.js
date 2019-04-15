@@ -15,14 +15,15 @@ class DefaultHeader extends Component {
 
     // eslint-disable-next-line
     const { children, networkName, ...attributes } = this.props;
-    const headerBackgroundColor = network2Color(this.props.networkName)
+    const network = process.env.REACT_APP_MOCK ? 'Mock Mode' : networkName
+    const headerBackgroundColor = network2Color(network)
     return (
       <div className="headerContainer" style={{ background: headerBackgroundColor }}>
         <AppNavbarBrand
           full={{ src: logo, width: 89, height: 25, alt: 'DutchX Logo' }}
           minimized={{ width: 30, height: 30 }}
           />
-        <div className="headerNetworkName"><h5>{this.props.networkName.toUpperCase()}</h5></div>
+        <div className="headerNetworkName"><h5>{network.toUpperCase()}</h5></div>
         <AppSidebarToggler className="d-lg-none" display="md" mobile />
         <AppSidebarToggler className="d-md-down-none" display="lg"/>
       </div>
