@@ -1,8 +1,8 @@
 const proxy = require('http-proxy-middleware')
 const assert = require('assert')
 
-const BOTS_API_PROXY_AUTH_RINKEBY = process.env.BOTS_API_PROXY_AUTH_RINKEBY
-const BOTS_API_PROXY_AUTH_MAINNET = process.env.BOTS_API_PROXY_AUTH_MAINNET
+const BOTS_API_PROXY_AUTH_RINKEBY = process.env.BOTS_API_PROXY_AUTH_RINKEBY || process.env.REACT_APP_RINKEBY_DX_BOTS_API_AUTH
+const BOTS_API_PROXY_AUTH_MAINNET = process.env.BOTS_API_PROXY_AUTH_MAINNET || process.env.REACT_APP_MAINNET_DX_BOTS_API_AUTH
 assert(BOTS_API_PROXY_AUTH_RINKEBY, 'Required env var: BOTS_API_PROXY_AUTH_RINKEBY')
 assert(BOTS_API_PROXY_AUTH_MAINNET, 'Required env var: BOTS_API_PROXY_AUTH_MAINNET')
 

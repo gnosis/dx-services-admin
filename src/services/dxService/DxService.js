@@ -132,10 +132,10 @@ class DxService {
    * SAFE MODULES
    */
   async getSafeModules() {
-    const { default: res } = await new Promise(acc => {
+    const res = await new Promise(acc => {
       return setTimeout(() => acc(require('../../data/mock/safes')), 3000)
     })
-
+    
     return res
   }
 }
