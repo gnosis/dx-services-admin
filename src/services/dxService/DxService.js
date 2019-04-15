@@ -1,8 +1,5 @@
-// FIXME, this should be injected in the repo layer using env vars
-const MAINNET_BASE_API_DX = process.env.REACT_APP_MAINNET_BASE_API_DX
-const RINKEBY_BASE_API_DX = process.env.REACT_APP_RINKEBY_BASE_API_DX
-const MAINNET_BASE_API_BOTS = process.env.REACT_APP_MAINNET_BASE_API_BOTS
-const RINKEBY_BASE_API_BOTS = process.env.REACT_APP_RINKEBY_BASE_API_BOTS
+const BOTS_API_BASE_URL = '-bots/api'
+const DX_API_BASE_URL = '-dx/api'
 
 class DxService {
   constructor({ network, web3 }) {
@@ -11,8 +8,24 @@ class DxService {
     this.web3 = web3
 
     // Network specific API URLs
-    this.botsApiURL = network === 1 ? MAINNET_BASE_API_BOTS : RINKEBY_BASE_API_BOTS
-    this.dxApiURL = network === 1 ? MAINNET_BASE_API_DX : RINKEBY_BASE_API_DX
+    const useMockApi = process.env.REACT_APP_MOCK === 'true'
+    console.log('process.env.MOCK', process.env.REACT_APP_MOCK)
+    console.log('useMockApi', useMockApi)
+    let networkName
+    if (useMockApi) {
+      networkName = 'local'
+    } else if (network === 1) {
+      networkName = 'mainnet'
+    } else if (network === 4) {
+      networkName = 'rinkeby'
+    }
+
+    if (networkName) {
+      this.botsApiURL = networkName + BOTS_API_BASE_URL
+      this.dxApiURL = networkName + DX_API_BASE_URL
+    } else {
+      console.error('Unknown network: ' + network)
+    }
 
     // Auth Header (BOTS API)
     this.botsAuthorizationHeader = {
@@ -28,13 +41,13 @@ class DxService {
    */
   async getAbout() {
     const apiURL = `${this.botsApiURL}/about`
-    
+
     return (await fetch(apiURL, this.botsAuthorizationHeader)).json()
   }
 
   async getBots() {
     const apiURL = `${this.botsApiURL}/about`
-    
+
     const { bots } = await (await fetch(apiURL, this.botsAuthorizationHeader)).json()
 
     // Add an artificial id to the bots
@@ -81,25 +94,25 @@ class DxService {
 
   async getMarketSellVolume(sellToken, buyToken) {
     const res = await (await fetch(`${this.dxApiURL}/v1/markets/${sellToken.toLowerCase()}-${buyToken.toLowerCase()}/sell-volume`)).json()
-    
+
     return res
   }
 
   async getMarketBuyVolume(sellToken, buyToken) {
     const res = await (await fetch(`${this.dxApiURL}/v1/markets/${sellToken.toLowerCase()}-${buyToken.toLowerCase()}/buy-volume`)).json()
-    
+
     return res
   }
 
   async getMarketState(sellToken, buyToken) {
     const res = await (await fetch(`${this.dxApiURL}/v1/markets/${sellToken.toLowerCase()}-${buyToken.toLowerCase()}/state`)).json()
-    
+
     return res
   }
 
   async getMarketStartTime(sellToken, buyToken) {
     const res = await (await fetch(`${this.dxApiURL}/v1/markets/${sellToken.toLowerCase()}-${buyToken.toLowerCase()}/auction-start`)).json()
-    
+
     return res
   }
 
@@ -108,7 +121,7 @@ class DxService {
    */
   async getLiquidityContribution(accountAddress) {
     const res = await (await fetch(`${this.dxApiURL}/v1/accounts/${accountAddress}/current-liquidity-contribution-ratio`)).json()
-    
+
     return res
   }
 

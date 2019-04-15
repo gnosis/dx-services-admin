@@ -18,8 +18,8 @@ const BOTS_API = {
 }
 
 const BOTS_API_AUTH = {
-  mainnet: BOTS_API_PROXY_AUTH_RINKEBY,
-  rinkeby: BOTS_API_PROXY_AUTH_MAINNET
+  mainnet: BOTS_API_PROXY_AUTH_MAINNET,
+  rinkeby: BOTS_API_PROXY_AUTH_RINKEBY
 }
 
 module.exports = function (app) {
