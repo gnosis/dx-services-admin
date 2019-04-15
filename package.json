@@ -14,8 +14,10 @@
     "core-js": "^2.6.5",
     "enzyme": "^3.9.0",
     "enzyme-adapter-react-16": "^1.10.0",
+    "express": "^4.16.4",
     "flag-icon-css": "^3.3.0",
     "font-awesome": "^4.7.0",
+    "http-proxy-middleware": "^0.19.1",
     "node-sass": "^4.11.0",
     "prop-types": "^15.7.2",
     "react": "^16.8.4",
@@ -32,11 +34,14 @@
     "web3": "^1.0.0-beta.27"
   },
   "devDependencies": {
+    "body-parser": "^1.18.3",
+    "nodemon": "^1.18.11",
     "react-scripts": "2.1.5"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "server": "nodemon src/localServer",
     "test": "react-scripts test",
     "test:cov": "react-scripts test --coverage",
     "test:debug": "react-scripts --inspect-brk test --runInBand",
