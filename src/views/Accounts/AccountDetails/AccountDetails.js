@@ -15,7 +15,7 @@ class AccountDetails extends Component {
   state = {
     // Token Balances and hide
     balances: [],
-    hideTokensWithoutBalance: false,
+    hideTokensWithoutBalance: true,
     // LC, MGN, OWL
     liquidityContribution: undefined,
     mgnLockedBalance: undefined,
@@ -122,49 +122,49 @@ class AccountDetails extends Component {
 
           {/* Liq. Contr. */}
           {liquidityContribution &&
-          <ListGroupItem style={{ backgroundColor: '#eef8ff' }}>
-            <Badge
-              color="primary"
-              className="p-2 mr-2"
-              pill>
-              L.C
+            <ListGroupItem style={{ backgroundColor: '#eef8ff' }}>
+              <Badge
+                color="primary"
+                className="p-2 mr-2"
+                pill>
+                L.C
             </Badge>
-            <strong>{typeof liquidityContribution !== 'undefined' && (`${liquidityContribution * 100}%`)}</strong>
-          </ListGroupItem>}
+              <strong>{typeof liquidityContribution !== 'undefined' && (`${liquidityContribution * 100}%`)}</strong>
+            </ListGroupItem>}
 
           {/* MGN */}
           {mgnLockedBalance &&
-          <ListGroupItem style={{ backgroundColor: '#eef8ff' }}
-            className='justify-content-between'>
-            <Badge
-              color="primary"
-              className="p-2 mr-2"
-              pill>
-              MGN
+            <ListGroupItem style={{ backgroundColor: '#eef8ff' }}
+              className='justify-content-between'>
+              <Badge
+                color="primary"
+                className="p-2 mr-2"
+                pill>
+                MGN
             </Badge>
-            &nbsp;<strong>Magnolia Token</strong>
-            <ul>
-              <li>Locked Balance: <Badge color={mgnLockedBalance > 0 ? 'success' : 'secondary'} pill>{Number(mgnLockedBalance / (10 ** 18)).toFixed(2)}</Badge></li>
-              <li>Unlocked Balance: <Badge color={mgnUnlockedBalance > 0 ? 'warning' : 'secondary'} pill>{Number(mgnUnlockedBalance / (10 ** 18)).toFixed(2)}</Badge></li>
-            </ul>
-          </ListGroupItem>}
+              &nbsp;<strong>Magnolia Token</strong>
+              <ul>
+                <li>Locked Balance: <Badge color={mgnLockedBalance > 0 ? 'success' : 'secondary'} pill>{Number(mgnLockedBalance / (10 ** 18)).toFixed(2)}</Badge></li>
+                <li>Unlocked Balance: <Badge color={mgnUnlockedBalance > 0 ? 'warning' : 'secondary'} pill>{Number(mgnUnlockedBalance / (10 ** 18)).toFixed(2)}</Badge></li>
+              </ul>
+            </ListGroupItem>}
 
           {/* OWL */}
           {owlBalance &&
-          <ListGroupItem style={{ backgroundColor: '#eef8ff' }}
-            className='justify-content-between'>
-            <Badge
-              color="primary"
-              className="p-2 mr-2"
-              pill>
-              OWL
+            <ListGroupItem style={{ backgroundColor: '#eef8ff' }}
+              className='justify-content-between'>
+              <Badge
+                color="primary"
+                className="p-2 mr-2"
+                pill>
+                OWL
             </Badge>
-            &nbsp;<strong>OWL Token</strong>
-            <ul>
-              {/* <li>DutchX: <Badge color={owlBalance > 0 ? 'success' : 'secondary'} pill>{Number(balance / (10 ** decimals)).toFixed(2)}</Badge></li> */}
-              <li>ERC20: <Badge color={owlBalance > 0 ? 'warning' : 'secondary'} pill>{Number(owlBalance / (10 ** 18)).toFixed(2)}</Badge></li>
-            </ul>
-          </ListGroupItem>}
+              &nbsp;<strong>OWL Token</strong>
+              <ul>
+                {/* <li>DutchX: <Badge color={owlBalance > 0 ? 'success' : 'secondary'} pill>{Number(balance / (10 ** decimals)).toFixed(2)}</Badge></li> */}
+                <li>ERC20: <Badge color={owlBalance > 0 ? 'warning' : 'secondary'} pill>{Number(owlBalance / (10 ** 18)).toFixed(2)}</Badge></li>
+              </ul>
+            </ListGroupItem>}
         </ListGroup>
         <br />
         <h2>Balances</h2>
