@@ -1,84 +1,102 @@
+require('dotenv').config()
+
 const proxy = require('http-proxy-middleware')
 const assert = require('assert')
+const LOG_LEVEL = 'debug'
+const LOCAL_API_PORT = process.env.REACT_APP_API_PORT || 8080
 
-const BOTS_API_PROXY_AUTH_RINKEBY = process.env.BOTS_API_PROXY_AUTH_RINKEBY || process.env.REACT_APP_RINKEBY_DX_BOTS_API_AUTH
-const BOTS_API_PROXY_AUTH_MAINNET = process.env.BOTS_API_PROXY_AUTH_MAINNET || process.env.REACT_APP_MAINNET_DX_BOTS_API_AUTH
-assert(BOTS_API_PROXY_AUTH_RINKEBY, 'Required env var: BOTS_API_PROXY_AUTH_RINKEBY')
-assert(BOTS_API_PROXY_AUTH_MAINNET, 'Required env var: BOTS_API_PROXY_AUTH_MAINNET')
+const BOTS_AUTH_RINKEBY = process.env.REACT_APP_BOTS_API_PROXY_AUTH_RINKEBY
+const BOTS_AUTH_KOVAN = process.env.REACT_APP_BOTS_API_PROXY_AUTH_KOVAN
+const BOTS_AUTH_MAINNET = process.env.REACT_APP_BOTS_API_PROXY_AUTH_MAINNET
+assert(BOTS_AUTH_RINKEBY, 'Required env var: REACT_APP_BOTS_API_PROXY_AUTH_RINKEBY')
+assert(BOTS_AUTH_KOVAN, 'Required env var: REACT_APP_BOTS_API_PROXY_AUTH_KOVAN')
+assert(BOTS_AUTH_MAINNET, 'Required env var: REACT_APP_BOTS_API_PROXY_AUTH_MAINNET')
 
+const networks = [
+  // LOCAL: Api
+  {
+    source: '/local-dx/api',
+    target: `http://localhost:${LOCAL_API_PORT}`,
+    pathRewrite: '/dx',
+    changeOrigin: false
+  },
 
-const DX_API = {
-  mainnet: 'https://dutchx.d.exchange',
-  rinkeby: 'https://dutchx-rinkeby.d.exchange'
-}
+  // LOCAL: Bots
+  {
+    source: '/local-bots/api',
+    target: `http://localhost:${LOCAL_API_PORT}`,
+    pathRewrite: '/bots',
+    changeOrigin: false
+  },
 
-const BOTS_API = {
-  mainnet: 'https://dx-services-bots.gnosis.pm',
-  rinkeby: 'https://dx-services-bots.staging.gnosisdev.com'
-}
+  // RINKEBY: Api
+  {
+    source: '/rinkeby-dx/api',
+    target: 'https://dutchx-rinkeby.d.exchange'
+  },
 
-const BOTS_API_AUTH = {
-  mainnet: BOTS_API_PROXY_AUTH_MAINNET,
-  rinkeby: BOTS_API_PROXY_AUTH_RINKEBY
-}
+  // RINKEBY: Bots
+  {
+    source: '/rinkeby-bots/api',
+    target: 'https://dx-services-bots.staging.gnosisdev.com',
+    auth: BOTS_AUTH_RINKEBY
+  },
+
+  // KOVAN: Api
+  {
+    source: '/kovan-dx/api',
+    target: 'https://dutchx-kovan.d.exchange'
+  },
+
+  // KOVAN: Bots
+  {
+    source: '/kovan-bots/api',
+    target: 'https://dx-services-bots.kovan.gnosisdev.com',
+    auth: BOTS_AUTH_KOVAN
+  },
+
+  // MAINNET: Api
+  {
+    source: '/mainnet-dx/api',
+    target: 'https://dutchx.d.exchange'
+  },
+
+  // MAINNET: Bots
+  {
+    source: '/mainnet-bots/api',
+    target: 'https://dx-services-bots.gnosis.pm',
+    auth: BOTS_AUTH_MAINNET
+  }
+]
 
 module.exports = function (app) {
-  const localPort = process.env.API_PORT || 8080
-  app.use(proxy('/local-bots/api', {
-    target: `http://localhost:${localPort}`,
-    pathRewrite: {
-      '^/local-bots/api': '/bots'
-    },
-    logLevel: 'debug'
-  }))
+  networks.forEach(({
+    source,
+    target,
+    pathRewrite = '/api',
+    changeOrigin = true,
+    auth
+  }) => {
+    // const path = `/${networkName}-bots/api`
+    console.log(
+      'Create %s: %s --> %s%s',
+      auth ? 'Authenticated Proxy' : 'Proxy',
+      source,
+      target,
+      pathRewrite
+    )
 
-  app.use(proxy('/local-dx/api', {
-    target: `http://localhost:${localPort}`,
-    pathRewrite: {
-      '^/local-dx/api': '/dx'
-    },
-    logLevel: 'debug'
-  }))
+    app.use(proxy(source, {
+      target,
+      pathRewrite: {
+        ['^' + source]: pathRewrite
+      },
+      logLevel: LOG_LEVEL,
+      changeOrigin,
+      auth
+    }))
+  })
 
-
-  app.use(proxy('/rinkeby-bots/api', {
-    target: BOTS_API.rinkeby,
-    pathRewrite: {
-      '^/rinkeby-bots/api': '/api'
-    },
-    changeOrigin: true,
-    logLevel: 'debug',
-    auth: BOTS_API_AUTH.rinkeby
-  }))
-
-  app.use(proxy('/rinkeby-dx/api', {
-    target: DX_API.rinkeby,
-    pathRewrite: {
-      '^/rinkeby-dx/api': '/api'
-    },
-    logLevel: 'debug',
-    changeOrigin: true
-  }))
-
-  app.use(proxy('/mainnet-bots/api', {
-    target: BOTS_API.mainnet,
-    pathRewrite: {
-      '^/mainnet-bots/api': '/api'
-    },
-    changeOrigin: true,
-    logLevel: 'debug',
-    auth: BOTS_API_AUTH.mainnet
-  }))
-
-  app.use(proxy('/mainnet-dx/api', {
-    target: DX_API.mainnet,
-    pathRewrite: {
-      '^/mainnet-dx/api': '/api'
-    },
-    logLevel: 'debug',
-    changeOrigin: true
-  }))
-
-
+  // throw new Error('a!')
 
 }

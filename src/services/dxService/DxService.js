@@ -21,6 +21,8 @@ class DxService {
       networkName = 'mainnet'
     } else if (network === 4) {
       networkName = 'rinkeby'
+    } else if (network === 42) {
+      networkName = 'kovan'
     }
 
     if (networkName) {
@@ -135,7 +137,7 @@ class DxService {
     const res = await new Promise(acc => {
       return setTimeout(() => acc(require('../../data/mock/safes')), 3000)
     })
-    
+
     return res
   }
 }
