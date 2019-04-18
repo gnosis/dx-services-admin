@@ -3,7 +3,7 @@ require('dotenv').config()
 const proxy = require('http-proxy-middleware')
 const assert = require('assert')
 const LOG_LEVEL = 'debug'
-const LOCAL_API_PORT = process.env.REACT_APP_API_PORT || 8080
+const LOCAL_API_PORT = process.env.REACT_APP_API_PORT || 8081
 
 const BOTS_AUTH_RINKEBY = process.env.REACT_APP_BOTS_API_PROXY_AUTH_RINKEBY
 const BOTS_AUTH_KOVAN = process.env.REACT_APP_BOTS_API_PROXY_AUTH_KOVAN

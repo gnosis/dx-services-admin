@@ -38,7 +38,7 @@ app.get('/dx/v1/tokens', (req, res) => {
   res.send(require('./data/mock/tokens'));
 })
 
-const port = process.env.REACT_APP_API_PORT || 8080
+const port = process.env.REACT_APP_API_PORT || 8081
 app.listen(port)
 
 console.log('Local Mock API listening on port ' + port)
