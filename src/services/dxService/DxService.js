@@ -11,7 +11,7 @@ class DxService {
     this.web3 = web3
 
     // Network specific API URLs
-    const useMockApi = process.env.REACT_APP_MOCK === 'true'
+    const useMockApi = process.env.REACT_APP_MOCK === 'true'   
     console.log('process.env.MOCK', process.env.REACT_APP_MOCK)
     console.log('useMockApi', useMockApi)
     let networkName
@@ -21,11 +21,18 @@ class DxService {
       networkName = 'mainnet'
     } else if (network === 4) {
       networkName = 'rinkeby'
+    } else if (network === 42) {
+      networkName = 'kovan'
     }
-
-    if (networkName) {
-      this.botsApiURL = networkName + BOTS_API_BASE_URL
-      this.dxApiURL = networkName + DX_API_BASE_URL
+    
+    const mainnetBaseUrl = process.env.REACT_APP_MAINNET_API_BASE_URL
+    if (network === 1 && mainnetBaseUrl) {
+      // Use absolute path for mainnet (if provided)
+      this.botsApiURL = mainnetBaseUrl + '/' + networkName + BOTS_API_BASE_URL
+      this.dxApiURL = mainnetBaseUrl + '/' + networkName + DX_API_BASE_URL
+    } else if (networkName) {
+      this.botsApiURL = '/' + networkName + BOTS_API_BASE_URL
+      this.dxApiURL = '/' + networkName + DX_API_BASE_URL
     } else {
       console.error('Unknown network: ' + network)
     }
@@ -135,7 +142,7 @@ class DxService {
     const res = await new Promise(acc => {
       return setTimeout(() => acc(require('../../data/mock/safes')), 3000)
     })
-    
+
     return res
   }
 }

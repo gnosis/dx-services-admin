@@ -1,4 +1,4 @@
-const DEFAULT_API_PORT = 8080
+require('dotenv').config()
 
 const express = require('express');
 // const bodyParser = require('body-parser')
@@ -38,8 +38,7 @@ app.get('/dx/v1/tokens', (req, res) => {
   res.send(require('./data/mock/tokens'));
 })
 
-
-const port = process.env.API_PORT || DEFAULT_API_PORT
+const port = process.env.REACT_APP_API_PORT || 8081
 app.listen(port)
 
 console.log('Local Mock API listening on port ' + port)
