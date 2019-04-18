@@ -43,10 +43,28 @@ class MarketList extends Component {
     
     markets = await Promise.all(markets.map(async ({tokenA, tokenB}, index) => {
       // TODO: Get sell volume, buyVolume, etc.. (use dxService)      
-      const [state, sellVolume, buyVolume, startTime] = await Promise.all([
+      const [
+        state, 
+        inverseState, 
+        sellVolume, 
+        sellVolumeInverse,
+        buyVolume, 
+        buyVolumeInverse,
+        startTime
+      ] = await Promise.all([
+        // Direct State
         dxService.getMarketState(tokenA.address, tokenB.address),
+        // Inverse State
+        dxService.getMarketState(tokenB.address, tokenA.address),
+        // Sell Volume
         dxService.getMarketSellVolume(tokenA.address, tokenB.address),
+        // Inverse Sell Volume
+        dxService.getMarketSellVolume(tokenB.address, tokenA.address),
+        // Buy Volume
         dxService.getMarketBuyVolume(tokenA.address, tokenB.address),
+        // Inverse Buy Volume
+        dxService.getMarketBuyVolume(tokenB.address, tokenA.address),
+        // Start Time
         dxService.getMarketStartTime(tokenA.address, tokenB.address)
       ])
 
@@ -57,7 +75,10 @@ class MarketList extends Component {
         id: index,
         sellVolume: checkApiRes(sellVolume),
         buyVolume: checkApiRes(buyVolume),
+        sellVolumeInverse: checkApiRes(sellVolumeInverse),
+        buyVolumeInverse: checkApiRes(buyVolumeInverse),
         state: checkApiRes(state),
+        inverseState: checkApiRes(inverseState),
         startTime: checkApiRes(startTime),
 
         ...{tokenA, tokenB}
@@ -99,11 +120,17 @@ class MarketList extends Component {
       tokenB,
       startTime,
       state,
+      inverseState,
       sellVolume,
-      buyVolume
+      buyVolume,
+      sellVolumeInverse,
+      buyVolumeInverse,
     } = market
+
     const stateInfo = STATES.find(stateInfo => stateInfo.value === state)
+    const inverseStateInfo = STATES.find(stateInfo => stateInfo.value === inverseState)
     const stateColor = stateInfo.color
+    const inverseStateColor = inverseStateInfo.color
 
     // TODO: color the markets depending on how long have they been running
     const now = new Date()
@@ -123,26 +150,42 @@ class MarketList extends Component {
 
     return (
       <tr key={`bot-${id}`} style={{ backgroundColor }}>
+        {/* MARKET */}
         <td>
           <Badge color="primary" className="p-2" pill>
             {tokenA.symbol + '-' + tokenB.symbol}
           </Badge>
         </td>
+        {/* TOKEN A */}
         <td>
           {this.renderEtherscanLink(tokenA)}
         </td>
+        {/* TOKEN B */}
         <td>
           {this.renderEtherscanLink(tokenB)}
         </td>
+        {/* STATE */}
         <td>
           <Badge color={stateColor} pill>
             {stateInfo.label}
           </Badge>
           <ul>
             {this.renderDateRow('Start time', startTime)}
-            {sellVolume && this.renderAmontRow('Sell volume', Number(sellVolume / (10**tokenA.decimals)).toFixed(2), tokenA.symbol)}
-            {buyVolume > 0 && this.renderAmontRow('Buy volume', Number(buyVolume / (10**tokenB.decimals)).toFixed(2), tokenB.symbol)}
-            {buyVolume > 0 && this.renderAmontRow('Oustanding volume', Number(buyVolume / (10**tokenB.decimals)).toFixed(2), tokenB.symbol)}
+            {sellVolume && this.renderAmountRow('Sell volume', Number(sellVolume / (10**tokenA.decimals)).toFixed(2), tokenA.symbol)}
+            {buyVolume > 0 && this.renderAmountRow('Buy volume', Number(buyVolume / (10**tokenB.decimals)).toFixed(2), tokenB.symbol)}
+            {buyVolume > 0 && this.renderAmountRow('Oustanding volume', Number(buyVolume / (10**tokenB.decimals)).toFixed(2), tokenB.symbol)}
+          </ul>
+        </td>
+        {/* INVERSE STATE */}
+        <td>
+          <Badge color={inverseStateColor} pill>
+            {inverseStateInfo.label}
+          </Badge>
+          <ul>
+            {this.renderDateRow('Start time', startTime)}
+            {sellVolumeInverse && this.renderAmountRow('Sell volume', Number(sellVolumeInverse/ (10**tokenB.decimals)).toFixed(2), tokenB.symbol)}
+            {buyVolumeInverse > 0 && this.renderAmountRow('Buy volume', Number(buyVolumeInverse/ (10**tokenA.decimals)).toFixed(2), tokenA.symbol)}
+            {buyVolumeInverse > 0 && this.renderAmountRow('Oustanding volume', Number(buyVolumeInverse / (10**tokenA.decimals)).toFixed(2), tokenA.symbol)}
           </ul>
         </td>
       </tr>
@@ -171,7 +214,7 @@ class MarketList extends Component {
     )
   }
 
-  renderAmontRow(label, amount, currency) {
+  renderAmountRow(label, amount, currency) {
     return amount && (
       <li>
         <strong>{label}</strong>:&nbsp;{amount + ' ' + currency}
@@ -237,8 +280,8 @@ class MarketList extends Component {
               <th>Market</th>
               <th>Token A</th>
               <th>Token B</th>
-              <th>State</th>
-              <th></th>
+              <th>State: Direct</th>
+              <th>State: Inverse</th>
             </tr>
           </thead>
           <tbody>
