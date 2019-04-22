@@ -7,7 +7,7 @@ set -ev
 # - Security env variables are available.
 if [ -n "$TRAVIS_TAG" ] && [ -n "$PROD_DEPLOYMENT_HOOK_TOKEN" ] && [ -n "$PROD_DEPLOYMENT_HOOK_URL_DOMAIN" ]
 then
-  curl -X POST \
+  curl --silent --output /dev/null -X POST \
      -F token="$PROD_DEPLOYMENT_HOOK_TOKEN" \
      -F ref=master \
      -F "variables[TRIGGER_RELEASE_COMMIT_TAG]=$TRAVIS_TAG" \
