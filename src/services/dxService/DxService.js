@@ -1,3 +1,4 @@
+/* eslint-disable eqeqeq */
 const BOTS_API_BASE_URL = '-bots/api'
 const DX_API_BASE_URL = '-dx/api'
 
@@ -17,16 +18,16 @@ class DxService {
     let networkName
     if (useMockApi) {
       networkName = 'local'
-    } else if (network === 1) {
+    } else if (network == 1) {
       networkName = 'mainnet'
-    } else if (network === 4) {
+    } else if (network == 4) {
       networkName = 'rinkeby'
-    } else if (network === 42) {
+    } else if (network == 42) {
       networkName = 'kovan'
     }
     
     const mainnetBaseUrl = process.env.REACT_APP_MAINNET_API_BASE_URL
-    if (network === 1 && mainnetBaseUrl) {
+    if (network == 1 && mainnetBaseUrl) {
       // Use absolute path for mainnet (if provided)
       this.botsApiURL = mainnetBaseUrl + '/' + networkName + BOTS_API_BASE_URL
       this.dxApiURL = mainnetBaseUrl + '/' + networkName + DX_API_BASE_URL
