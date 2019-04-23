@@ -2,27 +2,28 @@ import React, { useState } from 'react';
 import { Col, Button, Form, FormGroup, Label, Input } from 'reactstrap';
 
 import Web3HOC from '../../../HOCs/Web3HOC'
-
-import { FIXED_DECIMALS } from '../../../globals'
 import PageWrapper from '../../../containers/PageWrapper';
+
+// import { FIXED_DECIMALS } from '../../../globals'
 
 function CheckBalances(props) {
   const [inputAcct, setInputAcct] = useState(null)
-  const [accountBalance, setAccountBalance] = useState(null)
+  // const [accountBalance, setAccountBalance] = useState(null)
 
   const handleClick = async e => {
     e.preventDefault()
     const { web3 } = props
 
     try {
-      setAccountBalance('CALCULATING...')
-
-      const acctBalance = await web3.getCurrentBalance(inputAcct)
-
-      setAccountBalance(Number(web3.utils.fromWei(acctBalance.toString())).toFixed(FIXED_DECIMALS))
+      const acct = inputAcct || await web3.getCurrentAccount()
+      // setAccountBalance('CALCULATING...')
+      // const acctBalance = await web3.getCurrentBalance(inputAcct)
+      // setAccountBalance(Number(web3.utils.fromWei(acctBalance.toString())).toFixed(FIXED_DECIMALS))
+      const { host } = window.location
+      window.location.replace(`${host.includes('localhost') ? 'http' : 'https'}://${host}/#/accounts/${acct}`)
     } catch (error) {
       console.error(error)
-      setAccountBalance('INVALID ADDRESS')
+      // setAccountBalance('Invalid address passed, try again')
     }
   }
 
@@ -41,7 +42,7 @@ function CheckBalances(props) {
               placeholder="0x0000000000000000000000000000000000000000"
               onChange={handleInputChange}
             />
-            <strong>Address Balance: {accountBalance || '-'}</strong>
+            {/* <strong>Address Balance: {accountBalance || '-'}</strong> */}
           </Col>
         </FormGroup>
         <FormGroup check row>
