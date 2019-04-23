@@ -8,6 +8,8 @@ export const OWL_PROXY_ADDRESSES = {
     4: '0xa7d1c04faf998f9161fc9f800a99a809b84cfc9d',
 }
 
+export const DX_GRAPHS_URL = 'https://explore.duneanalytics.com/public/dashboards/NJXQ1WlL4zr9KVesucCaB3MbKPgcbYz8vTEAXv6s'
+
 /* export const MGN_PROXY_ADDRESSES = new Proxy(
     {
         1: '0x80f222a749a2e18eb7f676d371f19ad7efeee3b7',
