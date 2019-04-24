@@ -8,6 +8,11 @@ import Web3HOC from '../../HOCs/Web3HOC'
 
 import getDxService from '../../services/dxService'
 
+const SAFE_TYPES = [
+    'seller',
+    'complete',   
+]
+
 function Safes({ web3 }) {
     const [safeData, setSafeData] = useState([])
     const [safeNameFilter, setSafeNameFilter] = useState('')
@@ -65,7 +70,7 @@ function Safes({ web3 }) {
                             showWhat={safeTypeFilter}
                             changeFunction={event => setSafeTypeFilter(event.target.value)}
                             inputName="safe"
-                            render={safeData.map(({ safeModuleType, safeAddress }) => <option key={safeAddress} value={safeModuleType}>{safeModuleType}</option>)}
+                            render={SAFE_TYPES.map((type, index) => <option key={index} value={type}>{type}</option>)}
                         />
                     </Col>
                 </FormGroup>
