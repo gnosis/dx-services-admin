@@ -1,9 +1,9 @@
 /* eslint-disable eqeqeq */
+
+import { fetcher } from '../../utils'
+
 const BOTS_API_BASE_URL = '-bots/api'
 const DX_API_BASE_URL = '-dx/api'
-
-// const MAINNET_BOTS_API_AUTH = process.env.REACT_APP_MAINNET_DX_BOTS_API_AUTH
-// const RINKEBY_BOTS_API_AUTH = process.env.REACT_APP_RINKEBY_DX_BOTS_API_AUTH
 
 class DxService {
   constructor({ network, web3 }) {
@@ -13,9 +13,12 @@ class DxService {
 
     // Network specific API URLs
     const useMockApi = process.env.REACT_APP_MOCK === 'true'   
-    console.log('process.env.MOCK', process.env.REACT_APP_MOCK)
-    console.log('useMockApi', useMockApi)
+    
+    console.debug('process.env.MOCK?', process.env.REACT_APP_MOCK)
+    console.debug('useMockApi?', useMockApi)
+    
     let networkName
+    
     if (useMockApi) {
       networkName = 'local'
     } else if (network == 1) {
@@ -51,16 +54,11 @@ class DxService {
   /**
    * GENERAL API GRAB
    */
-  async getAbout() {
-    const apiURL = `${this.botsApiURL}/about`
-
-    return (await fetch(apiURL, this.botsAuthorizationHeader)).json()
-  }
+  getAbout = async () => fetcher(`${this.botsApiURL}/about`, this.botsAuthorizationHeader)
 
   async getBots() {
-    const apiURL = `${this.botsApiURL}/about`
-
-    const { bots } = await (await fetch(apiURL, this.botsAuthorizationHeader)).json()
+    const apiURL = `${this.botsApiURL}/v1/bots`
+    const bots = await fetcher(apiURL, this.botsAuthorizationHeader)
 
     // Add an artificial id to the bots
     return bots.map((bot, index) => ({
@@ -74,7 +72,7 @@ class DxService {
    */
   async getTokens() {
     const apiURL = `${this.dxApiURL}/v1/tokens`
-    const { data } = await (await fetch(apiURL)).json()
+    const { data } = await fetcher(apiURL)
 
     return data
   }
@@ -82,9 +80,7 @@ class DxService {
   async getTokenBalanceDx({ account, token }) {
     const { address: tokenParam } = token
 
-    const res = await (await fetch(`${this.dxApiURL}/v1/accounts/${account}/tokens/${tokenParam}`)).json()
-
-    return res
+    return fetcher(`${this.dxApiURL}/v1/accounts/${account}/tokens/${tokenParam}`)
   }
 
   async getTokenBalanceErc20({ account, tokenAddress }) {
@@ -98,54 +94,28 @@ class DxService {
    */
   async getMarkets() {
     const apiURL = `${this.dxApiURL}/v1/markets`
-    const markets = await (await fetch(apiURL)).json()
+    const { data } = await fetcher(apiURL)
 
-    return markets.data
+    return data
   }
 
-  async getMarketSellVolume(stAddress, btAddress) {
-    const res = await (await fetch(`${this.dxApiURL}/v1/markets/${stAddress.toLowerCase()}-${btAddress.toLowerCase()}/sell-volume`)).json()
+  getMarketSellVolume = async (stAddress, btAddress) => fetcher(`${this.dxApiURL}/v1/markets/${stAddress.toLowerCase()}-${btAddress.toLowerCase()}/sell-volume`)
 
-    return res
-  }
+  getMarketBuyVolume = async (stAddress, btAddress) => fetcher(`${this.dxApiURL}/v1/markets/${stAddress.toLowerCase()}-${btAddress.toLowerCase()}/buy-volume`)
 
-  async getMarketBuyVolume(stAddress, btAddress) {
-    const res = await (await fetch(`${this.dxApiURL}/v1/markets/${stAddress.toLowerCase()}-${btAddress.toLowerCase()}/buy-volume`)).json()
+  getMarketState = async (stAddress, btAddress) => fetcher(`${this.dxApiURL}/v1/markets/${stAddress.toLowerCase()}-${btAddress.toLowerCase()}/state-details`)
 
-    return res
-  }
-
-  async getMarketState(stAddress, btAddress) {
-    const res = await (await fetch(`${this.dxApiURL}/v1/markets/${stAddress.toLowerCase()}-${btAddress.toLowerCase()}/state`)).json()
-
-    return res
-  }
-
-  async getMarketStartTime(stAddress, btAddress) {
-    const res = await (await fetch(`${this.dxApiURL}/v1/markets/${stAddress.toLowerCase()}-${btAddress.toLowerCase()}/auction-start`)).json()
-
-    return res
-  }
+  getMarketStartTime = async (stAddress, btAddress) => fetcher(`${this.dxApiURL}/v1/markets/${stAddress.toLowerCase()}-${btAddress.toLowerCase()}/auction-start`)
 
   /*
    * LIQUIDITY CONTRIBUTION 
    */
-  async getLiquidityContribution(accountAddress) {
-    const res = await (await fetch(`${this.dxApiURL}/v1/accounts/${accountAddress}/current-liquidity-contribution-ratio`)).json()
-
-    return res
-  }
+  getLiquidityContribution = async (accountAddress) => fetcher(`${this.dxApiURL}/v1/accounts/${accountAddress}/current-liquidity-contribution-ratio`)
 
   /* 
    * SAFE MODULES
    */
-  async getSafeModules() {
-    const res = await new Promise(acc => {
-      return setTimeout(() => acc(require('../../data/mock/safes')), 3000)
-    })
-
-    return res
-  }
+  getSafeModules = async () => fetcher(`${this.botsApiURL}/v1/safes`)
 }
 
 
