@@ -57,3 +57,12 @@ export const netIdToName = (id) => {
             return 'Local Network'
     }
 }
+
+/**
+ * fetcher
+ * @description returns JSON data from native JS fetch
+ * @param { url: string }
+ * @param { options: any{} }
+ * @returns JSON
+ */
+export const fetcher = async (url, options) => (await fetch(url, options)).json()
