@@ -4,6 +4,7 @@ import { Col, Table, Badge, FormGroup, Form } from 'reactstrap';
 
 import { PageWrapper, PageFilter } from '../../../containers'
 
+import ErrorHOC from '../../../HOCs/ErrorHOC'
 import Web3HOC from '../../../HOCs/Web3HOC'
 
 import getDxService from '../../../services/dxService'
@@ -305,5 +306,5 @@ class MarketList extends Component {
 }
 
 
-export default Web3HOC(MarketList)
+export default ErrorHOC(Web3HOC(MarketList))
 

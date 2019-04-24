@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 
 import { Col, Table, Badge, FormGroup, Form } from 'reactstrap';
 import { PageWrapper, PageFilter } from '../../../containers'
+
+import ErrorHOC from '../../../HOCs/ErrorHOC'
 import Web3HOC from '../../../HOCs/Web3HOC'
 
 import moment from 'moment'
@@ -356,4 +358,4 @@ function colorByBotType(botType) {
   }
 }
 
-export default Web3HOC(BotList);
+export default ErrorHOC(Web3HOC(BotList))

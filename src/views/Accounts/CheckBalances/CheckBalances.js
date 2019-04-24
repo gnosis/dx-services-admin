@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Col, Button, Form, FormGroup, Label, Input } from 'reactstrap';
 
+import ErrorHOC from '../../../HOCs/ErrorHOC'
 import Web3HOC from '../../../HOCs/Web3HOC'
 import PageWrapper from '../../../containers/PageWrapper';
 
@@ -60,4 +61,4 @@ function CheckBalances(props) {
   )
 }
 
-export default Web3HOC(CheckBalances);
+export default ErrorHOC(Web3HOC(CheckBalances))

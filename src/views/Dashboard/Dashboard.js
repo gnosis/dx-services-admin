@@ -1,6 +1,8 @@
 import React from 'react';
 import { Jumbotron, Container } from 'reactstrap';
 
+import ErrorHOC from '../../HOCs/ErrorHOC'
+
 import { DX_GRAPHS_URL } from '../../globals'
 
 function Dashboard() {
@@ -19,4 +21,4 @@ function Dashboard() {
   )
 }
 
-export default Dashboard;
+export default ErrorHOC(Dashboard);

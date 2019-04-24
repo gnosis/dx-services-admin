@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { Col, Table, Badge, FormGroup, Form } from 'reactstrap'
 import { PageFilter, PageWrapper } from '../../containers'
 
+import ErrorHOC from '../../HOCs/ErrorHOC'
 import Web3HOC from '../../HOCs/Web3HOC'
 
 import getDxService from '../../services/dxService'
@@ -38,7 +39,6 @@ function Safes({ web3 }) {
                 console.error(err)
             }
         }
-
         getSafeData()
     }, [])
 
@@ -129,4 +129,4 @@ function Safes({ web3 }) {
     )
 }
 
-export default Web3HOC(Safes)
+export default ErrorHOC(Web3HOC(Safes))

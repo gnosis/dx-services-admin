@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { ListGroup, ListGroupItem, Badge, FormGroup, Label, Input } from 'reactstrap';
 import Blockies from 'react-blockies'
 
+import ErrorHOC from '../../../HOCs/ErrorHOC'
 import Web3HOC from '../../../HOCs/Web3HOC'
 
 import getDxService from '../../../services/dxService'
@@ -210,4 +211,4 @@ class AccountDetails extends Component {
   }
 }
 
-export default Web3HOC(AccountDetails);
+export default ErrorHOC(Web3HOC(AccountDetails))

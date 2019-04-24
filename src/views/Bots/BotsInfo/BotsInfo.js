@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Card, CardBody, CardHeader, Col, Row, Table } from 'reactstrap';
 
+import ErrorHOC from '../../../HOCs/ErrorHOC'
 import Web3HOC from '../../../HOCs/Web3HOC'
 import getDxService from '../../../services/dxService'
 
@@ -186,4 +187,4 @@ class BotsInfo extends Component {
   }
 }
 
-export default Web3HOC(BotsInfo);
+export default ErrorHOC(Web3HOC(BotsInfo))
