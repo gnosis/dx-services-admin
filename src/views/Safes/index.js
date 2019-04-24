@@ -10,7 +10,8 @@ import getDxService from '../../services/dxService'
 
 function Safes({ web3 }) {
     const [safeData, setSafeData] = useState([])
-    const [safeFilter, setSafeFilter] = useState('')
+    const [safeNameFilter, setSafeNameFilter] = useState('')
+    const [safeTypeFilter, setSafeTypeFilter] = useState('')
     const [network, setNetwork] = useState('UNKNOWN NETWORK')
 
     // mount logic
@@ -18,7 +19,7 @@ function Safes({ web3 }) {
     // 2. set to state
     useEffect(() => {
         // load data
-        async function fakeAsyncLoad(time = 3000) {
+        async function getSafeData(time = 3000) {
             try {
                 const network = await web3.getNetworkId()
                 const dxService = await getDxService(network, web3)
@@ -33,7 +34,7 @@ function Safes({ web3 }) {
             }
         }
 
-        fakeAsyncLoad()
+        getSafeData()
     }, [])
 
     // eslint-disable-next-line eqeqeq
@@ -45,14 +46,26 @@ function Safes({ web3 }) {
         <PageWrapper pageTitle="DutchX Safes">
             <Form>
                 <FormGroup row>
+                    {/* Filter SafeModule Name */}
                     <Col sm={6} className="py-2">
                         <PageFilter
                             type="select"
                             title="Safe"
-                            showWhat={safeFilter}
-                            changeFunction={event => setSafeFilter(event.target.value)}
+                            showWhat={safeNameFilter}
+                            changeFunction={event => setSafeNameFilter(event.target.value)}
                             inputName="safe"
                             render={safeData.map(({ name, safeAddress }) => <option key={safeAddress} value={name}>{name}</option>)}
+                        />
+                    </Col>
+                    {/* Filter SafeModule Type */}
+                    <Col sm={6} className="py-2">
+                        <PageFilter
+                            type="select"
+                            title="Type"
+                            showWhat={safeTypeFilter}
+                            changeFunction={event => setSafeTypeFilter(event.target.value)}
+                            inputName="safe"
+                            render={safeData.map(({ safeModuleType, safeAddress }) => <option key={safeAddress} value={safeModuleType}>{safeModuleType}</option>)}
                         />
                     </Col>
                 </FormGroup>
@@ -71,8 +84,10 @@ function Safes({ web3 }) {
                     {safeData
                         // Sort by operatorAddressIndex greatest to least
                         .sort((a, b) => b.operatorAddressIndex - a.operatorAddressIndex)
-                        // filter out
-                        .filter(({ name }) => safeFilter ? name === safeFilter : true)
+                        // filter out TYPE
+                        .filter(({ safeModuleType }) => safeTypeFilter ? safeModuleType === safeTypeFilter : true)
+                        // filter out NAME
+                        .filter(({ name }) => safeNameFilter ? name === safeNameFilter : true)
                         .map(({
                             name,
                             markets,
