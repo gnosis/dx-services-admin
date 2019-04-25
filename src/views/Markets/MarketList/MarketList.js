@@ -128,7 +128,8 @@ class MarketList extends Component {
       }
     }))
     markets = markets.sort((marketA, marketB) => {
-      if (!marketA.startTime || !marketB.startTime) return -1
+      if (!marketA.startTime) return 1 
+      if (!marketB.startTime) return -1
 
 
       return new Date(marketA.startTime) - new Date(marketB.startTime)
