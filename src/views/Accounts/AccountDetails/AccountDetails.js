@@ -7,7 +7,7 @@ import Web3HOC from '../../../HOCs/Web3HOC'
 
 import getDxService from '../../../services/dxService'
 
-import { MGN_PROXY_ADDRESSES, OWL_PROXY_ADDRESSES } from '../../../globals'
+import { MGN_PROXY_ADDRESSES, OWL_PROXY_ADDRESSES, FIXED_DECIMALS } from '../../../globals'
 import PageWrapper from '../../../containers/PageWrapper';
 
 const qrCodeUrl = 'https://chart.googleapis.com/chart?chs=300x300&cht=qr&choe=UTF-8&chl='
@@ -25,6 +25,7 @@ class AccountDetails extends Component {
 
     // WEb3
     network: 'UNKNOWN NETWORK',
+    ethBalance: undefined,
   }
 
   async componentDidMount() {
@@ -41,11 +42,13 @@ class AccountDetails extends Component {
       { amountUnlocked: mgnUnlockedBalance },
       mgnLockedBalance,
       owlBalance,
+      ethBalance,
     ] = await Promise.all([
       dxService.getLiquidityContribution(account),
       web3.getToken(MGN_PROXY_ADDRESSES[network], 'MGN', account).then(token => token.methods.unlockedTokens(account).call()).catch(() => 0),
       web3.getToken(MGN_PROXY_ADDRESSES[network], 'MGN', account).then(token => token.methods.lockedTokenBalances(account).call()).catch(() => 0),
       web3.getToken(OWL_PROXY_ADDRESSES[network], 'OWL', account).then(token => token.methods.balanceOf(account).call()).catch(() => 0),
+      web3.getCurrentBalance(account),
     ])
 
     // Get tokenBalances
@@ -75,6 +78,7 @@ class AccountDetails extends Component {
       mgnUnlockedBalance,
       owlBalance,
       network,
+      ethBalance,
     })
   }
 
@@ -87,6 +91,7 @@ class AccountDetails extends Component {
       mgnLockedBalance,
       mgnUnlockedBalance,
       owlBalance,
+      ethBalance,
     } = this.state
 
     if (!balances) {
@@ -118,6 +123,21 @@ class AccountDetails extends Component {
           </div>
         </div>
 
+        <h2>ETHER</h2>
+        <ListGroup>
+          {/* Liq. Contr. */}
+          {liquidityContribution &&
+            <ListGroupItem style={{ backgroundColor: '#eef8ff' }}>
+              <Badge
+                color="primary"
+                className="p-2 mr-2"
+                pill>
+                ETH
+            </Badge>
+              <strong>{ethBalance && Number(ethBalance / 10**18).toFixed(FIXED_DECIMALS)}</strong>
+            </ListGroupItem>}
+        </ListGroup>
+        <br />
         <h2>LC, MGN, OWL</h2>
         <ListGroup>
 
