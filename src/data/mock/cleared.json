@@ -1,1 +1,54 @@
-[{"auctionIndex":161,"sellToken":"RDN","buyToken":"WETH","sellTokenAddress":"0x255aa6df07540cb5d3d297f0d0d4d84cb52bc8e6","buyTokenAddress":"0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2","auctionStart":"2019-03-23T20:52:43.000Z","auctionEnd":"2019-03-24T02:52:58.000Z","sellVolume":3031.880006360281,"buyVolume":7.368039735108635,"closingPrice":0.00243018843742231,"priceIncrement":0.68},{"auctionIndex":162,"sellToken":"RDN","buyToken":"WETH","sellTokenAddress":"0x255aa6df07540cb5d3d297f0d0d4d84cb52bc8e6","buyTokenAddress":"0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2","auctionStart":"2019-03-24T03:06:12.000Z","auctionEnd":"2019-03-24T09:04:17.000Z","sellVolume":3023.7625230768535,"buyVolume":7.397662273264895,"closingPrice":0.0024465090154425703,"priceIncrement":0.67},{"auctionIndex":161,"sellToken":"WETH","buyToken":"RDN","sellTokenAddress":"0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2","buyTokenAddress":"0x255aa6df07540cb5d3d297f0d0d4d84cb52bc8e6","auctionStart":"2019-03-23T20:52:43.000Z","auctionEnd":"2019-03-24T02:55:52.000Z","sellVolume":7.371451654411764,"buyVolume":3014.245473710076,"closingPrice":408.90798922978354,"priceIncrement":0.14},{"auctionIndex":162,"sellToken":"WETH","buyToken":"RDN","sellTokenAddress":"0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2","buyTokenAddress":"0x255aa6df07540cb5d3d297f0d0d4d84cb52bc8e6","auctionStart":"2019-03-24T03:06:12.000Z","auctionEnd":"2019-03-24T09:14:27.000Z","sellVolume":7.371451654411764,"buyVolume":2977.9163649047714,"closingPrice":403.97963718889866,"priceIncrement":-1.2}]
+[
+  {
+    "auctionIndex": 161,
+    "sellToken": "RDN",
+    "buyToken": "WETH",
+    "sellTokenAddress": "0x255aa6df07540cb5d3d297f0d0d4d84cb52bc8e6",
+    "buyTokenAddress": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+    "auctionStart": "2019-03-23T20:52:43.000Z",
+    "auctionEnd": "2019-03-24T02:52:58.000Z",
+    "sellVolume": 3031.880006360281,
+    "buyVolume": 7.368039735108635,
+    "closingPrice": 0.00243018843742231,
+    "priceIncrement": 0.68
+  },
+  {
+    "auctionIndex": 162,
+    "sellToken": "RDN",
+    "buyToken": "WETH",
+    "sellTokenAddress": "0x255aa6df07540cb5d3d297f0d0d4d84cb52bc8e6",
+    "buyTokenAddress": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+    "auctionStart": "2019-03-24T03:06:12.000Z",
+    "auctionEnd": "2019-03-24T09:04:17.000Z",
+    "sellVolume": 3023.7625230768535,
+    "buyVolume": 7.397662273264895,
+    "closingPrice": 0.0024465090154425703,
+    "priceIncrement": 0.67
+  },
+  {
+    "auctionIndex": 161,
+    "sellToken": "WETH",
+    "buyToken": "RDN",
+    "sellTokenAddress": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+    "buyTokenAddress": "0x255aa6df07540cb5d3d297f0d0d4d84cb52bc8e6",
+    "auctionStart": "2019-03-23T20:52:43.000Z",
+    "auctionEnd": "2019-03-24T02:55:52.000Z",
+    "sellVolume": 7.371451654411764,
+    "buyVolume": 3014.245473710076,
+    "closingPrice": 408.90798922978354,
+    "priceIncrement": 0.14
+  },
+  {
+    "auctionIndex": 162,
+    "sellToken": "WETH",
+    "buyToken": "RDN",
+    "sellTokenAddress": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+    "buyTokenAddress": "0x255aa6df07540cb5d3d297f0d0d4d84cb52bc8e6",
+    "auctionStart": "2019-03-24T03:06:12.000Z",
+    "auctionEnd": "2019-03-24T09:14:27.000Z",
+    "sellVolume": 7.371451654411764,
+    "buyVolume": 2977.9163649047714,
+    "closingPrice": 403.97963718889866,
+    "priceIncrement": -1.2
+  }
+]

@@ -134,7 +134,7 @@ class AccountDetails extends Component {
                 pill>
                 ETH
             </Badge>
-              <strong>{ethBalance && Number(ethBalance / 10**18).toFixed(FIXED_DECIMALS)}</strong>
+              <strong>{ethBalance && Number(ethBalance / 10 ** 18).toFixed(FIXED_DECIMALS)}</strong>
             </ListGroupItem>}
         </ListGroup>
         <br />
