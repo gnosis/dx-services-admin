@@ -1,3 +1,4 @@
+/* eslint-disable eqeqeq */
 import React, { Component } from 'react';
 
 import { Col, Table, Badge, FormGroup, Form } from 'reactstrap';
@@ -245,7 +246,6 @@ class MarketList extends Component {
 
   renderEtherscanLink({ name, address }) {
     return (
-      // eslint-disable-next-line eqeqeq
       <a href={`https://${this.state.network == '4' ? 'rinkeby.etherscan' : 'etherscan'}.io/address/${address}`} target="_blank" rel="noopener noreferrer" title={address}>{name}</a>
     )
   }
