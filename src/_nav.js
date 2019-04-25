@@ -26,11 +26,6 @@ export default {
       icon: 'fa fa-line-chart',
     },
     {
-      name: 'Bots about',
-      url: '/bots',
-      icon: 'fa fa-info',
-    },
-    {
       name: 'Bots list',
       url: '/bots/list',
       icon: 'fa fa-heartbeat',
@@ -45,5 +40,19 @@ export default {
       url: '/accounts',
       icon: 'fa fa-money',
     },
+    {
+      title: true,
+      name: 'About',
+      wrapper: {            // optional wrapper object
+        element: '',        // required valid HTML5 element tag
+        attributes: {}        // optional valid JS object with JS API naming ex: { className: "my-class", style: { fontFamily: "Verdana" }, id: "my-id"}
+      },
+      class: ''             // optional class names space delimited list for title item ex: "text-center"
+    },
+    {
+      name: 'Bots',
+      url: '/bots',
+      icon: 'fa fa-info',
+    }
   ],
 };
