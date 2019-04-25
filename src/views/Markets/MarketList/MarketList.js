@@ -38,9 +38,10 @@ const calculatePercentage = (percentage, auctionTime) => {
   const hoursPassed = ((now - localAuctionStart) / 1000 / 60 / 60).toFixed()
   
   // use absolute value of 100 - val as auction below 6 hours
-  if (hoursPassed < 6) return Math.abs(Number(100 - percentage).toFixed(2))
+  if (hoursPassed < 6) return `+${Math.abs(Number(100 - percentage).toFixed(2))}%`
 
-  return Number(100 - percentage).toFixed(2)
+  // Above 6 hours, negative number
+  return `${Number(100 - percentage).toFixed(2)}%`
 }
 
 const HIGH_RUNNING_TIME = 1000 * 60 * 60 * 6.5
@@ -215,7 +216,7 @@ class MarketList extends Component {
             {/* Price */}
             {price && this.renderAmountRow('Price', Number(price.numerator/price.denominator).toFixed(FIXED_DECIMALS), '')}
             {/* Closing Price Increment */}
-            {priceRelationshipPercentage && this.renderAmountRow('Previous closing price increment', calculatePercentage(priceRelationshipPercentage, startTime), '%')}
+            {priceRelationshipPercentage && this.renderAmountRow('Previous closing price increment', calculatePercentage(priceRelationshipPercentage, startTime), '')}
           </ul>
         </td>
         {/* OPPOSITE */}
@@ -234,7 +235,7 @@ class MarketList extends Component {
             {/* Price */}
             {priceOpp && this.renderAmountRow('Price', Number(priceOpp.numerator/priceOpp.denominator).toFixed(FIXED_DECIMALS), '')}
             {/* Closing Price Increment */}
-            {priceRelationshipPercentageOpp && this.renderAmountRow('Previous closing price increment', calculatePercentage(priceRelationshipPercentageOpp, startTime), '%')}
+            {priceRelationshipPercentageOpp && this.renderAmountRow('Previous closing price increment', calculatePercentage(priceRelationshipPercentageOpp, startTime), '')}
           </ul>
         </td>
         <td></td>
