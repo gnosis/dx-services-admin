@@ -18,24 +18,17 @@ const STATES = [
   { label: 'Pending close theoretical', value: 'PENDING_CLOSE_THEORETICAL', color: 'danger' },
   { label: 'One auction has closed', value: 'ONE_AUCTION_HAS_CLOSED', color: 'primary' },
   { label: 'Running', value: 'RUNNING', color: 'success' },
-  { label: 'Not currently running', value: false, color: 'warning' },
+  // { label: 'Not currently running', value: false, color: 'warning' },
 ]
 
-const calculateState = (state, auc) => {
-  switch(auc) {
-    // DIDN'T RUN
-    case !auc.isClosed && auc.sellVolume <= 0:
-      return 'Didn\'t run'
-    // THEO CLOSED
-    case auc.isTheoreticalClosed:
-      return 'Theoretically Closed'
-    // CLOSED
-    case auc.isClosed:
-      return 'Closed'
-    
-    default:
-      const displayState = STATES.find(stateLabel => stateLabel.value === state)
-      return displayState ? displayState.label : 'Unknown State'
+const calculateState = (state, auc, { startTime }) => {
+  if (!startTime) return 'Waiting for auction to start'
+  else if (!auc.isClosed && auc.sellVolume == 0) return 'Didn\'t run'
+  else if (auc.isClosed) return 'Closed'
+  else if (auc.isTheoreticalClosed) return 'Theoretically closed'
+  else {
+    const displayState = STATES.find(stateLabel => stateLabel.value === state)
+    return displayState ? displayState.label : 'Unknown State'
   }
 }
 
@@ -100,15 +93,12 @@ class MarketList extends Component {
         auctionStart: startTime 
       } = stateDetails
 
-      // if response is API error object, return false. Else value
-      // const checkApiRes = val => (val && typeof val === 'object' && val.status) ? false : val
-
       return {
         id: index,
         state,
         startTime,
         
-        directState: calculateState(state, stateDetails.auction),
+        directState: calculateState(state, stateDetails.auction, { startTime }),
         sellVolume,
         buyVolume,
         fundingInUSD,
@@ -116,7 +106,7 @@ class MarketList extends Component {
         priceRelationshipPercentage,
         boughtPercentage,
 
-        oppState: calculateState(state, stateDetails.auctionOpp),
+        oppState: calculateState(state, stateDetails.auctionOpp, { startTime }),
         sellVolumeOpp,
         buyVolumeOpp,
         fundingInUSDOpp,
