@@ -41,7 +41,7 @@ const calculatePercentage = (percentage, auctionTime) => {
   if (hoursPassed < 6) return `+${Math.abs(Number(100 - percentage).toFixed(2))}%`
 
   // Above 6 hours, negative number
-  return `${Number(100 - percentage).toFixed(2)}%`
+  return `-${Number(100 - percentage).toFixed(2)}%`
 }
 
 const HIGH_RUNNING_TIME = 1000 * 60 * 60 * 6.5
@@ -214,7 +214,7 @@ class MarketList extends Component {
             {/* Outstanding Volume */}
             {buyVolume > 0 && this.renderAmountRow('Oustanding volume', Number(buyVolume / (10**tokenB.decimals)).toFixed(2), tokenB.symbol)}
             {/* Price */}
-            {price && this.renderAmountRow('Price', Number(price.numerator/price.denominator).toFixed(FIXED_DECIMALS), '')}
+            {price && this.renderAmountRow('Price', Number(price.numerator/price.denominator).toFixed(FIXED_DECIMALS), tokenB.symbol)}
             {/* Closing Price Increment */}
             {priceRelationshipPercentage && this.renderAmountRow('Previous closing price increment', calculatePercentage(priceRelationshipPercentage, startTime), '')}
           </ul>
@@ -233,7 +233,7 @@ class MarketList extends Component {
             {/* Outstanding Vol */}
             {buyVolumeOpp > 0 && this.renderAmountRow('Oustanding volume', Number(buyVolumeOpp / (10**tokenA.decimals)).toFixed(2), tokenA.symbol)}
             {/* Price */}
-            {priceOpp && this.renderAmountRow('Price', Number(priceOpp.numerator/priceOpp.denominator).toFixed(FIXED_DECIMALS), '')}
+            {priceOpp && this.renderAmountRow('Price', Number(priceOpp.numerator/priceOpp.denominator).toFixed(FIXED_DECIMALS), tokenA.symbol)}
             {/* Closing Price Increment */}
             {priceRelationshipPercentageOpp && this.renderAmountRow('Previous closing price increment', calculatePercentage(priceRelationshipPercentageOpp, startTime), '')}
           </ul>
@@ -268,7 +268,7 @@ class MarketList extends Component {
   renderAmountRow(label, amount, currency, usd, percentageBought) {
     return amount && (
       <li>
-        <strong>{label}</strong>:&nbsp;{amount + ' ' + currency} {usd && <code>(${usd})</code>} {percentageBought && <code>({percentageBought}% bought)</code>}
+        <strong>{label}</strong>:&nbsp;{amount + ' ' + currency} {usd && <code>[${usd}]</code>} {percentageBought && <code>[{percentageBought}% bought]</code>}
       </li>
     )
   }
