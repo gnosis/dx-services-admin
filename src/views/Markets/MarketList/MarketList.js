@@ -10,25 +10,7 @@ import Web3HOC from '../../../HOCs/Web3HOC'
 import getDxService from '../../../services/dxService'
 
 import moment from 'moment'
-
-const calculateState = (state, auc) => {
-  switch(state) {
-    case 'PENDING_CLOSE_THEORETICAL':
-      return {
-        state: auc.isClosed ? 'CLOSED' : '',
-        colour: 'success'
-      }
-
-      case 'ONE_AUCTION_HAS_CLOSED':
-        return {
-          state: auc.isClosed ? 'CLOSED' : 'RUNNING',
-          colour: auc.isClosed ? 'success' : 'warning',
-        }
-
-    default:
-      return false
-  }
-}
+import { FIXED_DECIMALS } from '../../../globals';
 
 const STATES = [
   { label: 'Waiting for funding', value: 'WAITING_FOR_FUNDING', color: 'secondary' },
@@ -38,6 +20,36 @@ const STATES = [
   { label: 'Running', value: 'RUNNING', color: 'success' },
   { label: 'Not currently running', value: false, color: 'warning' },
 ]
+
+const calculateState = (state, auc) => {
+  switch(auc) {
+    // DIDN'T RUN
+    case !auc.isClosed && auc.sellVolume <= 0:
+      return 'Didn\'t run'
+    // THEO CLOSED
+    case auc.isTheoreticalClosed:
+      return 'Theoretically Closed'
+    // CLOSED
+    case auc.isClosed:
+      return 'Closed'
+    
+    default:
+      const displayState = STATES.find(stateLabel => stateLabel.value === state)
+      return displayState ? displayState.label : 'Unknown State'
+  }
+}
+
+const calculatePercentage = (percentage, auctionTime) => {
+  const now = new Date()
+  const localAuctionStart = new Date(auctionTime)
+  const hoursPassed = ((now - localAuctionStart) / 1000 / 60 / 60).toFixed()
+  
+  // use absolute value of 100 - val as auction below 6 hours
+  if (hoursPassed < 6) return Math.abs(Number(100 - percentage).toFixed(2))
+
+  return Number(100 - percentage).toFixed(2)
+}
+
 const HIGH_RUNNING_TIME = 1000 * 60 * 60 * 6.5
 const NEAR_CLOSING_TIME = 1000 * 60 * 60 * 5
 
@@ -46,6 +58,9 @@ class MarketList extends Component {
     // Filters
     token: '',
     state: '',
+
+    // Sort
+    sortOrder: false,
 
     // Data
     markets: [],
@@ -62,7 +77,6 @@ class MarketList extends Component {
     let markets = await dxService.getMarkets()
     
     markets = await Promise.all(markets.map(async ({tokenA, tokenB}, index) => {
-      // TODO: Get sell volume, buyVolume, etc.. (use dxService)      
       const stateDetails = await dxService.getMarketState(tokenA.symbol.toUpperCase(), tokenB.address)
       
       const { 
@@ -70,43 +84,54 @@ class MarketList extends Component {
         auction: { 
           sellVolume, 
           buyVolume, 
+          fundingInUSD,
+          price,
+          priceRelationshipPercentage,
+          boughtPercentage,
         },
         auctionOpp: { 
           sellVolume: sellVolumeOpp, 
-          buyVolume: buyVolumeOpp, 
+          buyVolume: buyVolumeOpp,
+          fundingInUSD: fundingInUSDOpp,
+          price: priceOpp,
+          priceRelationshipPercentage: priceRelationshipPercentageOpp,
+          boughtPercentage: boughtPercentageOpp, 
         }, 
         auctionStart: startTime 
       } = stateDetails
-      console.debug('STATE _ DETAILS ', state)
+
       // if response is API error object, return false. Else value
-      const checkApiRes = val => (val && typeof val === 'object' && val.status) ? false : val
+      // const checkApiRes = val => (val && typeof val === 'object' && val.status) ? false : val
 
       return {
         id: index,
-        state: checkApiRes(state),
-        startTime: checkApiRes(startTime),
+        state,
+        startTime,
         
         directState: calculateState(state, stateDetails.auction),
-        sellVolume: checkApiRes(sellVolume),
-        buyVolume: checkApiRes(buyVolume),
+        sellVolume,
+        buyVolume,
+        fundingInUSD,
+        price,
+        priceRelationshipPercentage,
+        boughtPercentage,
 
         oppState: calculateState(state, stateDetails.auctionOpp),
-        sellVolumeOpp: checkApiRes(sellVolumeOpp),
-        buyVolumeOpp: checkApiRes(buyVolumeOpp),
+        sellVolumeOpp,
+        buyVolumeOpp,
+        fundingInUSDOpp,
+        priceOpp,
+        priceRelationshipPercentageOpp,
+        boughtPercentageOpp,
 
         ...{tokenA, tokenB}
       }
     }))
     markets = markets.sort((marketA, marketB) => {
-      if (!marketA.startTime) {
-        return 1
-      }
+      if (!marketA.startTime || !marketB.startTime) return -1
 
-      if (!marketB.startTime) {
-        return -1
-      }
 
-      return marketA.startTime - marketB.startTime
+      return new Date(marketA.startTime) - new Date(marketB.startTime)
     })
 
     const tokens = markets.reduce((acc, { tokenA, tokenB }) => {
@@ -137,11 +162,20 @@ class MarketList extends Component {
       directState,
       sellVolume,
       buyVolume,
+      fundingInUSD,
+      price,
+      priceRelationshipPercentage,
+      boughtPercentage,
 
       oppState,
       sellVolumeOpp,
       buyVolumeOpp,
+      fundingInUSDOpp,
+      priceOpp,
+      priceRelationshipPercentageOpp,
+      boughtPercentageOpp,
     } = market
+
     const stateInfo = STATES.find(stateInfo => stateInfo.value === state)
     const stateColor = stateInfo.color
 
@@ -177,29 +211,42 @@ class MarketList extends Component {
         {/* DIRECT */}
         <td>
           <Badge color={stateColor} pill>
-            {stateInfo.label}
+            {directState}
           </Badge>
-          {directState && <Badge color={directState.colour} pill>{directState.state}</Badge>}
           <ul>
             {this.renderDateRow('Start time', startTime)}
-            {sellVolume && this.renderAmontRow('Sell volume', Number(sellVolume / (10**tokenA.decimals)).toFixed(2), tokenA.symbol)}
-            {buyVolume > 0 && this.renderAmontRow('Buy volume', Number(buyVolume / (10**tokenB.decimals)).toFixed(2), tokenB.symbol)}
-            {buyVolume > 0 && this.renderAmontRow('Oustanding volume', Number(buyVolume / (10**tokenB.decimals)).toFixed(2), tokenB.symbol)}
+            {/* Sell Volume */}
+            {sellVolume && this.renderAmountRow('Sell volume', Number(sellVolume / (10**tokenA.decimals)).toFixed(2), tokenA.symbol, Number(fundingInUSD).toFixed(2))}
+            {/* Buy Volume */}
+            {buyVolume > 0 && this.renderAmountRow('Buy volume', Number(buyVolume / (10**tokenB.decimals)).toFixed(2), tokenB.symbol, null, Number(boughtPercentage).toFixed(2))}
+            {/* Outstanding Volume */}
+            {buyVolume > 0 && this.renderAmountRow('Oustanding volume', Number(buyVolume / (10**tokenB.decimals)).toFixed(2), tokenB.symbol)}
+            {/* Price */}
+            {price && this.renderAmountRow('Price', Number(price.numerator/price.denominator).toFixed(FIXED_DECIMALS), '')}
+            {/* Closing Price Increment */}
+            {priceRelationshipPercentage && this.renderAmountRow('Previous closing price increment', calculatePercentage(priceRelationshipPercentage, startTime), '%')}
           </ul>
         </td>
         {/* OPPOSITE */}
         <td>
           <Badge color={stateColor} pill>
-            {stateInfo.label}
+            {oppState}
           </Badge>
-          {oppState && <Badge color={oppState.colour} pill>{oppState.state}</Badge>}
           <ul>
             {this.renderDateRow('Start time', startTime)}
-            {sellVolumeOpp && this.renderAmontRow('Sell volume', Number(sellVolumeOpp / (10**tokenB.decimals)).toFixed(2), tokenB.symbol)}
-            {buyVolumeOpp > 0 && this.renderAmontRow('Buy volume', Number(buyVolumeOpp / (10**tokenA.decimals)).toFixed(2), tokenA.symbol)}
-            {buyVolumeOpp > 0 && this.renderAmontRow('Oustanding volume', Number(buyVolumeOpp / (10**tokenA.decimals)).toFixed(2), tokenA.symbol)}
+            {/* Sell Volume */}
+            {sellVolumeOpp && this.renderAmountRow('Sell volume', Number(sellVolumeOpp / (10**tokenB.decimals)).toFixed(2), tokenB.symbol, Number(fundingInUSDOpp).toFixed(2))}
+            {/* Buy Volume */}
+            {buyVolumeOpp > 0 && this.renderAmountRow('Buy volume', Number(buyVolumeOpp / (10**tokenA.decimals)).toFixed(2), tokenA.symbol, null, Number(boughtPercentageOpp).toFixed(2))}
+            {/* Outstanding Vol */}
+            {buyVolumeOpp > 0 && this.renderAmountRow('Oustanding volume', Number(buyVolumeOpp / (10**tokenA.decimals)).toFixed(2), tokenA.symbol)}
+            {/* Price */}
+            {priceOpp && this.renderAmountRow('Price', Number(priceOpp.numerator/priceOpp.denominator).toFixed(FIXED_DECIMALS), '')}
+            {/* Closing Price Increment */}
+            {priceRelationshipPercentageOpp && this.renderAmountRow('Previous closing price increment', calculatePercentage(priceRelationshipPercentageOpp, startTime), '%')}
           </ul>
         </td>
+        <td></td>
       </tr>
     )
   }
@@ -226,10 +273,10 @@ class MarketList extends Component {
     )
   }
 
-  renderAmontRow(label, amount, currency) {
+  renderAmountRow(label, amount, currency, usd, percentageBought) {
     return amount && (
       <li>
-        <strong>{label}</strong>:&nbsp;{amount + ' ' + currency}
+        <strong>{label}</strong>:&nbsp;{amount + ' ' + currency} {usd && <code>(${usd})</code>} {percentageBought && <code>({percentageBought}% bought)</code>}
       </li>
     )
   }
@@ -245,8 +292,15 @@ class MarketList extends Component {
       state
     } = this.state
 
+    // TODO: convert to hooks (no class) and use memo
+    const sortedMarkets = markets.sort((marketA, marketB) => {
+      if (!marketA.startTime || !marketB.startTime) return -1
+
+      return !this.state.sortOrder ? new Date(marketA.startTime) - new Date(marketB.startTime) : new Date(marketB.startTime) - new Date(marketA.startTime)
+    })
+
     // Filter by type
-    let filteredMarkets = markets
+    let filteredMarkets = sortedMarkets
     if (state) {
       filteredMarkets = filteredMarkets.filter(market => market.state && market.state === state)
     }
@@ -294,6 +348,7 @@ class MarketList extends Component {
               <th>Token B</th>
               <th>State: Direct</th>
               <th>State: Opposite</th>
+              <th style={{ cursor: 'pointer' }} onClick={() => this.setState({ sortOrder: !this.state.sortOrder })}>Sort by Time: {this.state.sortOrder ? '[ASC]' : '[DSC]' }</th>
             </tr>
           </thead>
           <tbody>
