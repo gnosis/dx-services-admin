@@ -198,7 +198,7 @@ class MarketList extends Component {
     return (
       <tr key={`bot-${id}`} style={{ backgroundColor }}>
         <td>
-          <Badge color="primary" className="p-2" pill>
+          <Badge color="primary" className="p-2" pill title={`${tokenA.address}-${tokenB.address}`}>
             {tokenA.symbol + '-' + tokenB.symbol}
           </Badge>
         </td>
@@ -254,7 +254,7 @@ class MarketList extends Component {
   renderEtherscanLink({ name, address }) {
     return (
       // eslint-disable-next-line eqeqeq
-      <a href={`https://${this.state.network == '4' ? 'rinkeby.etherscan' : 'etherscan'}.io/address/${address}`} target="_blank" rel="noopener noreferrer">{name}</a>
+      <a href={`https://${this.state.network == '4' ? 'rinkeby.etherscan' : 'etherscan'}.io/address/${address}`} target="_blank" rel="noopener noreferrer" title={address}>{name}</a>
     )
   }
 
