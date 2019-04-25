@@ -49,7 +49,7 @@ function CheckBalances(props) {
         <FormGroup check row>
           <Col sm={{ size: 10, offset: 2 }}>
             <Button
-              title="Enter public address to get ETH balance. Defaults to your current Web3 account address"
+              title="Enter public address to get various balances. Defaults to your current Web3 account address"
               onClick={handleClick}
             >
               Check balances
