@@ -79,10 +79,11 @@ function Safes({ web3 }) {
             <Table responsive hover>
                 <thead>
                     <tr>
-                        <th>Safe Name</th>
+                        <th>Name</th>
                         {/* <th>Markets</th>
                         <th>Safe Address</th> */}
-                        <th>Safe Info</th>
+                        <th>Type</th>
+                        <th>Info</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -109,9 +110,10 @@ function Safes({ web3 }) {
                             <td><Badge color="primary" className="p-2" pill>{name}</Badge></td>
                             {/* <td>{markets.map(({ tokenA, tokenB }) => [<p><Badge key={`safe-market-${tokenA}-${tokenB}`}>{`${tokenA}-${tokenB}`}</Badge></p>])}</td>
                             <td>{renderAccountLink(safeAddress)}</td> */}
+                            {/* Type */}
+                                <td><Badge color="success" className="p-2" pill>{safeModuleType}</Badge></td>
                             {/* Safe Info */}
                             <td>
-                                <Badge color="success" className="p-2" pill>{safeModuleType}</Badge>
                                 <ul>
                                     <li>Markets: {markets.map(({ tokenA, tokenB }) => [<span key={`safe-market-${tokenA}-${tokenB}`} style={{padding: '0px 5px'}}><Badge>{`${tokenA}-${tokenB}`}</Badge></span>])}</li>
                                     <li>Safe: {renderAccountLink(safeAddress)}</li>

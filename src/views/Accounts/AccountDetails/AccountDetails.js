@@ -123,7 +123,7 @@ class AccountDetails extends Component {
           </div>
         </div>
 
-        <h2>ETHER</h2>
+        <h2>Ether Balance</h2>
         <ListGroup>
           {/* Liq. Contr. */}
           {liquidityContribution &&
@@ -138,7 +138,7 @@ class AccountDetails extends Component {
             </ListGroupItem>}
         </ListGroup>
         <br />
-        <h2>LC, MGN, OWL</h2>
+        <h2>L.C, MGN, OWL</h2>
         <ListGroup>
 
           {/* Liq. Contr. */}
