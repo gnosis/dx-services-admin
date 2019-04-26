@@ -216,14 +216,18 @@ class MarketList extends Component {
             {this.renderDateRow('Start time', startTime)}
             {/* Sell Volume */}
             {sellVolume && this.renderAmountRow('Sell volume', Number(sellVolume / (10 ** tokenA.decimals)).toFixed(2), tokenA.symbol, Number(fundingInUSD).toFixed(2))}
-            {/* Buy Volume */}
-            {buyVolume > 0 && this.renderAmountRow('Buy volume', Number(buyVolume / (10 ** tokenB.decimals)).toFixed(2), tokenB.symbol, null, Number(boughtPercentage).toFixed(2))}
-            {/* Outstanding Volume */}
-            {buyVolume > 0 && this.renderAmountRow('Oustanding volume', Number(buyVolume / (10 ** tokenB.decimals)).toFixed(2), tokenB.symbol)}
-            {/* Price */}
-            {price && this.renderAmountRow('Price', Number(price.numerator / price.denominator).toFixed(FIXED_DECIMALS), tokenB.symbol)}
-            {/* Closing Price Increment */}
-            {priceRelationshipPercentage && this.renderAmountRow('Previous closing price increment', calculatePercentage(priceRelationshipPercentage, startTime), '')}
+            {startTime && (
+              <React.Fragment>
+                {/* Buy Volume */}
+                {buyVolume > 0 && this.renderAmountRow('Buy volume', Number(buyVolume / (10 ** tokenB.decimals)).toFixed(2), tokenB.symbol, null, Number(boughtPercentage).toFixed(2))}
+                {/* Outstanding Volume */}
+                {buyVolume > 0 && this.renderAmountRow('Oustanding volume', Number(buyVolume / (10 ** tokenB.decimals)).toFixed(2), tokenB.symbol)}
+                {/* Price */}
+                {price && this.renderAmountRow('Price', Number(price.numerator / price.denominator).toFixed(FIXED_DECIMALS), tokenB.symbol)}
+                {/* Closing Price Increment */}
+                {priceRelationshipPercentage && this.renderAmountRow('Previous closing price increment', calculatePercentage(priceRelationshipPercentage, startTime), '')}
+              </React.Fragment>
+            )}
           </ul>
         </td>
         {/* OPPOSITE */}
@@ -235,14 +239,18 @@ class MarketList extends Component {
             {this.renderDateRow('Start time', startTime)}
             {/* Sell Volume */}
             {sellVolumeOpp && this.renderAmountRow('Sell volume', Number(sellVolumeOpp / (10 ** tokenB.decimals)).toFixed(2), tokenB.symbol, Number(fundingInUSDOpp).toFixed(2))}
-            {/* Buy Volume */}
-            {buyVolumeOpp > 0 && this.renderAmountRow('Buy volume', Number(buyVolumeOpp / (10 ** tokenA.decimals)).toFixed(2), tokenA.symbol, null, Number(boughtPercentageOpp).toFixed(2))}
-            {/* Outstanding Vol */}
-            {buyVolumeOpp > 0 && this.renderAmountRow('Oustanding volume', Number(buyVolumeOpp / (10 ** tokenA.decimals)).toFixed(2), tokenA.symbol)}
-            {/* Price */}
-            {priceOpp && this.renderAmountRow('Price', Number(priceOpp.numerator / priceOpp.denominator).toFixed(FIXED_DECIMALS), tokenA.symbol)}
-            {/* Closing Price Increment */}
-            {priceRelationshipPercentageOpp && this.renderAmountRow('Previous closing price increment', calculatePercentage(priceRelationshipPercentageOpp, startTime), '')}
+            {startTime && (
+              <React.Fragment>
+                {/* Buy Volume */}
+                {buyVolumeOpp > 0 && this.renderAmountRow('Buy volume', Number(buyVolumeOpp / (10 ** tokenA.decimals)).toFixed(2), tokenA.symbol, null, Number(boughtPercentageOpp).toFixed(2))}
+                {/* Outstanding Vol */}
+                {buyVolumeOpp > 0 && this.renderAmountRow('Oustanding volume', Number(buyVolumeOpp / (10 ** tokenA.decimals)).toFixed(2), tokenA.symbol)}
+                {/* Price */}
+                {priceOpp && this.renderAmountRow('Price', Number(priceOpp.numerator / priceOpp.denominator).toFixed(FIXED_DECIMALS), tokenA.symbol)}
+                {/* Closing Price Increment */}
+                {priceRelationshipPercentageOpp && this.renderAmountRow('Previous closing price increment', calculatePercentage(priceRelationshipPercentageOpp, startTime), '')}
+              </React.Fragment>
+            )}
           </ul>
         </td>
         <td></td>
