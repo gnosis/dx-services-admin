@@ -23,14 +23,22 @@ const STATES = [
 ]
 
 const calculateState = (state, auc, { startTime }) => {
-  if (!auc.isClosed && auc.sellVolume == 0) 
+  // WAITING FOR THAT FUNDING
+  if (!startTime)
+    return { state: 'Waiting for funding', color: 'secondary' }
+  // DIDN'T RUN
+  else if (auc.sellVolume == 0) 
     return { state: 'Didn\'t run', color: 'secondary' }
+  // THEORETICALLY CLOSED
   else if (auc.isTheoreticalClosed) 
     return { state: 'Theoretically closed', color: 'danger' }
+  // CLOSED
   else if (auc.isClosed) 
     return { state: 'Closed', color: 'primary' }
-  else if (startTime && new Date(startTime) < new Date())
+  // RUNNING
+  else if (new Date(startTime) < new Date())
     return { state: 'Running', color: 'success' }
+  // ELSE USE TOTAL STATE
   else {
     const displayState = STATES.find(stateLabel => stateLabel.value === state)
     return { state: displayState.label, color: displayState.color }
