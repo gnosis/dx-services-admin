@@ -99,6 +99,7 @@ function Safes({ web3 }) {
               markets,
               safeAddress,
               uniswapArbitrageAddress,
+              uniswapExchangeAddress,
               // operatorAddressIndex,
               operatorAddress,
               safeModuleType,
@@ -115,10 +116,11 @@ function Safes({ web3 }) {
                 {/* Safe Info */}
                 <td>
                   <ul>
+                    <li>Safe account: {renderAccountLink(safeAddress)}</li>
                     <li>Markets: {markets.map(({ tokenA, tokenB }) => [<span key={`safe-market-${tokenA}-${tokenB}`} style={{ padding: '0px 5px' }}><Badge>{`${tokenA}-${tokenB}`}</Badge></span>])}</li>
-                    <li>Safe: {renderAccountLink(safeAddress)}</li>
-                    <li>Safe Module: {renderEtherscanLink(safeModuleAddress)}</li>
+                    <li>Safe module contract: {renderEtherscanLink(safeModuleAddress)}</li>
                     {uniswapArbitrageAddress && <li>Uniswap's arbitrage contract: {renderEtherscanLink(uniswapArbitrageAddress, 'readContract')}</li>}
+                    {uniswapExchangeAddress && <li>Uniswap's Exchange: {renderEtherscanLink(uniswapExchangeAddress, 'readContract')}</li>}
                     {/* Operator Address */}
                     <li>Operator: {renderEtherscanLink(operatorAddress)}</li>
                   </ul>
