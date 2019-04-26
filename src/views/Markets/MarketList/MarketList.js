@@ -212,46 +212,34 @@ class MarketList extends Component {
           <Badge color={directState.color} pill>
             {directState.state}
           </Badge>
-          <ul>
-            {this.renderDateRow('Start time', startTime)}
-            {/* Sell Volume */}
-            {sellVolume && this.renderAmountRow('Sell volume', Number(sellVolume / (10 ** tokenA.decimals)).toFixed(2), tokenA.symbol, Number(fundingInUSD).toFixed(2))}
-            {startTime && (
-              <React.Fragment>
-                {/* Buy Volume */}
-                {buyVolume > 0 && this.renderAmountRow('Buy volume', Number(buyVolume / (10 ** tokenB.decimals)).toFixed(2), tokenB.symbol, null, Number(boughtPercentage).toFixed(2))}
-                {/* Outstanding Volume */}
-                {buyVolume > 0 && this.renderAmountRow('Oustanding volume', Number(buyVolume / (10 ** tokenB.decimals)).toFixed(2), tokenB.symbol)}
-                {/* Price */}
-                {price && this.renderAmountRow('Price', Number(price.numerator / price.denominator).toFixed(FIXED_DECIMALS), tokenB.symbol)}
-                {/* Closing Price Increment */}
-                {priceRelationshipPercentage && this.renderAmountRow('Previous closing price increment', calculatePercentage(priceRelationshipPercentage, startTime), '')}
-              </React.Fragment>
-            )}
-          </ul>
+          {this.renderAuctionState({
+            startTime,
+            buyToken: tokenB,
+            sellToken: tokenA,
+            sellVolume,
+            buyVolume,
+            fundingInUSD,
+            boughtPercentage,
+            price,
+            priceRelationshipPercentage
+          })}
         </td>
         {/* OPPOSITE */}
         <td>
           <Badge color={oppState.color} pill>
             {oppState.state}
           </Badge>
-          <ul>
-            {this.renderDateRow('Start time', startTime)}
-            {/* Sell Volume */}
-            {sellVolumeOpp && this.renderAmountRow('Sell volume', Number(sellVolumeOpp / (10 ** tokenB.decimals)).toFixed(2), tokenB.symbol, Number(fundingInUSDOpp).toFixed(2))}
-            {startTime && (
-              <React.Fragment>
-                {/* Buy Volume */}
-                {buyVolumeOpp > 0 && this.renderAmountRow('Buy volume', Number(buyVolumeOpp / (10 ** tokenA.decimals)).toFixed(2), tokenA.symbol, null, Number(boughtPercentageOpp).toFixed(2))}
-                {/* Outstanding Vol */}
-                {buyVolumeOpp > 0 && this.renderAmountRow('Oustanding volume', Number(buyVolumeOpp / (10 ** tokenA.decimals)).toFixed(2), tokenA.symbol)}
-                {/* Price */}
-                {priceOpp && this.renderAmountRow('Price', Number(priceOpp.numerator / priceOpp.denominator).toFixed(FIXED_DECIMALS), tokenA.symbol)}
-                {/* Closing Price Increment */}
-                {priceRelationshipPercentageOpp && this.renderAmountRow('Previous closing price increment', calculatePercentage(priceRelationshipPercentageOpp, startTime), '')}
-              </React.Fragment>
-            )}
-          </ul>
+          {this.renderAuctionState({
+            startTime,
+            buyToken: tokenA,
+            sellToken: tokenB,
+            sellVolume: sellVolumeOpp,
+            buyVolume: buyVolumeOpp,
+            fundingInUSD: fundingInUSDOpp,
+            boughtPercentage: boughtPercentageOpp,
+            price: priceOpp,
+            priceRelationshipPercentage: priceRelationshipPercentageOpp
+          })}
         </td>
         <td></td>
       </tr>
@@ -261,6 +249,38 @@ class MarketList extends Component {
   renderEtherscanLink({ name, address }) {
     return (
       <a href={`https://${this.state.network == '4' ? 'rinkeby.etherscan' : 'etherscan'}.io/address/${address}`} target="_blank" rel="noopener noreferrer" title={address}>{name}</a>
+    )
+  }
+
+  renderAuctionState({
+    startTime,
+    sellVolume,
+    sellToken,
+    fundingInUSD,
+    buyVolume,
+    buyToken,
+    boughtPercentage,
+    price,
+    priceRelationshipPercentage
+  }) {
+    return (
+      <ul>
+        {this.renderDateRow('Start time', startTime)}
+        {/* Sell Volume */}
+        {sellVolume && this.renderAmountRow('Sell volume', Number(sellVolume / (10 ** sellToken.decimals)).toFixed(2), sellToken.symbol, Number(fundingInUSD).toFixed(2))}
+        {startTime && (
+          <React.Fragment>
+            {/* Buy Volume */}
+            {buyVolume > 0 && this.renderAmountRow('Buy volume', Number(buyVolume / (10 ** buyToken.decimals)).toFixed(2), buyToken.symbol, null, Number(boughtPercentage).toFixed(2))}
+            {/* Outstanding Vol */}
+            {buyVolume > 0 && this.renderAmountRow('Oustanding volume', Number(buyVolume / (10 ** buyToken.decimals)).toFixed(2), buyToken.symbol)}
+            {/* Price */}
+            {price && this.renderAmountRow('Price', Number(price.numerator / price.denominator).toFixed(FIXED_DECIMALS), buyToken.symbol)}
+            {/* Closing Price Increment */}
+            {priceRelationshipPercentage && this.renderAmountRow('Previous closing price increment', calculatePercentage(priceRelationshipPercentage, startTime), '')}
+          </React.Fragment>
+        )}
+      </ul>
     )
   }
 
