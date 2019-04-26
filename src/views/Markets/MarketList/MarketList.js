@@ -23,13 +23,17 @@ const STATES = [
 ]
 
 const calculateState = (state, auc, { startTime }) => {
-  if (!startTime) return 'Waiting for auction to start'
-  else if (!auc.isClosed && auc.sellVolume == 0) return 'Didn\'t run'
-  else if (auc.isClosed) return 'Closed'
-  else if (auc.isTheoreticalClosed) return 'Theoretically closed'
+  if (!auc.isClosed && auc.sellVolume == 0) 
+    return { state: 'Didn\'t run', color: 'secondary' }
+  else if (auc.isTheoreticalClosed) 
+    return { state: 'Theoretically closed', color: 'danger' }
+  else if (auc.isClosed) 
+    return { state: 'Closed', color: 'primary' }
+  else if (startTime && new Date(startTime) < new Date())
+    return { state: 'Running', color: 'success' }
   else {
     const displayState = STATES.find(stateLabel => stateLabel.value === state)
-    return displayState ? displayState.label : 'Unknown State'
+    return { state: displayState.label, color: displayState.color }
   }
 }
 
@@ -147,7 +151,7 @@ class MarketList extends Component {
   renderRow(market) {
     const {
       id,
-      state,
+      // state,
       tokenA,
       tokenB,
       startTime,
@@ -169,8 +173,8 @@ class MarketList extends Component {
       boughtPercentageOpp,
     } = market
 
-    const stateInfo = STATES.find(stateInfo => stateInfo.value === state)
-    const stateColor = stateInfo.color
+    // const stateInfo = STATES.find(stateInfo => stateInfo.value === state)
+    // const stateColor = stateInfo.color
 
     // TODO: color the markets depending on how long have they been running
     const now = new Date()
@@ -203,8 +207,8 @@ class MarketList extends Component {
         </td>
         {/* DIRECT */}
         <td>
-          <Badge color={stateColor} pill>
-            {directState}
+          <Badge color={directState.color} pill>
+            {directState.state}
           </Badge>
           <ul>
             {this.renderDateRow('Start time', startTime)}
@@ -222,8 +226,8 @@ class MarketList extends Component {
         </td>
         {/* OPPOSITE */}
         <td>
-          <Badge color={stateColor} pill>
-            {oppState}
+          <Badge color={oppState.color} pill>
+            {oppState.state}
           </Badge>
           <ul>
             {this.renderDateRow('Start time', startTime)}
