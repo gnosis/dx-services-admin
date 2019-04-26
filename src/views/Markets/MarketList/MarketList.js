@@ -27,13 +27,13 @@ const calculateState = (state, auc, { startTime }) => {
   if (!startTime)
     return { state: 'Waiting for funding', color: 'secondary' }
   // DIDN'T RUN
-  else if (auc.sellVolume == 0) 
+  else if (auc.sellVolume == 0)
     return { state: 'Didn\'t run', color: 'secondary' }
   // THEORETICALLY CLOSED
-  else if (auc.isTheoreticalClosed) 
+  else if (auc.isTheoreticalClosed)
     return { state: 'Theoretically closed', color: 'danger' }
   // CLOSED
-  else if (auc.isClosed) 
+  else if (auc.isClosed)
     return { state: 'Closed', color: 'primary' }
   // RUNNING
   else if (new Date(startTime) < new Date())
@@ -46,15 +46,9 @@ const calculateState = (state, auc, { startTime }) => {
 }
 
 const calculatePercentage = (percentage, auctionTime) => {
-  const now = new Date()
-  const localAuctionStart = new Date(auctionTime)
-  const hoursPassed = ((now - localAuctionStart) / 1000 / 60 / 60).toFixed()
-  
-  // use absolute value of 100 - val as auction below 6 hours
-  if (hoursPassed < 6) return `+${Math.abs(Number(100 - percentage).toFixed(2))}%`
-
-  // Above 6 hours, negative number
-  return `-${Number(100 - percentage).toFixed(2)}%`
+  const relativePercentage = Math.abs(Number(100 - percentage))
+  const sign = relativePercentage > 0 ? '+' : ''
+  return sign + relativePercentage.toFixed(2) + '%'
 }
 
 const HIGH_RUNNING_TIME = 1000 * 60 * 60 * 6.5
@@ -82,36 +76,36 @@ class MarketList extends Component {
     const dxService = await getDxService(network, this.props.web3)
 
     let markets = await dxService.getMarkets()
-    
-    markets = await Promise.all(markets.map(async ({tokenA, tokenB}, index) => {
+
+    markets = await Promise.all(markets.map(async ({ tokenA, tokenB }, index) => {
       const stateDetails = await dxService.getMarketState(tokenA.symbol.toUpperCase(), tokenB.address)
-      
-      const { 
-        state, 
-        auction: { 
-          sellVolume, 
-          buyVolume, 
+
+      const {
+        state,
+        auction: {
+          sellVolume,
+          buyVolume,
           fundingInUSD,
           price,
           priceRelationshipPercentage,
           boughtPercentage,
         },
-        auctionOpp: { 
-          sellVolume: sellVolumeOpp, 
+        auctionOpp: {
+          sellVolume: sellVolumeOpp,
           buyVolume: buyVolumeOpp,
           fundingInUSD: fundingInUSDOpp,
           price: priceOpp,
           priceRelationshipPercentage: priceRelationshipPercentageOpp,
-          boughtPercentage: boughtPercentageOpp, 
-        }, 
-        auctionStart: startTime 
+          boughtPercentage: boughtPercentageOpp,
+        },
+        auctionStart: startTime
       } = stateDetails
 
       return {
         id: index,
         state,
         startTime,
-        
+
         directState: calculateState(state, stateDetails.auction, { startTime }),
         sellVolume,
         buyVolume,
@@ -128,11 +122,11 @@ class MarketList extends Component {
         priceRelationshipPercentageOpp,
         boughtPercentageOpp,
 
-        ...{tokenA, tokenB}
+        ...{ tokenA, tokenB }
       }
     }))
     markets = markets.sort((marketA, marketB) => {
-      if (!marketA.startTime) return 1 
+      if (!marketA.startTime) return 1
       if (!marketB.startTime) return -1
 
 
@@ -221,13 +215,13 @@ class MarketList extends Component {
           <ul>
             {this.renderDateRow('Start time', startTime)}
             {/* Sell Volume */}
-            {sellVolume && this.renderAmountRow('Sell volume', Number(sellVolume / (10**tokenA.decimals)).toFixed(2), tokenA.symbol, Number(fundingInUSD).toFixed(2))}
+            {sellVolume && this.renderAmountRow('Sell volume', Number(sellVolume / (10 ** tokenA.decimals)).toFixed(2), tokenA.symbol, Number(fundingInUSD).toFixed(2))}
             {/* Buy Volume */}
-            {buyVolume > 0 && this.renderAmountRow('Buy volume', Number(buyVolume / (10**tokenB.decimals)).toFixed(2), tokenB.symbol, null, Number(boughtPercentage).toFixed(2))}
+            {buyVolume > 0 && this.renderAmountRow('Buy volume', Number(buyVolume / (10 ** tokenB.decimals)).toFixed(2), tokenB.symbol, null, Number(boughtPercentage).toFixed(2))}
             {/* Outstanding Volume */}
-            {buyVolume > 0 && this.renderAmountRow('Oustanding volume', Number(buyVolume / (10**tokenB.decimals)).toFixed(2), tokenB.symbol)}
+            {buyVolume > 0 && this.renderAmountRow('Oustanding volume', Number(buyVolume / (10 ** tokenB.decimals)).toFixed(2), tokenB.symbol)}
             {/* Price */}
-            {price && this.renderAmountRow('Price', Number(price.numerator/price.denominator).toFixed(FIXED_DECIMALS), tokenB.symbol)}
+            {price && this.renderAmountRow('Price', Number(price.numerator / price.denominator).toFixed(FIXED_DECIMALS), tokenB.symbol)}
             {/* Closing Price Increment */}
             {priceRelationshipPercentage && this.renderAmountRow('Previous closing price increment', calculatePercentage(priceRelationshipPercentage, startTime), '')}
           </ul>
@@ -240,13 +234,13 @@ class MarketList extends Component {
           <ul>
             {this.renderDateRow('Start time', startTime)}
             {/* Sell Volume */}
-            {sellVolumeOpp && this.renderAmountRow('Sell volume', Number(sellVolumeOpp / (10**tokenB.decimals)).toFixed(2), tokenB.symbol, Number(fundingInUSDOpp).toFixed(2))}
+            {sellVolumeOpp && this.renderAmountRow('Sell volume', Number(sellVolumeOpp / (10 ** tokenB.decimals)).toFixed(2), tokenB.symbol, Number(fundingInUSDOpp).toFixed(2))}
             {/* Buy Volume */}
-            {buyVolumeOpp > 0 && this.renderAmountRow('Buy volume', Number(buyVolumeOpp / (10**tokenA.decimals)).toFixed(2), tokenA.symbol, null, Number(boughtPercentageOpp).toFixed(2))}
+            {buyVolumeOpp > 0 && this.renderAmountRow('Buy volume', Number(buyVolumeOpp / (10 ** tokenA.decimals)).toFixed(2), tokenA.symbol, null, Number(boughtPercentageOpp).toFixed(2))}
             {/* Outstanding Vol */}
-            {buyVolumeOpp > 0 && this.renderAmountRow('Oustanding volume', Number(buyVolumeOpp / (10**tokenA.decimals)).toFixed(2), tokenA.symbol)}
+            {buyVolumeOpp > 0 && this.renderAmountRow('Oustanding volume', Number(buyVolumeOpp / (10 ** tokenA.decimals)).toFixed(2), tokenA.symbol)}
             {/* Price */}
-            {priceOpp && this.renderAmountRow('Price', Number(priceOpp.numerator/priceOpp.denominator).toFixed(FIXED_DECIMALS), tokenA.symbol)}
+            {priceOpp && this.renderAmountRow('Price', Number(priceOpp.numerator / priceOpp.denominator).toFixed(FIXED_DECIMALS), tokenA.symbol)}
             {/* Closing Price Increment */}
             {priceRelationshipPercentageOpp && this.renderAmountRow('Previous closing price increment', calculatePercentage(priceRelationshipPercentageOpp, startTime), '')}
           </ul>
@@ -333,13 +327,13 @@ class MarketList extends Component {
 
             <Col sm={6} className="py-2">
               <PageFilter
-                  type="select"
-                  title="State" 
-                  showWhat={state}
-                  changeFunction={event => this.setState({ state: event.target.value })}
-                  inputName="state"
-                  render={STATES.map(({ label, value }) => <option key={value} value={value}>{label}</option>)}
-                />
+                type="select"
+                title="State"
+                showWhat={state}
+                changeFunction={event => this.setState({ state: event.target.value })}
+                inputName="state"
+                render={STATES.map(({ label, value }) => <option key={value} value={value}>{label}</option>)}
+              />
             </Col>
           </FormGroup>
         </Form>
@@ -352,7 +346,7 @@ class MarketList extends Component {
               <th>Token B</th>
               <th>State: Direct</th>
               <th>State: Opposite</th>
-              <th style={{ cursor: 'pointer' }} onClick={() => this.setState({ sortOrder: !this.state.sortOrder })}>Sort by Time: {this.state.sortOrder ? '[ASC]' : '[DSC]' }</th>
+              <th style={{ cursor: 'pointer' }} onClick={() => this.setState({ sortOrder: !this.state.sortOrder })}>Sort by Time: {this.state.sortOrder ? '[ASC]' : '[DSC]'}</th>
             </tr>
           </thead>
           <tbody>
