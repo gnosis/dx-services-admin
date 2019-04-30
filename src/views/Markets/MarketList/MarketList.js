@@ -23,23 +23,23 @@ const STATES = [
 ]
 
 const calculateState = (state, auc, { startTime }) => {
-  // WAITING FOR THAT FUNDING
-  if (!startTime)
+  if (!startTime) {
+    // WAITING FOR THAT FUNDING
     return { state: 'Waiting for funding', color: 'secondary' }
-  // DIDN'T RUN
-  else if (auc.sellVolume == 0)
+  } else if (auc.sellVolume == 0) {
+    // DIDN'T RUN
     return { state: 'Didn\'t run', color: 'secondary' }
-  // THEORETICALLY CLOSED
-  else if (auc.isTheoreticalClosed)
-    return { state: 'Theoretically closed', color: 'danger' }
-  // CLOSED
-  else if (auc.isClosed)
+  } else if (auc.isClosed) {
+    // CLOSED
     return { state: 'Closed', color: 'primary' }
-  // RUNNING
-  else if (new Date(startTime) < new Date())
+  } else if (auc.isTheoreticalClosed) {
+    // THEORETICALLY CLOSED
+    return { state: 'Theoretically closed', color: 'danger' }
+  } else if (new Date(startTime) < new Date()) {
+    // RUNNING
     return { state: 'Running', color: 'success' }
-  // ELSE USE TOTAL STATE
-  else {
+  } else {
+    // ELSE USE TOTAL STATE
     const displayState = STATES.find(stateLabel => stateLabel.value === state)
     return { state: displayState.label, color: displayState.color }
   }
