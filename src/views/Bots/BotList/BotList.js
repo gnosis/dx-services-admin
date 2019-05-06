@@ -108,7 +108,7 @@ class BotList extends Component {
         <Form>
           <FormGroup row>
             <Col lg={4} sm={6} className="py-2">
-              <PageFilter 
+              <PageFilter
                 type="select"
                 title="Bot Type"
                 filterWhat={botTypes}
@@ -119,7 +119,7 @@ class BotList extends Component {
             </Col>
 
             <Col lg={4} sm={6} className="py-2">
-              <PageFilter 
+              <PageFilter
                 type="select"
                 title="Token"
                 filterWhat={tokens}
@@ -188,6 +188,8 @@ class BotList extends Component {
       checkTimeInMilliseconds,
       minimumAmountForEther,
       minimumAmountInUsdForToken,
+      minimumAmountInUsdForTokenBalance,
+      minimumAmountForOwl,
       lastWarnNotification
     } = bot
 
@@ -201,8 +203,13 @@ class BotList extends Component {
             {this.renderTokens(name, tokens)}
             {this.renderRules(name, rules)}
             {this.renderMarkets(name, markets)}
-            {this.renderInactivityPeriods(name, inactivityPeriods)}
             {this.renderAddressRow('Bot address', botAddress)}
+            {this.renderInactivityPeriods(name, inactivityPeriods)}
+
+            {this.renderAmontRow('Minimum Ether', minimumAmountForEther && minimumAmountForEther / 10 ** 18, 'Ether')}
+            {this.renderAmontRow('Minimun tokens (in DutchX)', minimumAmountInUsdForToken, '$')}
+            {this.renderAmontRow('Minimun token (out of DutchX)', minimumAmountInUsdForTokenBalance, '$')}
+            {this.renderAmontRow('Minimum OWL', minimumAmountForOwl, 'OWL')}
 
             {this.renderDateRow('Last error', lastError, 'danger')}
             {this.renderDateRow('Last warning notification', lastWarnNotification)}
@@ -211,8 +218,6 @@ class BotList extends Component {
             {this.renderDateRow('Last sell', lastSell)}
             {this.renderDateRow('Last deposit', lastDeposit)}
             {this.renderDateRow('Running since', startTime)}
-            {this.renderAmontRow('Minimum amount for Ether', minimumAmountForEther && minimumAmountForEther / 10**18, 'Ether')}
-            {this.renderAmontRow('Minimum USD amount for tokens', minimumAmountInUsdForToken, '$')}
             {this.renderNotifications(name, notifications)}
             {checkTimeInMilliseconds && this.renderAmontRow('Check frecuency', checkTimeInMilliseconds / 1000, 'seconds')}
           </ul>
