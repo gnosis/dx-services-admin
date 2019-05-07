@@ -46,6 +46,205 @@ class BotList extends Component {
     })
   }
 
+  renderRow = ({
+    id,
+    type,
+    name,
+    startTime,
+    botAddress,
+    lastCheck,
+    lastBuy,
+    lastSell,
+    lastError,
+    markets,
+    inactivityPeriods,
+    rules,
+    tokens,
+    notifications,
+    lastDeposit,
+    checkTimeInMilliseconds,
+    minimumAmountForEther,
+    minimumAmountInUsdForToken,
+    minimumAmountInUsdForTokenBalance,
+    minimumAmountForOwl,
+    lastWarnNotification,
+  }) =>
+    <tr key={`bot-${id}`}>
+      <td><Badge color={colorByBotType(type)} pill>{type}</Badge></td>
+      <td><strong>{name}</strong></td>
+      <td>
+        <ul>
+          {this.renderTokens(name, tokens)}
+          {this.renderRules(name, rules)}
+          {this.renderMarkets(name, markets)}
+          {this.renderAddressRow('Bot address', botAddress)}
+          {this.renderInactivityPeriods(name, inactivityPeriods)}
+
+          {this.renderAmountRow('Minimum Ether', minimumAmountForEther / 10 ** 18, 'Ether')}
+          {this.renderAmountRow('Minimum tokens (in DutchX)', minimumAmountInUsdForToken, '$')}
+          {this.renderAmountRow('Minimum token (out of DutchX)', minimumAmountInUsdForTokenBalance, '$')}
+          {this.renderAmountRow('Minimum OWL', minimumAmountForOwl, 'OWL')}
+
+          {this.renderDateRow('Last error', lastError, 'danger')}
+          {this.renderDateRow('Last warning notification', lastWarnNotification)}
+          {this.renderDateRow('Last check', lastCheck)}
+          {this.renderDateRow('Last buy', lastBuy)}
+          {this.renderDateRow('Last sell', lastSell)}
+          {this.renderDateRow('Last deposit', lastDeposit)}
+          {this.renderDateRow('Running since', startTime)}
+          {this.renderNotifications(name, notifications)}
+          {checkTimeInMilliseconds && this.renderAmountRow('Check frequency', checkTimeInMilliseconds / 1000, 'seconds')}
+        </ul>
+      </td>
+    </tr>
+
+  renderDateRow = (label, time, badgeColor) => 
+    time &&
+      <li>
+        {!badgeColor && (
+          <strong>{label}</strong>
+        )}
+        {badgeColor && (
+          <Badge color={badgeColor}>{label}</Badge>
+        )}
+        :&nbsp;
+        {moment(time).fromNow()}
+      </li>
+
+  /**
+   * @name renderMarkets
+   * @param { String } name
+   * @param { Array } markets
+
+   * @memberof BotList
+   */
+  renderMarkets = (name, markets) =>
+    markets && !!markets.length &&
+      <li>
+        <strong>Markets</strong>:&nbsp;
+        {markets.map(({ tokenA, tokenB }) => (
+          <React.Fragment key={`${name}-market-${tokenA}-${tokenB}`}>
+            <Badge color="primary" pill>
+              {tokenA + '-' + tokenB}
+            </Badge>
+            &nbsp;
+          </React.Fragment>
+        ))}
+      </li>
+
+  /**
+   * @name renderTokens
+   * @param { string } name
+   * @param { Array } tokens
+
+   * @memberof BotList
+   */
+  renderTokens = (name, tokens) =>
+    tokens && !!tokens.length &&
+      <li>
+        <strong>Tokens</strong>:&nbsp;
+        {tokens.map(token => (
+          <React.Fragment key={`${name}-tokens-${token}`}>
+            <Badge color="primary" pill>
+              {token}
+            </Badge>
+            &nbsp;
+          </React.Fragment>
+        ))}
+      </li>
+
+  /**
+   * @name renderNotifications
+   * @param { string } name
+   * @param { Array } notifications
+   
+   * @memberof BotList
+   */
+  renderNotifications = (name, notifications) =>
+    notifications && !!notifications.length &&
+      <li>
+        <strong>Notifications</strong>:&nbsp;
+        {notifications.map(({ type, channel }, index) => (
+          <React.Fragment key={`${name}-notifications-${index}`}>
+            <Badge color="secondary" pill>
+              {type}
+              {type === 'slack' && (
+                ': ' + channel
+              )}
+            </Badge>
+            &nbsp;
+          </React.Fragment>
+        ))}
+      </li>
+
+  /** 
+   * @name renderInactivityPeriods
+   * @param { string } name
+   * @param { Array } inactivityPeriods
+   
+   * @memberof BotList
+   */
+  renderInactivityPeriods = (name, inactivityPeriods) =>
+    inactivityPeriods && !!inactivityPeriods.length &&
+      <li>
+        <strong>Inactivity periods</strong>:&nbsp;
+        {inactivityPeriods.map(({ from, to }, index) => (
+          <React.Fragment key={`${name}-inactivities-${index}`}>
+            <Badge color="secondary" pill>
+              {from + '-' + to}
+            </Badge>
+            &nbsp;
+
+          </React.Fragment>
+        ))}
+      </li>
+
+  /**
+   * @name renderAmountRow
+   * @param { string } label
+   * @param { number } amount
+   * @param { string } currency
+
+   * @memberof BotList
+   */
+  renderAmountRow = (label, amount, currency) =>
+    !!Number(amount) &&
+      <li>
+        <strong>{label}</strong>:&nbsp;{amount + ' ' + currency}
+      </li>
+
+  renderAddressRow = (label, address) =>
+    address &&
+      <li>
+        <strong>{label}</strong>: <Link to={'/accounts/' + address}>{address}</Link>
+      </li>
+
+  /**
+   * @name renderRules
+   * @param { string } name
+   * @param { Array } rules
+   
+   * @memberof BotList
+   */
+  renderRules = (name, rules) =>
+    rules && !!rules.length &&
+      <li>
+        <strong>Rules</strong>:
+        <ul>
+          {rules.map(({ buyRatio, marketPriceRatio }, index) => (
+            <li key={name + '-rules-' + index}>Buy&nbsp;
+              <Badge color="success" pill>
+                {Math.round(100 * buyRatio.numerator / buyRatio.denominator)}%
+              </Badge>
+              &nbsp;at price&nbsp;
+              <Badge color="warning" pill>
+                {Math.round(100 * marketPriceRatio.numerator / marketPriceRatio.denominator - 100)}%
+              </Badge>
+            </li>
+          ))}
+        </ul>
+      </li>
+
   render() {
     const {
       // Data
@@ -165,183 +364,6 @@ class BotList extends Component {
           </tbody>
         </Table>
       </PageWrapper>
-    )
-  }
-
-  renderRow(bot) {
-    const {
-      id,
-      type,
-      name,
-      startTime,
-      botAddress,
-      lastCheck,
-      lastBuy,
-      lastSell,
-      lastError,
-      markets,
-      inactivityPeriods,
-      rules,
-      tokens,
-      notifications,
-      lastDeposit,
-      checkTimeInMilliseconds,
-      minimumAmountForEther,
-      minimumAmountInUsdForToken,
-      minimumAmountInUsdForTokenBalance,
-      minimumAmountForOwl,
-      lastWarnNotification
-    } = bot
-
-
-    return (
-      <tr key={`bot-${id}`}>
-        <td><Badge color={colorByBotType(type)} pill>{type}</Badge></td>
-        <td><strong>{name}</strong></td>
-        <td>
-          <ul>
-            {this.renderTokens(name, tokens)}
-            {this.renderRules(name, rules)}
-            {this.renderMarkets(name, markets)}
-            {this.renderAddressRow('Bot address', botAddress)}
-            {this.renderInactivityPeriods(name, inactivityPeriods)}
-
-            {this.renderAmontRow('Minimum Ether', minimumAmountForEther && minimumAmountForEther / 10 ** 18, 'Ether')}
-            {this.renderAmontRow('Minimun tokens (in DutchX)', minimumAmountInUsdForToken, '$')}
-            {this.renderAmontRow('Minimun token (out of DutchX)', minimumAmountInUsdForTokenBalance, '$')}
-            {this.renderAmontRow('Minimum OWL', minimumAmountForOwl, 'OWL')}
-
-            {this.renderDateRow('Last error', lastError, 'danger')}
-            {this.renderDateRow('Last warning notification', lastWarnNotification)}
-            {this.renderDateRow('Last check', lastCheck)}
-            {this.renderDateRow('Last buy', lastBuy)}
-            {this.renderDateRow('Last sell', lastSell)}
-            {this.renderDateRow('Last deposit', lastDeposit)}
-            {this.renderDateRow('Running since', startTime)}
-            {this.renderNotifications(name, notifications)}
-            {checkTimeInMilliseconds && this.renderAmontRow('Check frecuency', checkTimeInMilliseconds / 1000, 'seconds')}
-          </ul>
-        </td>
-      </tr>
-    )
-  }
-
-  renderDateRow(label, time, badgeColor) {
-    return time && (
-      <li>
-        {!badgeColor && (
-          <strong>{label}</strong>
-        )}
-        {badgeColor && (
-          <Badge color={badgeColor}>{label}</Badge>
-        )}
-        :&nbsp;
-        {moment(time).fromNow()}
-      </li>
-    )
-  }
-
-  renderMarkets(name, markets) {
-    return markets && (
-      <li>
-        <strong>Markets</strong>:&nbsp;
-        {markets.map(({ tokenA, tokenB }) => (
-          <React.Fragment key={`${name}-market-${tokenA}-${tokenB}`}>
-            <Badge color="primary" pill>
-              {tokenA + '-' + tokenB}
-            </Badge>
-            &nbsp;
-          </React.Fragment>
-        ))}
-      </li>
-    )
-  }
-
-  renderTokens(name, tokens) {
-    return tokens && (
-      <li>
-        <strong>Tokens</strong>:&nbsp;
-        {tokens.map(token => (
-          <React.Fragment key={`${name}-tokens-${token}`}>
-            <Badge color="primary" pill>
-              {token}
-            </Badge>
-            &nbsp;
-          </React.Fragment>
-        ))}
-      </li>
-    )
-  }
-
-  renderNotifications(name, notifications) {
-    return notifications && (
-      <li>
-        <strong>Notifications</strong>:&nbsp;
-        {notifications.map(({ type, channel }, index) => (
-          <React.Fragment key={`${name}-notifications-${index}`}>
-            <Badge color="secondary" pill>
-              {type}
-              {type === 'slack' && (
-                ': ' + channel
-              )}
-            </Badge>
-            &nbsp;
-          </React.Fragment>
-        ))}
-      </li>
-    )
-  }
-
-  renderInactivityPeriods(name, inactivityPeriods) {
-    return inactivityPeriods && (
-      <li>
-        <strong>Inactivity periods</strong>:&nbsp;
-        {inactivityPeriods.map(({ from, to }, index) => (
-          <React.Fragment key={`${name}-inactivities-${index}`}>
-            <Badge color="secondary" pill>
-              {from + '-' + to}
-            </Badge>
-            &nbsp;
-
-          </React.Fragment>
-        ))}
-      </li>
-    )
-  }
-
-  renderAmontRow(label, amount, currency) {
-    return amount && (
-      <li>
-        <strong>{label}</strong>:&nbsp;{amount + ' ' + currency}
-      </li>
-    )
-  }
-
-  renderAddressRow(label, address) {
-    return address && (
-      <li><strong>{label}</strong>:&nbsp;
-      <Link to={'/accounts/' + address}>{address}</Link></li>
-    )
-  }
-
-  renderRules(name, rules) {
-    return rules && (
-      <li>
-        <strong>Rules</strong>:
-        <ul>
-          {rules.map(({ buyRatio, marketPriceRatio }, index) => (
-            <li key={name + '-rules-' + index}>Buy&nbsp;
-              <Badge color="success" pill>
-                {Math.round(100 * buyRatio.numerator / buyRatio.denominator)}%
-              </Badge>
-              &nbsp;at price&nbsp;
-              <Badge color="warning" pill>
-                {Math.round(100 * marketPriceRatio.numerator / marketPriceRatio.denominator - 100)}%
-              </Badge>
-            </li>
-          ))}
-        </ul>
-      </li>
     )
   }
 }
