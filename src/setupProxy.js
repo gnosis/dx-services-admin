@@ -73,6 +73,7 @@ module.exports = function (app) {
   networks.forEach(({
     source,
     target,
+    secure = false,
     pathRewrite = '/api',
     changeOrigin = true,
     auth
@@ -93,7 +94,8 @@ module.exports = function (app) {
       },
       logLevel: LOG_LEVEL,
       changeOrigin,
-      auth
+      auth,
+      secure
     }))
   })
 
