@@ -45,13 +45,13 @@ const networks = [
   // KOVAN: Api
   {
     source: '/kovan-dx/api',
-    target: 'https://dutchx-kovan.d.exchange'
+    target: 'https://dx-services.kovan.staging.gnosisdev.com'
   },
 
   // KOVAN: Bots
   {
     source: '/kovan-bots/api',
-    target: 'https://dx-services-bots.kovan.gnosisdev.com',
+    target: 'https://dx-services-bots.kovan.staging.gnosisdev.com',
     auth: BOTS_AUTH_KOVAN
   },
 
