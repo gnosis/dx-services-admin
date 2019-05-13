@@ -81,6 +81,7 @@ class MarketList extends Component {
       const stateDetails = await dxService.getMarketState(tokenA.symbol.toUpperCase(), tokenB.address)
 
       const {
+        auctionIndex,
         state,
         auction: {
           sellVolume,
@@ -103,6 +104,7 @@ class MarketList extends Component {
 
       return {
         id: index,
+        auctionIndex,
         state,
         startTime,
 
@@ -153,6 +155,8 @@ class MarketList extends Component {
   renderRow(market) {
     const {
       id,
+      auctionIndex,
+
       // state,
       tokenA,
       tokenB,
@@ -198,7 +202,7 @@ class MarketList extends Component {
       <tr key={`bot-${id}`} style={{ backgroundColor }}>
         <td>
           <Badge color="primary" className="p-2" pill title={`${tokenA.address}-${tokenB.address}`}>
-            {tokenA.symbol + '-' + tokenB.symbol}
+            {tokenA.symbol + '-' + tokenB.symbol + '-' + auctionIndex}
           </Badge>
         </td>
         <td>
@@ -209,6 +213,9 @@ class MarketList extends Component {
         </td>
         {/* DIRECT */}
         <td>
+          <Badge color="warning" pill title={`${tokenA.address}-${tokenB.address}`}>
+            {tokenA.symbol + '-' + tokenB.symbol}
+          </Badge>:&nbsp;
           <Badge color={directState.color} pill>
             {directState.state}
           </Badge>
@@ -226,6 +233,9 @@ class MarketList extends Component {
         </td>
         {/* OPPOSITE */}
         <td>
+          <Badge color="warning" pill title={`${tokenA.address}-${tokenB.address}`}>
+            {tokenB.symbol + '-' + tokenA.symbol}
+          </Badge>:&nbsp;
           <Badge color={oppState.color} pill>
             {oppState.state}
           </Badge>
