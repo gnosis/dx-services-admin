@@ -1,4 +1,5 @@
 export const FIXED_DECIMALS = 4
+export const OWL_ALLOWANCE_THRESHOLD = 100000
 export const MGN_PROXY_ADDRESSES = {
     1: '0x80f222a749a2e18eb7f676d371f19ad7efeee3b7',
     4: '0x4ed5e1ec6bdbecf5967fe257f60e05237db9d583',
@@ -6,6 +7,10 @@ export const MGN_PROXY_ADDRESSES = {
 export const OWL_PROXY_ADDRESSES = {
     1: '0x1a5f9352af8af974bfc03399e3767df6370d82e4',
     4: '0xa7d1c04faf998f9161fc9f800a99a809b84cfc9d',
+}
+export const DUTCHX_PROXY_ADDRESSES = {
+    1: '0xb9812e2fa995ec53b5b6df34d21f9304762c5497',
+    4: '0xaaeb2035ff394fdb2c879190f95e7676f1a9444b',
 }
 
 export const DX_GRAPHS_URL = 'https://explore.duneanalytics.com/public/dashboards/NJXQ1WlL4zr9KVesucCaB3MbKPgcbYz8vTEAXv6s'

@@ -7,7 +7,7 @@ import Web3HOC from '../../../HOCs/Web3HOC'
 
 import getDxService from '../../../services/dxService'
 
-import { MGN_PROXY_ADDRESSES, OWL_PROXY_ADDRESSES, FIXED_DECIMALS } from '../../../globals'
+import { MGN_PROXY_ADDRESSES, OWL_PROXY_ADDRESSES, DUTCHX_PROXY_ADDRESSES, FIXED_DECIMALS, OWL_ALLOWANCE_THRESHOLD } from '../../../globals'
 import PageWrapper from '../../../containers/PageWrapper';
 
 const qrCodeUrl = 'https://chart.googleapis.com/chart?chs=300x300&cht=qr&choe=UTF-8&chl='
@@ -42,15 +42,17 @@ class AccountDetails extends Component {
       { amountUnlocked: mgnUnlockedBalance },
       mgnLockedBalance,
       owlBalance,
+      owlAllowance,
       ethBalance,
     ] = await Promise.all([
       dxService.getLiquidityContribution(account),
       web3.getToken(MGN_PROXY_ADDRESSES[network], 'MGN', account).then(token => token.methods.unlockedTokens(account).call()).catch(() => 0),
       web3.getToken(MGN_PROXY_ADDRESSES[network], 'MGN', account).then(token => token.methods.lockedTokenBalances(account).call()).catch(() => 0),
       web3.getToken(OWL_PROXY_ADDRESSES[network], 'OWL', account).then(token => token.methods.balanceOf(account).call()).catch(() => 0),
+      web3.getToken(OWL_PROXY_ADDRESSES[network], 'OWL', account).then(token => token.methods.allowance(account, DUTCHX_PROXY_ADDRESSES[network]).call()).catch(() => 0),
       web3.getCurrentBalance(account),
     ])
-
+    
     // Get tokenBalances
     let tokens = await dxService.getTokens()
     const balancePromises = tokens.map(async token => {
@@ -76,6 +78,7 @@ class AccountDetails extends Component {
       liquidityContribution,
       mgnLockedBalance,
       mgnUnlockedBalance,
+      owlAllowance,
       owlBalance,
       network,
       ethBalance,
@@ -91,12 +94,15 @@ class AccountDetails extends Component {
       mgnLockedBalance,
       mgnUnlockedBalance,
       owlBalance,
+      owlAllowance,
       ethBalance,
     } = this.state
 
     if (!balances) {
       return null
     }
+
+    const owlAllowanceEnabled = Number(owlAllowance) >= (OWL_ALLOWANCE_THRESHOLD * (10**18))
 
     const address = this.props.match.params.address
     return (
@@ -183,7 +189,8 @@ class AccountDetails extends Component {
               &nbsp;<strong>OWL Token</strong>
               <ul>
                 {/* <li>DutchX: <Badge color={owlBalance > 0 ? 'success' : 'secondary'} pill>{Number(balance / (10 ** decimals)).toFixed(2)}</Badge></li> */}
-                <li>ERC20: <Badge color={owlBalance > 0 ? 'warning' : 'secondary'} pill>{Number(owlBalance / (10 ** 18)).toFixed(2)}</Badge></li>
+                {!owlAllowanceEnabled && <li>Allowance: <Badge color='warning' pill>{Number(owlAllowance / (10 ** 18)).toFixed(2)}</Badge></li>}
+                <li>Balance: <Badge color={owlBalance > 0 ? 'warning' : 'secondary'} pill>{Number(owlBalance / (10 ** 18)).toFixed(2)}</Badge>{owlAllowanceEnabled && <Badge color='success' pill>ENABLED</Badge>}</li>
               </ul>
             </ListGroupItem>}
         </ListGroup>

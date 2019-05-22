@@ -120,6 +120,8 @@
       "OMG"
     ],
     "minimumAmountForEther": 700000000000000000,
+    "minimumAmountInUsdForTokenBalance": 210000000000000000,
+    "minimumAmountForOwl": 100,
     "minimumAmountInUsdForToken": 5000,
     "lastCheck": "2019-03-18T08:28:13.457Z",
     "lastWarnNotification": null,
@@ -143,6 +145,8 @@
       "OMG"
     ],
     "minimumAmountForEther": 700000000000000000,
+    "minimumAmountInUsdForTokenBalance": 210000000000000000,
+    "minimumAmountForOwl": 100,
     "minimumAmountInUsdForToken": 500,
     "lastCheck": "2019-03-18T08:28:16.059Z",
     "lastWarnNotification": null,
@@ -366,6 +370,8 @@
     ],
     "minimumAmountForEther": 700000000000000000,
     "minimumAmountInUsdForToken": 5000,
+    "minimumAmountInUsdForTokenBalance": 210000000000000000,
+    "minimumAmountForOwl": 100,
     "lastCheck": "2019-03-18T08:28:13.457Z",
     "lastWarnNotification": null,
     "lastError": null,
@@ -389,6 +395,8 @@
       "OMG"
     ],
     "minimumAmountForEther": 700000000000000000,
+    "minimumAmountInUsdForTokenBalance": 210000000000000000,
+    "minimumAmountForOwl": 100,
     "minimumAmountInUsdForToken": 500,
     "lastCheck": "2019-03-18T08:28:16.059Z",
     "lastWarnNotification": null,
