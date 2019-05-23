@@ -78,7 +78,7 @@ class MarketList extends Component {
     let markets = await dxService.getMarkets()
 
     markets = await Promise.all(markets.map(async ({ tokenA, tokenB }, index) => {
-      const stateDetails = await dxService.getMarketState(tokenA.symbol.toUpperCase(), tokenB.address)
+      const stateDetails = await dxService.getMarketState(tokenA.address, tokenB.address)
 
       const {
         auctionIndex,
