@@ -72,9 +72,9 @@ class DxService {
    */
   async getTokens() {
     const apiURL = `${this.dxApiURL}/v1/tokens`
-    const { data } = await fetcher(apiURL)
+    const res = await fetcher(apiURL)
 
-    return data
+    return res.data
   }
 
   async getTokenBalanceDx({ account, token }) {
@@ -94,9 +94,9 @@ class DxService {
    */
   async getMarkets() {
     const apiURL = `${this.dxApiURL}/v1/markets`
-    const { data } = await fetcher(apiURL)
+    const res = await fetcher(apiURL)
 
-    return data
+    return res.data || res
   }
 
   getMarketSellVolume = async (stAddress, btAddress) => fetcher(`${this.dxApiURL}/v1/markets/${stAddress.toLowerCase()}-${btAddress.toLowerCase()}/sell-volume`)
