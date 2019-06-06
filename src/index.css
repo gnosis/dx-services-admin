@@ -1,1 +1,23 @@
+@import url('https://fonts.googleapis.com/css?family=Permanent+Marker&display=swap');
 
+.MetaMaskSVGContainer {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: center;
+    align-items: center;
+    margin: auto;
+    
+    position: fixed;
+    top: 20%; bottom: 20%;
+    left: 20%; right: 20%;
+}
+
+.MetaMaskSVGContainer > img {
+    margin: auto;
+    min-width: 40%;
+}
+
+.MetaMaskSVGContainer > h1 {
+    font-family: 'Permanent Marker', monospace;
+    text-align: center;
+}
