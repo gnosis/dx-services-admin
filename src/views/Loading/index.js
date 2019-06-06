@@ -1,6 +1,6 @@
 import React from 'react'
 
-const ANXO = 'https://gitlab.gnosisdev.com/web/gnosis-website-owl-page/uploads/856f1a1221b8592e8aa6f2b8dabf1864/loading.png'
+import LOADING from '../../assets/img/brand/logo.svg'
 
 const LoadingStyles = {
     display: 'flex',
@@ -15,8 +15,8 @@ const LoadingPicStyles = {
 
 const Loading = () =>
     <div style={LoadingStyles}>
-        <pre style={{ margin: '20px auto', textAlign: 'center' }}><h1 style={{ margin: '30px 0px' }}>Mmmmm incoming data :D</h1>
-        <img className="spinAnimate" style={LoadingPicStyles} src={ANXO} alt="Is he a liar? A doll? No! It's our Anxo!"/></pre>
+        <pre style={{ margin: '20px auto', textAlign: 'center' }}><h1 style={{ margin: '30px 0px' }}>Loading...</h1>
+        <img className="spinAnimate" style={LoadingPicStyles} src={LOADING} alt="Is he a liar? A doll? No! It's our Anxo!"/></pre>
         
     </div>
 
