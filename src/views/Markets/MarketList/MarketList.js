@@ -87,6 +87,7 @@ class MarketList extends Component {
           sellVolume,
           buyVolume,
           fundingInUSD,
+          outstandingVolume,
           price,
           priceRelationshipPercentage,
           boughtPercentage,
@@ -95,6 +96,7 @@ class MarketList extends Component {
           sellVolume: sellVolumeOpp,
           buyVolume: buyVolumeOpp,
           fundingInUSD: fundingInUSDOpp,
+          outstandingVolume: outstandingVolumeOpp,
           price: priceOpp,
           priceRelationshipPercentage: priceRelationshipPercentageOpp,
           boughtPercentage: boughtPercentageOpp,
@@ -112,6 +114,7 @@ class MarketList extends Component {
         sellVolume,
         buyVolume,
         fundingInUSD,
+        outstandingVolume,
         price,
         priceRelationshipPercentage,
         boughtPercentage,
@@ -120,6 +123,7 @@ class MarketList extends Component {
         sellVolumeOpp,
         buyVolumeOpp,
         fundingInUSDOpp,
+        outstandingVolumeOpp,
         priceOpp,
         priceRelationshipPercentageOpp,
         boughtPercentageOpp,
@@ -166,6 +170,7 @@ class MarketList extends Component {
       sellVolume,
       buyVolume,
       fundingInUSD,
+      outstandingVolume,
       price,
       priceRelationshipPercentage,
       boughtPercentage,
@@ -174,6 +179,7 @@ class MarketList extends Component {
       sellVolumeOpp,
       buyVolumeOpp,
       fundingInUSDOpp,
+      outstandingVolumeOpp,
       priceOpp,
       priceRelationshipPercentageOpp,
       boughtPercentageOpp,
@@ -227,6 +233,7 @@ class MarketList extends Component {
             buyVolume,
             fundingInUSD,
             boughtPercentage,
+            outstandingVolume,
             price,
             priceRelationshipPercentage
           })}
@@ -247,6 +254,7 @@ class MarketList extends Component {
             buyVolume: buyVolumeOpp,
             fundingInUSD: fundingInUSDOpp,
             boughtPercentage: boughtPercentageOpp,
+            outstandingVolume: outstandingVolumeOpp,
             price: priceOpp,
             priceRelationshipPercentage: priceRelationshipPercentageOpp
           })}
@@ -270,6 +278,7 @@ class MarketList extends Component {
     buyVolume,
     buyToken,
     boughtPercentage,
+    outstandingVolume,
     price,
     priceRelationshipPercentage
   }) {
@@ -283,7 +292,7 @@ class MarketList extends Component {
             {/* Buy Volume */}
             {buyVolume > 0 && this.renderAmountRow('Buy volume', Number(buyVolume / (10 ** buyToken.decimals)).toFixed(2), buyToken.symbol, null, Number(boughtPercentage).toFixed(2))}
             {/* Outstanding Vol */}
-            {buyVolume > 0 && this.renderAmountRow('Oustanding volume', Number(buyVolume / (10 ** buyToken.decimals)).toFixed(2), buyToken.symbol)}
+            {outstandingVolume > 0 && this.renderAmountRow('Oustanding volume', Number(outstandingVolume / (10 ** buyToken.decimals)).toFixed(2), buyToken.symbol)}
             {/* Price */}
             {price && this.renderAmountRow('Price', Number(price.numerator / price.denominator).toFixed(FIXED_DECIMALS), buyToken.symbol)}
             {/* Closing Price Increment */}
