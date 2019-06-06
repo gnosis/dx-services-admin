@@ -8,10 +8,12 @@ import { PageWrapper, PageFilter } from '../../../containers'
 import ErrorHOC from '../../../HOCs/ErrorHOC'
 import Web3HOC from '../../../HOCs/Web3HOC'
 
+import Loading from '../../Loading'
+
 import getDxService from '../../../services/dxService'
 
 import moment from 'moment'
-import { FIXED_DECIMALS } from '../../../globals';
+import { FIXED_DECIMALS } from '../../../globals'
 
 const STATES = [
   { label: 'Waiting for funding', value: 'WAITING_FOR_FUNDING', color: 'secondary' },
@@ -71,11 +73,14 @@ class MarketList extends Component {
     // Web3
     network: 'UNKNOWN NETWORK',
 
-    // Error
+    // App Related
     error: undefined,
+    loading: false,
   }
 
   async componentDidMount() {
+    this.setState({ loading: true })
+
     const network = await this.props.web3.getNetworkId()
     const dxService = await getDxService(network, this.props.web3)
 
@@ -173,7 +178,8 @@ class MarketList extends Component {
     this.setState({
       markets,
       tokens,
-      network
+      network,
+      loading: false,
     })
   }
 
@@ -346,6 +352,7 @@ class MarketList extends Component {
     const {
       // Data
       markets,
+      erroredMarkets,
       tokens,
 
       // Filters
@@ -354,7 +361,7 @@ class MarketList extends Component {
       
       // error
       error,
-      erroredMarkets,
+      loading,
     } = this.state
 
     if (error) return <h1>{error}</h1>
@@ -378,6 +385,8 @@ class MarketList extends Component {
         return tokenA.symbol === token || tokenB.symbol === token
       })
     }
+    // Data Loading
+    if (loading) return <Loading />
 
     return (
       <PageWrapper pageTitle="DutchX Markets">
