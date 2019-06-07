@@ -26,6 +26,11 @@
     animation: spinAnimate 3.4s linear 0s infinite normal forwards running;
 }
 
+.slowFadeIn {
+    -webkit-animation: fadeIn 2s linear;
+    animation: fadeIn 2s linear;
+  }
+
 /* ANIMATION */
 
 @keyframes spinAnimate {
@@ -51,6 +56,15 @@
 
     100% {
       transform: rotateY(360deg);
+      opacity: 1;
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
       opacity: 1;
     }
   }
