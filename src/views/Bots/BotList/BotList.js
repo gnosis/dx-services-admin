@@ -7,6 +7,8 @@ import { PageWrapper, PageFilter } from '../../../containers'
 import ErrorHOC from '../../../HOCs/ErrorHOC'
 import Web3HOC from '../../../HOCs/Web3HOC'
 
+import Loading from '../../Loading'
+
 import moment from 'moment'
 
 import getBotMasters from '../../../utils/getBotMasters'
@@ -28,22 +30,33 @@ class BotList extends Component {
 
     // Web3
     network: 'UNKNOWN NETWORK',
+
+    // Errors
+    error: undefined,
+    loading: false,
   }
 
   async componentDidMount() {
-    const network = await this.props.web3.getNetworkId()
-    const dxService = await getDxService(network, this.props.web3)
-
-    let bots = await dxService.getBots()
-    const { botTypes, tokens, botAddress } = getBotMasters(bots)
-
-    this.setState({
-      bots,
-      botTypes,
-      tokens,
-      botAddress,
-      network,
-    })
+    try {
+      this.setState({ loading: true })
+      const network = await this.props.web3.getNetworkId()
+      const dxService = await getDxService(network, this.props.web3)
+      
+      let bots = await dxService.getBots()
+      const { botTypes, tokens, botAddress } = getBotMasters(bots)
+  
+      this.setState({
+        bots,
+        botTypes,
+        tokens,
+        botAddress,
+        network,
+        loading: false,
+      })
+    } catch (err) {
+      console.error(err)
+      this.setState({ error: err, loading: false })
+    }
   }
 
   renderRow = ({
@@ -258,6 +271,10 @@ class BotList extends Component {
       token,
       address,
       botName,
+
+      // App
+      loading,
+      error
     } = this.state
 
     // Filter by type
@@ -301,6 +318,9 @@ class BotList extends Component {
         return false
       })
     }
+    if (error) return <pre><h3>An error has occurred on mount :(</h3>{error.message || error}</pre>
+    // Data Loading
+    if (loading) return <Loading />
 
     return (
       <PageWrapper pageTitle="DutchX Bots">
