@@ -68,7 +68,7 @@ export const netIdToName = (id) => {
 export const fetcher = async (url, options) => 
     fetch(url, options)
     .then(res => res.json())
-    .catch(e=> { 
+    .catch(e => { 
         console.error(e) 
-        return `Error occurred on fetch from ${url}` 
+        throw new Error(`Error occurred on fetch from ${url}`)
     })
