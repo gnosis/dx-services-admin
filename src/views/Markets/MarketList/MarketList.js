@@ -8,6 +8,7 @@ import { PageWrapper, PageFilter } from '../../../containers'
 import ErrorHOC from '../../../HOCs/ErrorHOC'
 import Web3HOC from '../../../HOCs/Web3HOC'
 
+import ErrorPre from '../../Error'
 import Loading from '../../Loading'
 
 import getDxService from '../../../services/dxService'
@@ -373,7 +374,9 @@ class MarketList extends Component {
       loading,
     } = this.state
 
-    if (error) return <h1>{error}</h1>
+    if (error) return <ErrorPre error={error} errorTitle="An initialisation error during market fetching - please try refreshing!" />
+    // Data Loading
+    if (loading) return <Loading />
 
     // TODO: convert to hooks (no class) and use memo
     const sortedMarkets = markets.sort((marketA, marketB) => {
@@ -394,8 +397,6 @@ class MarketList extends Component {
         return tokenA.symbol === token || tokenB.symbol === token
       })
     }
-    // Data Loading
-    if (loading) return <Loading />
 
     return (
       <PageWrapper pageTitle="DutchX Markets">

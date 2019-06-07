@@ -8,6 +8,7 @@ import ErrorHOC from '../../../HOCs/ErrorHOC'
 import Web3HOC from '../../../HOCs/Web3HOC'
 
 import Loading from '../../Loading'
+import ErrorPre from '../../Error'
 
 import moment from 'moment'
 
@@ -318,7 +319,7 @@ class BotList extends Component {
         return false
       })
     }
-    if (error) return <pre><h3>An error has occurred on mount :(</h3>{error.message || error}</pre>
+    if (error) return <ErrorPre error={error} />
     // Data Loading
     if (loading) return <Loading />
 

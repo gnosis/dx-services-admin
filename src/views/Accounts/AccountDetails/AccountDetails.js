@@ -6,6 +6,7 @@ import ErrorHOC from '../../../HOCs/ErrorHOC'
 import Web3HOC from '../../../HOCs/Web3HOC'
 
 import Loading from '../../Loading'
+import ErrorPre from '../../Error'
 
 import getDxService from '../../../services/dxService'
 
@@ -126,7 +127,7 @@ class AccountDetails extends Component {
 
     const address = this.props.match.params.address
 
-    if (error) return <pre><h3>An error has occurred on mount :(</h3>{error.message || error}</pre>
+    if (error) return <ErrorPre error={error} />
     // Data Loading
     if (loading) return <Loading />
 

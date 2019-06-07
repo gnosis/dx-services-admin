@@ -8,6 +8,7 @@ import ErrorHOC from '../../HOCs/ErrorHOC'
 import Web3HOC from '../../HOCs/Web3HOC'
 
 import Loading from '../Loading'
+import ErrorPre from '../Error'
 
 import getDxService from '../../services/dxService'
 
@@ -56,9 +57,9 @@ function Safes({ web3 }) {
 
   const renderAccountLink = address => address && <Link to={'/accounts/' + address}>{address}</Link>
 
-  if (error) return <pre><h3>An error has occurred on mount :(</h3>{error.message || error}</pre>
-    // Data Loading
-    if (loading) return <Loading />
+  if (error) return <ErrorPre error={error}/>
+  // Data Loading
+  if (loading) return <Loading />
 
   return (
     <PageWrapper pageTitle="DutchX Safes">
@@ -72,7 +73,7 @@ function Safes({ web3 }) {
               showWhat={safeNameFilter}
               changeFunction={event => setSafeNameFilter(event.target.value)}
               inputName="safe"
-              render={safeData.map(({ name, safeAddress }) => <option key={safeAddress} value={name}>{name}</option>)}
+              render={safeData.map(({ name, safeAddress }) => <option key={safeAddress + Math.random()} value={name}>{name}</option>)}
             />
           </Col>
           {/* Filter SafeModule Type */}
@@ -83,7 +84,7 @@ function Safes({ web3 }) {
               showWhat={safeTypeFilter}
               changeFunction={event => setSafeTypeFilter(event.target.value)}
               inputName="safe"
-              render={SAFE_TYPES.map((type, index) => <option key={index} value={type}>{type}</option>)}
+              render={SAFE_TYPES.map((type, index) => <option key={index + Math.random()} value={type}>{type}</option>)}
             />
           </Col>
         </FormGroup>
