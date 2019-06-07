@@ -8,10 +8,12 @@ import { PageWrapper, PageFilter } from '../../../containers'
 import ErrorHOC from '../../../HOCs/ErrorHOC'
 import Web3HOC from '../../../HOCs/Web3HOC'
 
+import Loading from '../../Loading'
+
 import getDxService from '../../../services/dxService'
 
 import moment from 'moment'
-import { FIXED_DECIMALS } from '../../../globals';
+import { FIXED_DECIMALS } from '../../../globals'
 
 const STATES = [
   { label: 'Waiting for funding', value: 'WAITING_FOR_FUNDING', color: 'secondary' },
@@ -65,20 +67,48 @@ class MarketList extends Component {
 
     // Data
     markets: [],
+    erroredMarkets: [],
     tokens: [],
 
     // Web3
     network: 'UNKNOWN NETWORK',
+
+    // App Related
+    error: undefined,
+    loading: false,
   }
 
   async componentDidMount() {
+    this.setState({ loading: true })
+
     const network = await this.props.web3.getNetworkId()
     const dxService = await getDxService(network, this.props.web3)
 
     let markets = await dxService.getMarkets()
+    
+    if (!Array.isArray(markets)) return this.setState({ error: markets })
 
-    markets = await Promise.all(markets.map(async ({ tokenA, tokenB }, index) => {
+    markets = await Promise.all(markets.map(async (market, index) => {
+      if (!market.tokenA || !market.tokenB) return { error: 'Error loading market - please try refreshing' }
+      const { tokenA, tokenB } = market
       const stateDetails = await dxService.getMarketState(tokenA.address, tokenB.address)
+
+      // check for any errored markets and proceed
+      if (stateDetails.status) {
+        return this.setState(prevState => ({
+          ...prevState,
+          erroredMarkets: [
+            ...prevState.erroredMarkets,
+            {
+              tokenA,
+              tokenB,
+              status: stateDetails.status,
+              message: stateDetails.message,
+              type: stateDetails.type,
+            }
+          ]
+        }))
+      }
 
       const {
         auctionIndex,
@@ -101,7 +131,7 @@ class MarketList extends Component {
         },
         auctionStart: startTime
       } = stateDetails
-
+      
       return {
         id: index,
         auctionIndex,
@@ -127,7 +157,7 @@ class MarketList extends Component {
         ...{ tokenA, tokenB }
       }
     }))
-    markets = markets.sort((marketA, marketB) => {
+    markets = markets.filter(item => item).sort((marketA, marketB) => {
       if (!marketA.startTime) return 1
       if (!marketB.startTime) return -1
 
@@ -148,7 +178,8 @@ class MarketList extends Component {
     this.setState({
       markets,
       tokens,
-      network
+      network,
+      loading: false,
     })
   }
 
@@ -321,12 +352,19 @@ class MarketList extends Component {
     const {
       // Data
       markets,
+      erroredMarkets,
       tokens,
 
       // Filters
       token,
-      state
+      state,
+      
+      // error
+      error,
+      loading,
     } = this.state
+
+    if (error) return <h1>{error}</h1>
 
     // TODO: convert to hooks (no class) and use memo
     const sortedMarkets = markets.sort((marketA, marketB) => {
@@ -347,6 +385,8 @@ class MarketList extends Component {
         return tokenA.symbol === token || tokenB.symbol === token
       })
     }
+    // Data Loading
+    if (loading) return <Loading />
 
     return (
       <PageWrapper pageTitle="DutchX Markets">
@@ -376,6 +416,8 @@ class MarketList extends Component {
           </FormGroup>
         </Form>
 
+        {erroredMarkets.length > 0 && <ErrorTable erroredMarkets={erroredMarkets}/>}
+
         <Table responsive hover>
           <thead>
             <tr>
@@ -396,6 +438,35 @@ class MarketList extends Component {
   }
 }
 
+const ErrorTable = ({
+  erroredMarkets,
+}) =>
+  <>
+    <Badge pill style={{ backgroundColor: '#f4f59a' }}>An error occurred during load!</Badge>
+    <Table style={{ backgroundColor: '#f4f59a' }} responsive hover>
+      <thead>
+        <tr>
+          <th>Market</th>
+          <th>Status Code</th>
+          <th>Error Type</th>
+          <th>Message</th>
+        </tr>
+      </thead>
+      <tbody>
+        {erroredMarkets.map(({ status, message, type, tokenA, tokenB }) => 
+          <tr key={message} style={{ backgroundColor: '#f9c4c4' }}>
+            <td>
+              <Badge color="primary" className="p-2" pill title={`${tokenA.address}-${tokenB.address}`}>
+                {tokenA.symbol + '-' + tokenB.symbol}
+              </Badge>
+            </td>
+            <td><Badge pill>{status}</Badge></td>
+            <td><strong>{type}</strong></td>
+            <td>{message}</td>
+          </tr>
+        )}
+      </tbody>
+    </ Table>
+</>
 
 export default ErrorHOC(Web3HOC(MarketList))
-

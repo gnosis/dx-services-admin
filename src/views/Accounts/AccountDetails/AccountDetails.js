@@ -5,6 +5,8 @@ import Blockies from 'react-blockies'
 import ErrorHOC from '../../../HOCs/ErrorHOC'
 import Web3HOC from '../../../HOCs/Web3HOC'
 
+import Loading from '../../Loading'
+
 import getDxService from '../../../services/dxService'
 
 import { MGN_PROXY_ADDRESSES, OWL_PROXY_ADDRESSES, DUTCHX_PROXY_ADDRESSES, FIXED_DECIMALS, OWL_ALLOWANCE_THRESHOLD } from '../../../globals'
@@ -26,63 +28,77 @@ class AccountDetails extends Component {
     // WEb3
     network: 'UNKNOWN NETWORK',
     ethBalance: undefined,
+
+    // App
+    error: undefined,
+    loading: false,
   }
 
   async componentDidMount() {
     const { web3 } = this.props
+    this.setState({ loading: true })
 
-    const network = await web3.getNetworkId()
-    const dxService = await getDxService(network, web3)
+    try {
+      const network = await web3.getNetworkId()
+      const dxService = await getDxService(network, web3)
 
-    const account = this.props.match.params.address
+      const account = this.props.match.params.address
 
-    // LC, MGN, OWL
-    const [
-      liquidityContribution,
-      { amountUnlocked: mgnUnlockedBalance },
-      mgnLockedBalance,
-      owlBalance,
-      owlAllowance,
-      ethBalance,
-    ] = await Promise.all([
-      dxService.getLiquidityContribution(account),
-      web3.getToken(MGN_PROXY_ADDRESSES[network], 'MGN', account).then(token => token.methods.unlockedTokens(account).call()).catch(() => 0),
-      web3.getToken(MGN_PROXY_ADDRESSES[network], 'MGN', account).then(token => token.methods.lockedTokenBalances(account).call()).catch(() => 0),
-      web3.getToken(OWL_PROXY_ADDRESSES[network], 'OWL', account).then(token => token.methods.balanceOf(account).call()).catch(() => 0),
-      web3.getToken(OWL_PROXY_ADDRESSES[network], 'OWL', account).then(token => token.methods.allowance(account, DUTCHX_PROXY_ADDRESSES[network]).call()).catch(() => 0),
-      web3.getCurrentBalance(account),
-    ])
-    
-    // Get tokenBalances
-    let tokens = await dxService.getTokens()
-    const balancePromises = tokens.map(async token => {
-      const balance = await dxService.getTokenBalanceDx({
-        account,
-        token,
+      // LC, MGN, OWL
+      const [
+        liquidityContribution,
+        { amountUnlocked: mgnUnlockedBalance },
+        mgnLockedBalance,
+        owlBalance,
+        owlAllowance,
+        ethBalance,
+      ] = await Promise.all([
+        dxService.getLiquidityContribution(account),
+        web3.getToken(MGN_PROXY_ADDRESSES[network], 'MGN', account).then(token => token.methods.unlockedTokens(account).call()).catch(() => 0),
+        web3.getToken(MGN_PROXY_ADDRESSES[network], 'MGN', account).then(token => token.methods.lockedTokenBalances(account).call()).catch(() => 0),
+        web3.getToken(OWL_PROXY_ADDRESSES[network], 'OWL', account).then(token => token.methods.balanceOf(account).call()).catch(() => 0),
+        web3.getToken(OWL_PROXY_ADDRESSES[network], 'OWL', account).then(token => token.methods.allowance(account, DUTCHX_PROXY_ADDRESSES[network]).call()).catch(() => 0),
+        web3.getCurrentBalance(account),
+      ])
+      
+      // Get tokenBalances
+      let tokens = await dxService.getTokens()
+      const balancePromises = tokens.map(async token => {
+        const balance = await dxService.getTokenBalanceDx({
+          account,
+          token,
+        })
+
+        const balanceErc20 = await dxService.getTokenBalanceErc20({
+          account,
+          tokenAddress: token.address
+        })
+
+        return {
+          balance,
+          balanceErc20,
+          ...token
+        }
       })
 
-      const balanceErc20 = await dxService.getTokenBalanceErc20({
-        account,
-        tokenAddress: token.address
+      this.setState({
+        balances: await Promise.all(balancePromises),
+        liquidityContribution,
+        mgnLockedBalance,
+        mgnUnlockedBalance,
+        owlAllowance,
+        owlBalance,
+        network,
+        ethBalance,
+        loading: false,
       })
-
-      return {
-        balance,
-        balanceErc20,
-        ...token
-      }
-    })
-
-    this.setState({
-      balances: await Promise.all(balancePromises),
-      liquidityContribution,
-      mgnLockedBalance,
-      mgnUnlockedBalance,
-      owlAllowance,
-      owlBalance,
-      network,
-      ethBalance,
-    })
+    } catch(err) {
+      console.error(err)
+      this.setState({
+        error: err,
+        loading: false,
+      })
+    }
   }
 
   render() {
@@ -96,6 +112,10 @@ class AccountDetails extends Component {
       owlBalance,
       owlAllowance,
       ethBalance,
+
+      // APp
+      error,
+      loading,
     } = this.state
 
     if (!balances) {
@@ -105,6 +125,11 @@ class AccountDetails extends Component {
     const owlAllowanceEnabled = Number(owlAllowance) >= (OWL_ALLOWANCE_THRESHOLD * (10**18))
 
     const address = this.props.match.params.address
+
+    if (error) return <pre><h3>An error has occurred on mount :(</h3>{error.message || error}</pre>
+    // Data Loading
+    if (loading) return <Loading />
+
     return (
       <PageWrapper colSize={{ xs: "12" }} pageTitle="Account Information">
         <div className="d-flex flex-row bd-highlight mb-3">
