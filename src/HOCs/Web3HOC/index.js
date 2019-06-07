@@ -1,17 +1,40 @@
 import React, { useEffect, useState } from 'react';
 
 import getWeb3API from '../../services/web3Service'
-
 import ErrorPre from '../../views/Error'
-
 import MetaMaskSVG from '../../assets/svg/MetaMask.svg'
+
+import { from, of } from 'rxjs'
+import { concatMap, delay } from 'rxjs/operators'
 
 const MetaMaskPrompt = () => {
     const [mmMessage, setMMMessage] = useState('Attempting MetaMask connection...')
+
+    const messages = [
+        'This is taking a long time...',
+        'Is your MM wallet logged-in + connected?',
+        'Timeout. Please try refreshing this page.',
+    ]
+
     useEffect(() => {
-        setTimeout(() => setMMMessage('This is taking a long time...'), 10000)
-        setTimeout(() => setMMMessage('Is your MM wallet logged-in + connected?'), 20000)
-        setTimeout(() => setMMMessage('Timeout. Please try refreshing this page.'), 30000)
+        const MMMessageSubscription = from(messages)
+        .pipe(
+            concatMap(
+                message => 
+                    of(message)
+                    .pipe(delay(10000))
+            )
+        )
+        .subscribe({
+            next: (message) => {
+                setMMMessage(message)
+            },
+            error: (error) => console.error(error),
+        })
+
+        return () => {
+            MMMessageSubscription && MMMessageSubscription.unsubscribe()
+        }
     }, [])
 
     return (
@@ -28,17 +51,21 @@ const useWeb3Init = () => {
     const [error, setError] = useState(undefined)
 
     useEffect(() => {
-        const initWeb3API = async () => {
-            try {
-                const W3 = await getWeb3API()
-                setAppLoadStatus(true)
-                setWeb3API(W3)
-            } catch (loadErr) {
-                console.error(loadErr)
-                setError(loadErr)
-            }
+        const web3InitSubscription = from(getWeb3API())
+            .subscribe({
+                next: (W3) => {
+                    setAppLoadStatus(true)
+                    setWeb3API(W3)
+                },
+                error: (loadErr) => {
+                    console.error(loadErr)
+                    setError(loadErr)
+                }
+            })
+
+        return () => {
+            web3InitSubscription && web3InitSubscription.unsubscribe()
         }
-        initWeb3API()
     }, [])
 
     return { appLoadStatus, error, web3API }
