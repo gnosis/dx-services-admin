@@ -65,4 +65,10 @@ export const netIdToName = (id) => {
  * @param { options: any{} }
  * @returns JSON
  */
-export const fetcher = async (url, options) => (await fetch(url, options)).json()
+export const fetcher = async (url, options) => 
+    fetch(url, options)
+    .then(res => res.json())
+    .catch(e=> { 
+        console.error(e) 
+        return `Error occurred on fetch from ${url}` 
+    })
