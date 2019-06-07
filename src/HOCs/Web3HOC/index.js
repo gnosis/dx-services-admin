@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 
 import getWeb3API from '../../services/web3Service'
 
+import ErrorPre from '../../views/Error'
+
 import MetaMaskSVG from '../../assets/svg/MetaMask.svg'
 
 const MetaMaskPrompt = () => {
@@ -13,7 +15,7 @@ const MetaMaskPrompt = () => {
     }, [])
 
     return (
-        <div className="MetaMaskSVGContainer">
+        <div className="MetaMaskSVGContainer slowFadeIn">
             <h1>{mmMessage}</h1>
             <img src={MetaMaskSVG} alt="Dark MetaMask Fox" />
         </div>
@@ -23,24 +25,32 @@ const MetaMaskPrompt = () => {
 const useWeb3Init = () => {
     const [web3API, setWeb3API] = useState(false)
     const [appLoadStatus, setAppLoadStatus] = useState(false)
+    const [error, setError] = useState(undefined)
 
     useEffect(() => {
         const initWeb3API = async () => {
-            const W3 = await getWeb3API()
-            setAppLoadStatus(true)
-            setWeb3API(W3)
+            try {
+                const W3 = await getWeb3API()
+                setAppLoadStatus(true)
+                setWeb3API(W3)
+            } catch (loadErr) {
+                console.error(loadErr)
+                setError(loadErr)
+            }
         }
         initWeb3API()
     }, [])
 
-    return { appLoadStatus, web3API }
+    return { appLoadStatus, error, web3API }
 }
 
 const Web3HOC = Component =>
     function WrappedComponent(props) {
-        const { appLoadStatus, web3API } = useWeb3Init()
-        if (!web3API) return <MetaMaskPrompt />
-        return appLoadStatus && web3API && <Component web3={web3API} {...props}/>/*  : <h1 style={{ padding: 50 }}>L O A D I N G . . .</h1> */
+        const { appLoadStatus, error, web3API } = useWeb3Init()
+        
+        if (error) return <ErrorPre error={error} errorTitle="An error has occurred on Web3 initialisation mount :(" />
+
+        return appLoadStatus && web3API ? <Component web3={web3API} {...props}/> : <MetaMaskPrompt />
     }
 
 
