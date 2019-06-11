@@ -8,6 +8,8 @@ import getDxService from '../../../services/dxService'
 import ErrorPre from '../../Error'
 import Loading from '../../Loading'
 
+import { from } from 'rxjs'
+
 function BotsInfo({
   web3,
 }) {
@@ -19,15 +21,22 @@ function BotsInfo({
       try {
         const network = await web3.getNetworkId()
         const dxService = await getDxService(network, web3)
-        const about = await dxService.getAbout()
-        
-        setAbout(about)
+        return dxService.getAbout()
       } catch (appError) {
         console.error(appError)
-        setError(appError)
+        throw new Error(appError)
       }
     }
-    asyncMount()
+
+    const asyncMountSubscription = from(asyncMount())
+    .subscribe({
+      next: about => setAbout(about),
+      error: loadError => setError(loadError)
+    })
+
+    return () => {
+      asyncMountSubscription && asyncMountSubscription.unsubscribe()
+    }
   }, [])
 
   
