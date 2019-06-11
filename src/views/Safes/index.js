@@ -12,6 +12,8 @@ import ErrorPre from '../Error'
 
 import getDxService from '../../services/dxService'
 
+import { from } from 'rxjs'
+
 const SAFE_TYPES = [
   'seller',
   'complete',
@@ -33,23 +35,40 @@ function Safes({ web3 }) {
     // load data
     async function getSafeData() {
       try {
-        setLoading(true)
         const network = await web3.getNetworkId()
         const dxService = await getDxService(network, web3)
 
         const safeData = await dxService.getSafeModules()
 
-        setNetwork(network)
-        return setSafeData(safeData)
+        return {
+          network,
+          safeData,
+        }
       } catch (error) {
         const err = new Error(error.message)
         console.error(err)
-        setError(err)
-      } finally {
-        setLoading(false)
+        throw err
       }
     }
-    getSafeData()
+
+    setLoading(true)
+
+    const safeSubscription = from(getSafeData())
+    .subscribe({
+      next: ({
+        network,
+        safeData,
+      }) => {
+        setNetwork(network)
+        setSafeData(safeData)
+      },
+      error: appError => setError(appError),
+      complete: () => setLoading(false),
+    })
+
+    return () => {
+      safeSubscription && safeSubscription.unsubscribe()
+    }
   }, [])
 
   // eslint-disable-next-line eqeqeq
