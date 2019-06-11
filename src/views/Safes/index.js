@@ -7,6 +7,8 @@ import { PageFilter, PageWrapper } from '../../containers'
 import ErrorHOC from '../../HOCs/ErrorHOC'
 import Web3HOC from '../../HOCs/Web3HOC'
 
+import Loading from '../Loading'
+
 import getDxService from '../../services/dxService'
 
 const SAFE_TYPES = [
@@ -19,14 +21,18 @@ function Safes({ web3 }) {
   const [safeNameFilter, setSafeNameFilter] = useState('')
   const [safeTypeFilter, setSafeTypeFilter] = useState('')
   const [network, setNetwork] = useState('UNKNOWN NETWORK')
+  // App
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(undefined)
 
   // mount logic
   // 1. load endpoint Safes data
   // 2. set to state
   useEffect(() => {
     // load data
-    async function getSafeData(time = 3000) {
+    async function getSafeData() {
       try {
+        setLoading(true)
         const network = await web3.getNetworkId()
         const dxService = await getDxService(network, web3)
 
@@ -37,6 +43,9 @@ function Safes({ web3 }) {
       } catch (error) {
         const err = new Error(error.message)
         console.error(err)
+        setError(err)
+      } finally {
+        setLoading(false)
       }
     }
     getSafeData()
@@ -46,6 +55,10 @@ function Safes({ web3 }) {
   const renderEtherscanLink = (address, section) => <a href={`https://${network == '4' ? 'rinkeby.etherscan' : 'etherscan'}.io/address/${address}${section ? '#' + section : ''}`} target="_blank" rel="noopener noreferrer">{address}</a>
 
   const renderAccountLink = address => address && <Link to={'/accounts/' + address}>{address}</Link>
+
+  if (error) return <pre><h3>An error has occurred on mount :(</h3>{error.message || error}</pre>
+    // Data Loading
+    if (loading) return <Loading />
 
   return (
     <PageWrapper pageTitle="DutchX Safes">
