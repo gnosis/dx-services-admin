@@ -6,6 +6,7 @@ const MarketList = React.lazy(() => import('./views/Markets/MarketList/MarketLis
 const BotsInfo = React.lazy(() => import('./views/Bots/BotsInfo/BotsInfo'));
 const BotsList = React.lazy(() => import('./views/Bots/BotList/BotList'));
 const CheckBalances = React.lazy(() => import('./views/Accounts/CheckBalances/CheckBalances'));
+const MgnHolders = React.lazy(() => import('./views/MgnHolders'));
 const AccountDetails = React.lazy(() => import('./views/Accounts/AccountDetails/AccountDetails'));
 const Safes = React.lazy(() => import('./views/Safes'));
 
@@ -17,6 +18,7 @@ const routes = [
   { path: '/bots', exact: true, name: 'Bots', component: BotsInfo },
   { path: '/bots/list', name: 'List', component: BotsList },
   { path: '/accounts', exact: true, name: 'Accounts', component: CheckBalances },
+  { path: '/mgn-holders', exact: true, name: 'MGN Holders', component: MgnHolders },
   { path: '/accounts/:address', exact: true, name: 'Balances', component: AccountDetails },
   { path: '/safes', exact: true, name: 'DutchX Safes', component: Safes },
 ];

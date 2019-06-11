@@ -26,6 +26,11 @@ export default {
       icon: 'fa fa-line-chart',
     },
     {
+      name: 'MGN Holders',
+      url: '/mgn-holders',
+      icon: 'cui-briefcase icons',
+    },
+    {
       name: 'Bots list',
       url: '/bots/list',
       icon: 'fa fa-heartbeat',
