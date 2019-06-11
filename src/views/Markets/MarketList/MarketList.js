@@ -184,7 +184,6 @@ function MarketList({
           markets,
           tokens,
           network,
-          loading: false,
         }
       } catch (error) {
         console.error(error)
@@ -207,12 +206,11 @@ function MarketList({
             tokens,
             network,
           }))
-        setLoading(false)
       },
       error: (appError) => {
         setError(appError)
-        setLoading(false)
-      }
+      },
+      complete: () => setLoading(false),
     })
 
     return () => {
