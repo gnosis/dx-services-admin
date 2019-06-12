@@ -41,7 +41,9 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "start:public": "REACT_APP_PUBLIC=true react-scripts start",
     "build": "react-scripts build",
+    "build:public": "REACT_APP_PUBLIC=true react-scripts build",
     "server": "nodemon src/localServer",
     "test": "react-scripts test",
     "test:cov": "react-scripts test --coverage",
