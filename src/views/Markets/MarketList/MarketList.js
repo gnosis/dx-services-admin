@@ -50,9 +50,10 @@ const calculateState = (state, auc, { startTime }) => {
   }
 }
 
-const calculatePercentage = (percentage, auctionTime) => {
+const calculatePercentage = (percentage, auctionStartTime) => {
+  const auctionStartTimeInHours = Math.round(Math.abs(new Date(auctionStartTime) - new Date()) / 1000 / 60 / 60)
   const relativePercentage = Math.abs(Number(100 - percentage))
-  const sign = relativePercentage > 0 ? '+' : ''
+  const sign = auctionStartTimeInHours < 6 ? '+' : auctionStartTime === 0 ? '' : '-'
   return sign + relativePercentage.toFixed(2) + '%'
 }
 
