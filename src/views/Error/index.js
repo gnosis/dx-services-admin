@@ -2,7 +2,7 @@ import React from 'react'
 
 export const ErrorPre = ({
     error = 'An unknown error occurred',
-    errorTitle = 'An error has occurred initialisation :(',
+    errorTitle = 'An error occurred during initialisation :(',
 }) =>
     <pre style={{ padding: 50 }}>
         <h3>{errorTitle}</h3>
