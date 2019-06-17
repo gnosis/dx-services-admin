@@ -26,6 +26,11 @@ export default {
       icon: 'fa fa-line-chart',
     },
     {
+      name: 'Trades',
+      url: '/trades',
+      icon: 'fa fa-exchange',
+    },
+    {
       name: 'MGN Holders',
       url: '/mgn-holders',
       icon: 'cui-briefcase icons',

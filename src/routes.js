@@ -9,6 +9,7 @@ const CheckBalances = React.lazy(() => import('./views/Accounts/CheckBalances/Ch
 const MgnHolders = React.lazy(() => import('./views/MgnHolders'));
 const AccountDetails = React.lazy(() => import('./views/Accounts/AccountDetails/AccountDetails'));
 const Safes = React.lazy(() => import('./views/Safes'));
+const Trades = React.lazy(() => import('./views/Trades'));
 
 // https://github.com/ReactTraining/react-router/tree/master/packages/react-router-config
 const routes = [
@@ -21,6 +22,7 @@ const routes = [
   { path: '/mgn-holders', exact: true, name: 'MGN Holders', component: MgnHolders },
   { path: '/accounts/:address', exact: true, name: 'Balances', component: AccountDetails },
   { path: '/safes', exact: true, name: 'DutchX Safes', component: Safes },
+  { path: '/trades', exact: true, name: 'DutchX Trades', component: Trades },
 ];
 
 export default routes;
