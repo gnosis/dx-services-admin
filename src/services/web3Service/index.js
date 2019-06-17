@@ -121,12 +121,42 @@ async function init() {
         if (contractsMap[address]) return contractsMap[address]
         
         try {
-            const tokenArtifact = type === 'OWL' ? require('./TokenOWL.json') : type === 'MGN' ? require('./TokenFRT.json') : require('./ERC20.json')
+            const tokenArtifact = type === 'OWL' ? require('./artifacts/TokenOWL.json') : type === 'MGN' ? require('./artifacts/TokenFRT.json') : require('./artifacts/ERC20.json')
             const defaultAccount = customAccount || await getCurrentAccount()
 
             contractsMap[address] = await new web3.eth.Contract(tokenArtifact.abi, address, { from: defaultAccount })
             
             return contractsMap[address]
+        } catch (error) {
+            throw new Error(error.message)
+        }
+    }
+
+    /*
+     * DutchExchange Smart Contract
+     */
+    const getDutchX = async (network, customAccount) => {
+        // if (!address) throw new Error('No Token address passed')
+        // if (contractsMap[address]) return contractsMap[address]
+        
+        const promisedUserAccountandNetwork = Promise.all([
+            customAccount || getCurrentAccount(), 
+            network || getNetworkId()
+        ])
+
+        try {
+            const dxArtifact = require('./artifacts/DutchExchange.json')
+            const dxProxyArtifact = require('./artifacts/DutchExchangeProxy.json')
+
+            // Resolve Network + User Account
+            const [defaultAccount, network] = await promisedUserAccountandNetwork
+            
+            // Get correct dxProxy address
+            const { address: dxProxyAddr } = dxProxyArtifact.networks[network]
+
+            contractsMap[dxProxyAddr] = await new web3.eth.Contract(dxArtifact.abi, dxProxyAddr, { from: defaultAccount })
+            
+            return contractsMap[dxProxyAddr]
         } catch (error) {
             throw new Error(error.message)
         }
@@ -153,6 +183,7 @@ async function init() {
         fromWei,
         toWei,
         getToken,
+        getDutchX,
     }
 }
 
