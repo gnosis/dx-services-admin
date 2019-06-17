@@ -1,0 +1,407 @@
+{
+  "contractName": "DutchExchangeProxy",
+  "abi": [
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "masterCopy",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "name": "_masterCopy",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "payable": true,
+      "stateMutability": "payable",
+      "type": "fallback"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b506040516020806101d38339810180604052602081101561003057600080fd5b505180600160a060020a03811615156100aa57604080517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601b60248201527f546865206d617374657220636f70792069732072657175697265640000000000604482015290519081900360640190fd5b60008054600160a060020a03909216600160a060020a03199092169190911790555060f9806100da6000396000f3fe6080604052600436106038577c01000000000000000000000000000000000000000000000000000000006000350463a619486e81146076575b6000805473ffffffffffffffffffffffffffffffffffffffff169036908037600080368184600019f43d6000803e8080156071573d6000f35b3d6000fd5b348015608157600080fd5b50608860b1565b6040805173ffffffffffffffffffffffffffffffffffffffff9092168252519081900360200190f35b60005473ffffffffffffffffffffffffffffffffffffffff168156fea165627a7a7230582053d5d737ce41635f1bbd312c4fb211defcea73dc82e7fc270351a609f198b8450029",
+  "deployedBytecode": "0x6080604052600436106038577c01000000000000000000000000000000000000000000000000000000006000350463a619486e81146076575b6000805473ffffffffffffffffffffffffffffffffffffffff169036908037600080368184600019f43d6000803e8080156071573d6000f35b3d6000fd5b348015608157600080fd5b50608860b1565b6040805173ffffffffffffffffffffffffffffffffffffffff9092168252519081900360200190f35b60005473ffffffffffffffffffffffffffffffffffffffff168156fea165627a7a7230582053d5d737ce41635f1bbd312c4fb211defcea73dc82e7fc270351a609f198b8450029",
+  "sourceMap": "83:106:2:-;;;126:61;8:9:-1;5:2;;;30:1;27;20:12;5:2;126:61:2;;;;;;;;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;126:61:2;;-1:-1:-1;;;;;600:25:34;;;;592:65;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;667:10;:24;;-1:-1:-1;;;;;667:24:34;;;-1:-1:-1;;;;;;667:24:34;;;;;;;;;-1:-1:-1;83:106:2;;;;;;",
+  "deployedSourceMap": "83:106:2:-;;;;;;;;;;;;;;;;;;837:19:34;859:10;;;;;921:12;;837:19;902:32;1016:1;;999:12;1016:1;983:11;-1:-1:-1;;962:56:34;1052:14;1049:1;1046;1031:36;1087:7;1111:72;;;;1240:14;1237:1;1230:25;1111:72;1150:14;1147:1;1140:25;196;;8:9:-1;5:2;;;30:1;27;20:12;5:2;196:25:34;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;;;:::o",
+  "source": "pragma solidity ^0.5.2;\n\nimport \"@gnosis.pm/util-contracts/contracts/Proxy.sol\";\n\n\ncontract DutchExchangeProxy is Proxy {\n    constructor(address _masterCopy) public Proxy(_masterCopy) {}\n}\n",
+  "sourcePath": "/Users/anxo/code/gnosis/dx-contracts/contracts/DutchExchangeProxy.sol",
+  "ast": {
+    "absolutePath": "/Users/anxo/code/gnosis/dx-contracts/contracts/DutchExchangeProxy.sol",
+    "exportedSymbols": {
+      "DutchExchangeProxy": [
+        4415
+      ]
+    },
+    "id": 4416,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 4402,
+        "literals": [
+          "solidity",
+          "^",
+          "0.5",
+          ".2"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:2"
+      },
+      {
+        "absolutePath": "@gnosis.pm/util-contracts/contracts/Proxy.sol",
+        "file": "@gnosis.pm/util-contracts/contracts/Proxy.sol",
+        "id": 4403,
+        "nodeType": "ImportDirective",
+        "scope": 4416,
+        "sourceUnit": 9286,
+        "src": "25:55:2",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "baseContracts": [
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 4404,
+              "name": "Proxy",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 9285,
+              "src": "114:5:2",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_Proxy_$9285",
+                "typeString": "contract Proxy"
+              }
+            },
+            "id": 4405,
+            "nodeType": "InheritanceSpecifier",
+            "src": "114:5:2"
+          }
+        ],
+        "contractDependencies": [
+          9254,
+          9285
+        ],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 4415,
+        "linearizedBaseContracts": [
+          4415,
+          9285,
+          9254
+        ],
+        "name": "DutchExchangeProxy",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": {
+              "id": 4413,
+              "nodeType": "Block",
+              "src": "185:2:2",
+              "statements": []
+            },
+            "documentation": null,
+            "id": 4414,
+            "implemented": true,
+            "kind": "constructor",
+            "modifiers": [
+              {
+                "arguments": [
+                  {
+                    "argumentTypes": null,
+                    "id": 4410,
+                    "name": "_masterCopy",
+                    "nodeType": "Identifier",
+                    "overloadedDeclarations": [],
+                    "referencedDeclaration": 4407,
+                    "src": "172:11:2",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  }
+                ],
+                "id": 4411,
+                "modifierName": {
+                  "argumentTypes": null,
+                  "id": 4409,
+                  "name": "Proxy",
+                  "nodeType": "Identifier",
+                  "overloadedDeclarations": [],
+                  "referencedDeclaration": 9285,
+                  "src": "166:5:2",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_type$_t_contract$_Proxy_$9285_$",
+                    "typeString": "type(contract Proxy)"
+                  }
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "166:18:2"
+              }
+            ],
+            "name": "",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 4408,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4407,
+                  "name": "_masterCopy",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4414,
+                  "src": "138:19:2",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 4406,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "138:7:2",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "137:21:2"
+            },
+            "returnParameters": {
+              "id": 4412,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "185:0:2"
+            },
+            "scope": 4415,
+            "src": "126:61:2",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          }
+        ],
+        "scope": 4416,
+        "src": "83:106:2"
+      }
+    ],
+    "src": "0:190:2"
+  },
+  "legacyAST": {
+    "absolutePath": "/Users/anxo/code/gnosis/dx-contracts/contracts/DutchExchangeProxy.sol",
+    "exportedSymbols": {
+      "DutchExchangeProxy": [
+        4415
+      ]
+    },
+    "id": 4416,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 4402,
+        "literals": [
+          "solidity",
+          "^",
+          "0.5",
+          ".2"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:2"
+      },
+      {
+        "absolutePath": "@gnosis.pm/util-contracts/contracts/Proxy.sol",
+        "file": "@gnosis.pm/util-contracts/contracts/Proxy.sol",
+        "id": 4403,
+        "nodeType": "ImportDirective",
+        "scope": 4416,
+        "sourceUnit": 9286,
+        "src": "25:55:2",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "baseContracts": [
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 4404,
+              "name": "Proxy",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 9285,
+              "src": "114:5:2",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_Proxy_$9285",
+                "typeString": "contract Proxy"
+              }
+            },
+            "id": 4405,
+            "nodeType": "InheritanceSpecifier",
+            "src": "114:5:2"
+          }
+        ],
+        "contractDependencies": [
+          9254,
+          9285
+        ],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 4415,
+        "linearizedBaseContracts": [
+          4415,
+          9285,
+          9254
+        ],
+        "name": "DutchExchangeProxy",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": {
+              "id": 4413,
+              "nodeType": "Block",
+              "src": "185:2:2",
+              "statements": []
+            },
+            "documentation": null,
+            "id": 4414,
+            "implemented": true,
+            "kind": "constructor",
+            "modifiers": [
+              {
+                "arguments": [
+                  {
+                    "argumentTypes": null,
+                    "id": 4410,
+                    "name": "_masterCopy",
+                    "nodeType": "Identifier",
+                    "overloadedDeclarations": [],
+                    "referencedDeclaration": 4407,
+                    "src": "172:11:2",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  }
+                ],
+                "id": 4411,
+                "modifierName": {
+                  "argumentTypes": null,
+                  "id": 4409,
+                  "name": "Proxy",
+                  "nodeType": "Identifier",
+                  "overloadedDeclarations": [],
+                  "referencedDeclaration": 9285,
+                  "src": "166:5:2",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_type$_t_contract$_Proxy_$9285_$",
+                    "typeString": "type(contract Proxy)"
+                  }
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "166:18:2"
+              }
+            ],
+            "name": "",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 4408,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4407,
+                  "name": "_masterCopy",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4414,
+                  "src": "138:19:2",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 4406,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "138:7:2",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "137:21:2"
+            },
+            "returnParameters": {
+              "id": 4412,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "185:0:2"
+            },
+            "scope": 4415,
+            "src": "126:61:2",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          }
+        ],
+        "scope": 4416,
+        "src": "83:106:2"
+      }
+    ],
+    "src": "0:190:2"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.5.2+commit.1df8f40c.Emscripten.clang"
+  },
+  "networks": {
+    "1": {
+      "events": {},
+      "links": {},
+      "address": "0xb9812e2fa995ec53b5b6df34d21f9304762c5497",
+      "transactionHash": "0xb6061e32145f4b3a1b6864f0ee9d4fbdd13304afa44a6b98bdf03c05af01586f"
+    },
+    "4": {
+      "events": {},
+      "links": {},
+      "address": "0xaaeb2035ff394fdb2c879190f95e7676f1a9444b",
+      "transactionHash": "0xfaef0f2ded54fd853f7c90d4e6a15da03d011fad1ecac5f37c3ad63165f9d308"
+    },
+    "42": {
+      "events": {},
+      "links": {},
+      "address": "0x775ea749a82a87f12199019e5166980f305f4c8f",
+      "transactionHash": "0x64d16ed028081a741ae0de0e75714878a5d54474a4d263eb0e71a64861deadb9"
+    }
+  },
+  "schemaVersion": "2.0.2",
+  "updatedAt": "2019-02-07T19:40:43.708Z"
+}
