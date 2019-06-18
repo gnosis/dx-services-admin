@@ -16,7 +16,7 @@ export const DUTCHX_PROXY_ADDRESSES = {
     42: '0x775ea749a82a87f12199019e5166980f305f4c8f',
 }
 
-export const DX_GRAPHS_URL = 'https://explore.duneanalytics.com/public/dashboards/NJXQ1WlL4zr9KVesucCaB3MbKPgcbYz8vTEAXv6s'
+export const DX_GRAPHS_URL = 'https://explore.duneanalytics.com/public/dashboards/nigajDs8cp1lkmoXYNgdo3jMh2XCzUIiLk0J5Fst'
 
 /* export const MGN_PROXY_ADDRESSES = new Proxy(
     {
