@@ -80,7 +80,10 @@ function BotList({
         botAddress,
         network,
       }),
-      error: appError => setError(appError),
+      error: appError => {
+        setError(appError)
+        setLoading(false)
+      },
       complete: () => setLoading(false)
     })
 

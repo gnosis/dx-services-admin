@@ -41,6 +41,7 @@ function Trades({ web3 }) {
   const [sellTokenFilter, setSellTokenFilter] = useState((tokenFromURL(window.location.href) && tokenFromURL(window.location.href).sellToken) || MAINNET_WETH_ADDRESS)
   const [buyTokenFilter, setBuyTokenFilter] = useState((tokenFromURL(window.location.href) && tokenFromURL(window.location.href).buyToken) || MAINNET_GNO_ADDRESS)
   const [numberOfAuctions, setNumberOfAuctions] = useState(10)
+  const [specificAuction, setSpecificAuction] = useState(undefined)
   // App
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(undefined)
@@ -89,7 +90,14 @@ function Trades({ web3 }) {
         
         const { data : { data } } = await axios.post(URL, { 
           query: `{
-            auctions(first: ${numberOfAuctions}, where: { sellToken_contains: ${JSON.stringify(sellTokenFilter)}, buyToken_contains: ${JSON.stringify(buyTokenFilter)}, sellVolume_gt: 0, auctionIndex_gt: ${currentAuctionIndex - numberOfAuctions} }, order_by: { auctionIndex: desc }) {
+            auctions(
+              first: ${numberOfAuctions}, 
+              where: { 
+                sellToken_contains: ${JSON.stringify(sellTokenFilter)}, 
+                buyToken_contains: ${JSON.stringify(buyTokenFilter)}, 
+                sellVolume_gt: 0, 
+                auctionIndex_gt: ${currentAuctionIndex - numberOfAuctions} 
+            }) {
               auctionIndex
               sellVolume
               buyVolume
@@ -99,7 +107,16 @@ function Trades({ web3 }) {
           }`
         })
 
-        if (!data) throw new Error('Range too large or unsupported - please try a lower range')
+        console.group()
+        console.debug('Checking sellToken: ', sellTokenFilter)
+        console.debug('Checking buyToken: ', buyTokenFilter)
+        console.debug('Checking with currentAuctionIndex = ', currentAuctionIndex)
+        console.debug('Checking with numberOfAuctions = ', numberOfAuctions)
+        console.debug('Checking with auctionIndex_gt = ', currentAuctionIndex - numberOfAuctions)
+        console.debug('DATA = ', data)
+        console.groupEnd()
+
+        if (!data) throw new Error('Range too large/small or no record of data at set params - please try a different range')
  
         // Cache auctions
         const { auctions } = data
@@ -132,7 +149,10 @@ function Trades({ web3 }) {
         setTrades(auctions)
         setMaxAuctions(currentAuctionIndex)
       },
-      error: appError => setError(appError),
+      error: appError => {
+        setError(appError)
+        setLoading(false)
+      },
       complete: () => setLoading(false),
     })
 
@@ -144,6 +164,10 @@ function Trades({ web3 }) {
   // eslint-disable-next-line eqeqeq
   // const renderEtherscanLink = (address, section) => <a href={`https://${network == '4' ? 'rinkeby.etherscan' : 'etherscan'}.io/address/${address}${section ? '#' + section : ''}`} target="_blank" rel="noopener noreferrer">{address}</a>
   // const renderAccountLink = address => address && <Link to={'/accounts/' + address}>{address}</Link>
+
+  const handleAuctionSelect = () => {
+
+  }
 
   const renderTrades = ({
     auctionIndex,
@@ -181,7 +205,7 @@ function Trades({ web3 }) {
       <AttentionBanner title="MAINNET ONLY" subText="This feature is currently only available for Mainnet. Please check back later for data on other networks."/>
       <Form>
         <FormGroup row>
-          {/* Filter SafeModule Name */}
+          {/* Filter SellToken */}
           <Col sm={6} className="py-2">
             <PageFilter
               type="select"
@@ -191,6 +215,7 @@ function Trades({ web3 }) {
               inputName="trades"
               render={availableTokens.map(({ name, address, symbol }) => <option key={address + Math.random()} value={address}>{name} [{symbol}]</option>)}
             />
+            {/* Filter BuyToken */}
             <PageFilter
               type="select"
               title="Buy Token"
@@ -200,7 +225,7 @@ function Trades({ web3 }) {
               render={availableTokens.map(({ name, address, symbol }) => <option key={address + Math.random()} value={address}>{name} [{symbol}]</option>)}
             />
           </Col>
-          {/* Filter SafeModule Type */}
+          {/* Filter AuctionIndex Range Type */}
           <Col sm={6} className="py-2">
             <PageFilter
               type="select"
@@ -208,15 +233,22 @@ function Trades({ web3 }) {
               showWhat={numberOfAuctions}
               changeFunction={event => setNumberOfAuctions(event.target.value)}
               inputName="trades"
-              onSubmit
-              render={Array.from({length: maxAuctions}, (v, i) => <option key={i + Math.random()} value={i}>{i}</option>)}
+              render={Array.from({length: maxAuctions}, (_, i) => <option key={i + Math.random()} value={i}>{i}</option>)}
+            />
+            <PageFilter
+              type="select"
+              title="Specific auction to show"
+              showWhat={numberOfAuctions}
+              changeFunction={event => setSpecificAuction(event.target.value)}
+              inputName="trades"
+              render={Array.from({length: maxAuctions}, (_, i) => <option key={i + Math.random()} value={i}>{i}</option>)}
             />
           </Col>
         </FormGroup>
       </Form>
       {error 
         ?
-      <ErrorPre error={error}/>
+      <ErrorPre error={error} errorTitle=""/>
         :
       <Table responsive hover>
         <thead>

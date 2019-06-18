@@ -209,6 +209,7 @@ function MarketList({
       },
       error: (appError) => {
         setError(appError)
+        setLoading(false)
       },
       complete: () => setLoading(false),
     })
