@@ -43,7 +43,7 @@ function CheckBalances(props) {
               placeholder="0x0000000000000000000000000000000000000000"
               onChange={handleInputChange}
             />
-            {/* <strong>Address Balance: {accountBalance || '-'}</strong> */}
+            <strong>** clicking <i>Check balances</i> with no address defaults to your current Ethereum address</strong>
           </Col>
         </FormGroup>
         <FormGroup check row>

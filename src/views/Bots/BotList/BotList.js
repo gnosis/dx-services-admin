@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { Col, Table, Badge, FormGroup, Form } from 'reactstrap';
@@ -8,58 +8,88 @@ import ErrorHOC from '../../../HOCs/ErrorHOC'
 import Web3HOC from '../../../HOCs/Web3HOC'
 
 import Loading from '../../Loading'
+import ErrorPre from '../../Error'
 
 import moment from 'moment'
 
 import getBotMasters from '../../../utils/getBotMasters'
 import getDxService from '../../../services/dxService'
 
-class BotList extends Component {
-  state = {
-    // Filters
-    botType: '',
-    token: '',
-    address: '',
-    botName: '',
+import { from } from 'rxjs'
 
+function BotList({
+  web3,
+}) {
+  const [state, setState] = useState({
     // Data
     bots: [],
-    botTypes: [],
     tokens: [],
+    botTypes: [],
     botAddress: [],
 
     // Web3
     network: 'UNKNOWN NETWORK',
+  })
+  // FILTERS
+  const [token, setToken] = useState('')
+  const [botType, setBotType] = useState('')
+  const [address, setAddress] = useState('')
+  const [botName, setBotName] = useState('')
 
-    // Errors
-    error: undefined,
-    loading: false,
-  }
+  // APP
+  const [error, setError] = useState(undefined)
+  const [loading, setLoading] = useState(false)
 
-  async componentDidMount() {
-    try {
-      this.setState({ loading: true })
-      const network = await this.props.web3.getNetworkId()
-      const dxService = await getDxService(network, this.props.web3)
-      
-      let bots = await dxService.getBots()
-      const { botTypes, tokens, botAddress } = getBotMasters(bots)
-  
-      this.setState({
+  // ComponentDidMount
+  useEffect(() => {
+    async function asyncMountLogic() {
+      try {
+        const network = await web3.getNetworkId()
+        const dxService = await getDxService(network, web3)
+        
+        let bots = await dxService.getBots()
+        const { botTypes, tokens, botAddress } = getBotMasters(bots)
+    
+        return {
+          bots,
+          botTypes,
+          tokens,
+          botAddress,
+          network,
+        }
+      } catch (err) {
+        console.error(err)
+        throw new Error(err)
+      }
+    }
+
+    setLoading(true)
+
+    const botsListSubscription = from(asyncMountLogic())
+    .subscribe({
+      next: ({
         bots,
         botTypes,
         tokens,
         botAddress,
         network,
-        loading: false,
-      })
-    } catch (err) {
-      console.error(err)
-      this.setState({ error: err, loading: false })
-    }
-  }
+      }) => setState({
+        bots,
+        botTypes,
+        tokens,
+        botAddress,
+        network,
+      }),
+      error: appError => setError(appError),
+      complete: () => setLoading(false)
+    })
 
-  renderRow = ({
+    return () => {
+      botsListSubscription && botsListSubscription.unsubscribe()
+    }
+  }, [])
+
+  const renderRow = ({
     id,
     type,
     name,
@@ -87,31 +117,31 @@ class BotList extends Component {
       <td><strong>{name}</strong></td>
       <td>
         <ul>
-          {this.renderTokens(name, tokens)}
-          {this.renderRules(name, rules)}
-          {this.renderMarkets(name, markets)}
-          {this.renderAddressRow('Bot address', botAddress)}
-          {this.renderInactivityPeriods(name, inactivityPeriods)}
+          {renderTokens(name, tokens)}
+          {renderRules(name, rules)}
+          {renderMarkets(name, markets)}
+          {renderAddressRow('Bot address', botAddress)}
+          {renderInactivityPeriods(name, inactivityPeriods)}
 
-          {this.renderAmountRow('Minimum Ether', minimumAmountForEther / 10 ** 18, 'Ether')}
-          {this.renderAmountRow('Minimum tokens (in DutchX)', minimumAmountInUsdForToken, '$')}
-          {this.renderAmountRow('Minimum token (out of DutchX)', minimumAmountInUsdForTokenBalance, '$')}
-          {this.renderAmountRow('Minimum OWL', minimumAmountForOwl, 'OWL')}
+          {renderAmountRow('Minimum Ether', minimumAmountForEther / 10 ** 18, 'Ether')}
+          {renderAmountRow('Minimum tokens (in DutchX)', minimumAmountInUsdForToken, '$')}
+          {renderAmountRow('Minimum token (out of DutchX)', minimumAmountInUsdForTokenBalance, '$')}
+          {renderAmountRow('Minimum OWL', minimumAmountForOwl, 'OWL')}
 
-          {this.renderDateRow('Last error', lastError, 'danger')}
-          {this.renderDateRow('Last warning notification', lastWarnNotification)}
-          {this.renderDateRow('Last check', lastCheck)}
-          {this.renderDateRow('Last buy', lastBuy)}
-          {this.renderDateRow('Last sell', lastSell)}
-          {this.renderDateRow('Last deposit', lastDeposit)}
-          {this.renderDateRow('Running since', startTime)}
-          {this.renderNotifications(name, notifications)}
-          {checkTimeInMilliseconds && this.renderAmountRow('Check frequency', checkTimeInMilliseconds / 1000, 'seconds')}
+          {renderDateRow('Last error', lastError, 'danger')}
+          {renderDateRow('Last warning notification', lastWarnNotification)}
+          {renderDateRow('Last check', lastCheck)}
+          {renderDateRow('Last buy', lastBuy)}
+          {renderDateRow('Last sell', lastSell)}
+          {renderDateRow('Last deposit', lastDeposit)}
+          {renderDateRow('Running since', startTime)}
+          {renderNotifications(name, notifications)}
+          {checkTimeInMilliseconds && renderAmountRow('Check frequency', checkTimeInMilliseconds / 1000, 'seconds')}
         </ul>
       </td>
     </tr>
 
-  renderDateRow = (label, time, badgeColor) => 
+  const renderDateRow = (label, time, badgeColor) => 
     time &&
       <li>
         {!badgeColor && (
@@ -131,7 +161,7 @@ class BotList extends Component {
 
    * @memberof BotList
    */
-  renderMarkets = (name, markets) =>
+  const renderMarkets = (name, markets) =>
     markets && !!markets.length &&
       <li>
         <strong>Markets</strong>:&nbsp;
@@ -152,7 +182,7 @@ class BotList extends Component {
 
    * @memberof BotList
    */
-  renderTokens = (name, tokens) =>
+  const renderTokens = (name, tokens) =>
     tokens && !!tokens.length &&
       <li>
         <strong>Tokens</strong>:&nbsp;
@@ -173,7 +203,7 @@ class BotList extends Component {
    
    * @memberof BotList
    */
-  renderNotifications = (name, notifications) =>
+  const renderNotifications = (name, notifications) =>
     notifications && !!notifications.length &&
       <li>
         <strong>Notifications</strong>:&nbsp;
@@ -197,7 +227,7 @@ class BotList extends Component {
    
    * @memberof BotList
    */
-  renderInactivityPeriods = (name, inactivityPeriods) =>
+  const renderInactivityPeriods = (name, inactivityPeriods) =>
     inactivityPeriods && !!inactivityPeriods.length &&
       <li>
         <strong>Inactivity periods</strong>:&nbsp;
@@ -220,13 +250,13 @@ class BotList extends Component {
 
    * @memberof BotList
    */
-  renderAmountRow = (label, amount, currency) =>
+  const renderAmountRow = (label, amount, currency) =>
     !!Number(amount) &&
       <li>
         <strong>{label}</strong>:&nbsp;{amount + ' ' + currency}
       </li>
 
-  renderAddressRow = (label, address) =>
+  const renderAddressRow = (label, address) =>
     address &&
       <li>
         <strong>{label}</strong>: <Link to={'/accounts/' + address}>{address}</Link>
@@ -239,7 +269,7 @@ class BotList extends Component {
    
    * @memberof BotList
    */
-  renderRules = (name, rules) =>
+  const renderRules = (name, rules) =>
     rules && !!rules.length &&
       <li>
         <strong>Rules</strong>:
@@ -258,134 +288,122 @@ class BotList extends Component {
         </ul>
       </li>
 
-  render() {
-    const {
-      // Data
-      bots,
-      botTypes,
-      tokens,
-      botAddress,
+  const {
+    // Data
+    bots,
+    botTypes,
+    tokens,
+    botAddress,
+  } = state
 
-      // Filters
-      botType,
-      token,
-      address,
-      botName,
+  // Filter by type
+  let filteredBots = bots
+  if (botType) {
+    filteredBots = filteredBots.filter(bot => bot.type && bot.type === botType)
+  }
 
-      // App
-      loading,
-      error
-    } = this.state
+  // Filter by address
+  if (address) {
+    filteredBots = filteredBots.filter(bot => bot.botAddress && bot.botAddress === address)
+  }
 
-    // Filter by type
-    let filteredBots = bots
-    if (botType) {
-      filteredBots = filteredBots.filter(bot => bot.type && bot.type === botType)
-    }
+  // Filter by name
+  if (botName) {
+    const botNameLowerCase = botName.toLowerCase()
+    filteredBots = filteredBots.filter(bot => bot.name && bot.name.toLowerCase().includes(botNameLowerCase))
+  }
 
-    // Filter by address
-    if (address) {
-      filteredBots = filteredBots.filter(bot => bot.botAddress && bot.botAddress === address)
-    }
+  // Filter by token
+  if (token) {
+    filteredBots = filteredBots.filter(({ markets, tokens }) => {
+      if (!tokens && !markets) {
+        return false
+      }
 
-    // Filter by name
-    if (botName) {
-      const botNameLowerCase = botName.toLowerCase()
-      filteredBots = filteredBots.filter(bot => bot.name && bot.name.toLowerCase().includes(botNameLowerCase))
-    }
+      if (tokens && tokens.includes(token)) {
+        return true
+      }
 
-    // Filter by token
-    if (token) {
-      filteredBots = filteredBots.filter(({ markets, tokens }) => {
-        if (!tokens && !markets) {
-          return false
-        }
+      if (markets) {
+        const marketContainsToken = markets.some(({ tokenA, tokenB }) => {
+          return tokenA === token || tokenB === token
+        })
 
-        if (tokens && tokens.includes(token)) {
+        if (marketContainsToken) {
           return true
         }
+      }
 
-        if (markets) {
-          const marketContainsToken = markets.some(({ tokenA, tokenB }) => {
-            return tokenA === token || tokenB === token
-          })
-
-          if (marketContainsToken) {
-            return true
-          }
-        }
-
-        return false
-      })
-    }
-    if (error) return <pre><h3>An error has occurred on mount :(</h3>{error.message || error}</pre>
-    // Data Loading
-    if (loading) return <Loading />
-
-    return (
-      <PageWrapper pageTitle="DutchX Bots">
-        <Form>
-          <FormGroup row>
-            <Col lg={4} sm={6} className="py-2">
-              <PageFilter
-                type="select"
-                title="Bot Type"
-                filterWhat={botTypes}
-                showWhat={botType}
-                changeFunction={event => this.setState({ botType: event.target.value })}
-                inputName="botType"
-              />
-            </Col>
-
-            <Col lg={4} sm={6} className="py-2">
-              <PageFilter
-                type="select"
-                title="Token"
-                filterWhat={tokens}
-                showWhat={token}
-                changeFunction={event => this.setState({ token: event.target.value })}
-                inputName="token"
-              />
-            </Col>
-
-            <Col lg={4} sm={6} className="py-2">
-              <PageFilter
-                type="select"
-                title="Address"
-                filterWhat={botAddress}
-                showWhat={address}
-                changeFunction={event => this.setState({ address: event.target.value })}
-                inputName="address"
-              />
-            </Col>
-
-            <Col lg={12} sm={6} className="py-2">
-              <PageFilter
-                title="Bot Name"
-                showWhat={botName}
-                changeFunction={event => this.setState({ botName: event.target.value })}
-                placeholder="Filter by bot name"
-                inputName="token"
-              />
-            </Col>
-          </FormGroup>
-        </Form>
-
-        <Table responsive striped hover>
-          <thead>
-            <tr>
-              <th>Type</th>
-              <th>Name</th>
-              <th>State</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredBots.map(bot => this.renderRow(bot))}
-          </tbody>
-        </Table>
-      </PageWrapper>
-    )
+      return false
+    })
   }
+  if (error) return <ErrorPre error={error} />
+  // Data Loading
+  if (loading) return <Loading />
+
+  return (
+    <PageWrapper pageTitle="DutchX Bots">
+      <Form>
+        <FormGroup row>
+          <Col lg={4} sm={6} className="py-2">
+            <PageFilter
+              type="select"
+              title="Bot Type"
+              filterWhat={botTypes}
+              showWhat={botType}
+              changeFunction={event => setBotType(event.target.value)}
+              inputName="botType"
+            />
+          </Col>
+
+          <Col lg={4} sm={6} className="py-2">
+            <PageFilter
+              type="select"
+              title="Token"
+              filterWhat={tokens}
+              showWhat={token}
+              changeFunction={event => setToken(event.target.value)}
+              inputName="token"
+            />
+          </Col>
+
+          <Col lg={4} sm={6} className="py-2">
+            <PageFilter
+              type="select"
+              title="Address"
+              filterWhat={botAddress}
+              showWhat={address}
+              changeFunction={event => setAddress(event.target.value)}
+              inputName="address"
+            />
+          </Col>
+
+          <Col lg={12} sm={6} className="py-2">
+            <PageFilter
+              title="Bot Name"
+              showWhat={botName}
+              changeFunction={event => setBotName(event.target.value)}
+              placeholder="Filter by bot name"
+              inputName="token"
+            />
+          </Col>
+        </FormGroup>
+      </Form>
+
+      <Table responsive striped hover>
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Name</th>
+            <th>State</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredBots.map(bot => renderRow(bot))}
+        </tbody>
+      </Table>
+    </PageWrapper>
+  )
 }
 
 function colorByBotType(botType) {

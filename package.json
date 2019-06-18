@@ -7,7 +7,7 @@
     "@coreui/coreui-plugin-chartjs-custom-tooltips": "^1.2.0",
     "@coreui/icons": "0.3.0",
     "@coreui/react": "^2.1.5",
-    "axios": "^0.18.0",
+    "axios": "^0.19.0",
     "bootstrap": "^4.3.1",
     "chart.js": "^2.7.3",
     "classnames": "^2.2.6",
@@ -30,6 +30,7 @@
     "react-router-dom": "^4.3.1",
     "react-test-renderer": "^16.8.4",
     "reactstrap": "^7.1.0",
+    "rxjs": "^6.5.2",
     "simple-line-icons": "^2.4.1",
     "web3": "^1.0.0-beta.27"
   },
@@ -39,8 +40,10 @@
     "react-scripts": "2.1.5"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "start": "REACT_APP_PUBLIC=true react-scripts start",
+    "start:admin": "react-scripts start",
+    "build": "REACT_APP_PUBLIC=true react-scripts build",
+    "build:admin": "react-scripts build",
     "server": "nodemon src/localServer",
     "test": "react-scripts test",
     "test:cov": "react-scripts test --coverage",
