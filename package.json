@@ -1,6 +1,6 @@
 {
   "name": "@gnosis.pm/dx-services-admin",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "description": "dx services admin",
   "dependencies": {
     "@coreui/coreui": "^2.1.7",
