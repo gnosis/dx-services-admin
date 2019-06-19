@@ -75,7 +75,15 @@ function PageFilterSubmit ({
                     id={inputID || inputName}
                     innerRef={ref}
                 />
-                <button value={inputValue} onClick={(e) => (e.preventDefault(), submitFunction(inputValue))}>{buttonText}</button>
+                <button 
+                    value={inputValue} 
+                    onClick={(e) => { 
+                        e.preventDefault()
+                        submitFunction(inputValue)
+                    }}
+                >
+                    {buttonText}
+                </button>
         </InputGroup>    
 )}
 
