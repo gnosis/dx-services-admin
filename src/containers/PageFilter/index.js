@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Input, InputGroupAddon, InputGroup } from 'reactstrap'
 
 const PageFilter = ({
@@ -25,7 +25,7 @@ const PageFilter = ({
         {
             type === 'select'
                 ?
-                <Input
+            <Input
                 type={type}
                 value={showWhat}
                 onChange={changeFunction}
@@ -50,4 +50,36 @@ const PageFilter = ({
         }
     </InputGroup>
 
-export default PageFilter
+function PageFilterSubmit ({
+    type,
+    title = "Filter Name",
+    buttonText = 'Submit',
+    // CB to use on submit
+    submitFunction, 
+    inputName, 
+    inputID, 
+    ref,
+}) {
+    const [inputValue, setInputValue] = useState('')
+
+    const handleChange = e => setInputValue(e.target.value)
+
+    return (
+        <InputGroup>
+            <InputGroupAddon addonType="prepend">{title}</InputGroupAddon>
+                <Input
+                    type={type}
+                    value={inputValue}
+                    onChange={handleChange}
+                    name={inputName}
+                    id={inputID || inputName}
+                    innerRef={ref}
+                />
+                <button value={inputValue} onClick={(e) => (e.preventDefault(), submitFunction(inputValue))}>{buttonText}</button>
+        </InputGroup>    
+)}
+
+export {
+    PageFilter as default,
+    PageFilterSubmit,
+}

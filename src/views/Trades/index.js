@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 
 import { Col, Table, Badge, FormGroup, Form } from 'reactstrap'
-import { PageFilter, PageWrapper } from '../../containers'
+import { PageFilter, PageFilterSubmit, PageWrapper } from '../../containers'
 
 import ErrorHOC from '../../HOCs/ErrorHOC'
 import Web3HOC from '../../HOCs/Web3HOC'
@@ -91,18 +91,22 @@ function Trades({ web3 }) {
         const { data : { data } } = await axios.post(URL, { 
           query: `{
             auctions(
-              first: ${numberOfAuctions}, 
+              ${!specificAuction ? `first: ${numberOfAuctions},` : ''} 
               where: { 
                 sellToken_contains: ${JSON.stringify(sellTokenFilter)}, 
                 buyToken_contains: ${JSON.stringify(buyTokenFilter)}, 
                 sellVolume_gt: 0, 
-                auctionIndex_gt: ${currentAuctionIndex - numberOfAuctions} 
+                ${specificAuction ? `auctionIndex: ${specificAuction}` : `auctionIndex_gte: ${currentAuctionIndex - numberOfAuctions}`}
             }) {
               auctionIndex
               sellVolume
               buyVolume
               sellToken
               buyToken
+              cleared
+              startTime
+              clearingTime
+              totalFeesPaid
             }
           }`
         })
@@ -116,7 +120,7 @@ function Trades({ web3 }) {
         console.debug('DATA = ', data)
         console.groupEnd()
 
-        if (!data) throw new Error('Range too large/small or no record of data at set params - please try a different range')
+        if (!data.auctions) throw new Error('Range too large/small or no record of data at set params - please try a different range')
  
         // Cache auctions
         const { auctions } = data
@@ -159,15 +163,11 @@ function Trades({ web3 }) {
     return () => {
       tradesSubscription && tradesSubscription.unsubscribe()
     }
-  }, [sellTokenFilter, buyTokenFilter, numberOfAuctions])
+  }, [sellTokenFilter, buyTokenFilter, numberOfAuctions, specificAuction])
 
   // eslint-disable-next-line eqeqeq
   // const renderEtherscanLink = (address, section) => <a href={`https://${network == '4' ? 'rinkeby.etherscan' : 'etherscan'}.io/address/${address}${section ? '#' + section : ''}`} target="_blank" rel="noopener noreferrer">{address}</a>
   // const renderAccountLink = address => address && <Link to={'/accounts/' + address}>{address}</Link>
-
-  const handleAuctionSelect = () => {
-
-  }
 
   const renderTrades = ({
     auctionIndex,
@@ -175,6 +175,9 @@ function Trades({ web3 }) {
     buyToken,
     sellVolume,
     buyVolume,
+    startTime,
+    clearingTime,
+    totalFeesPaid,
   }) =>
     <tr key={auctionIndex * Math.random()}>
       {/* NAME */}
@@ -183,23 +186,30 @@ function Trades({ web3 }) {
       </td>
       {/* SECTION */}
       <td>
+        <Badge pill color="warning">VOLUMES</Badge>
         <ul>
-          <li>Sell Token: {sellToken}</li>
-          <li>Buy Token: {buyToken}</li>
+          <li><strong>Sell volume:</strong> {(sellVolume / 10**18).toFixed(4)}</li>
+          <li><strong>Buy volume:</strong> {(buyVolume / 10**18).toFixed(4)}</li>
         </ul>
       </td>
-      {/* SECTION */}
       <td>
+        <Badge pill color="warning">TIMES</Badge>
         <ul>
-          <li>Sell Volume: {(sellVolume / 10**18).toFixed(4)}</li>
-          <li>Buy Volume: {(buyVolume / 10**18).toFixed(4)}</li>
+          <li><strong>Starting time:</strong> {(new Date(startTime * 1000)).toUTCString()}</li>
+          <li><strong>Clearing time:</strong> {(new Date(clearingTime * 1000)).toUTCString()}</li>
+        </ul>
+      </td>
+      <td>
+        <Badge pill color="warning">FEES</Badge>
+        <ul>
+          <li><strong>Total fees paid:</strong> <Badge pill>{(totalFeesPaid / 10**18).toFixed(4)}</Badge></li>
         </ul>
       </td>
     </tr>
 
   // Data Loading
   if (loading) return <Loading />
-
+  console.debug('SELECTED AUCTION = ', specificAuction)
   return (
     <PageWrapper pageTitle="DutchX Trades">
       <AttentionBanner title="MAINNET ONLY" subText="This feature is currently only available for Mainnet. Please check back later for data on other networks."/>
@@ -235,17 +245,22 @@ function Trades({ web3 }) {
               inputName="trades"
               render={Array.from({length: maxAuctions}, (_, i) => <option key={i + Math.random()} value={i}>{i}</option>)}
             />
-            <PageFilter
-              type="select"
+            <PageFilterSubmit
+              type="number"
               title="Specific auction to show"
               showWhat={numberOfAuctions}
-              changeFunction={event => setSpecificAuction(event.target.value)}
+              submitFunction={setSpecificAuction}
               inputName="trades"
-              render={Array.from({length: maxAuctions}, (_, i) => <option key={i + Math.random()} value={i}>{i}</option>)}
             />
           </Col>
         </FormGroup>
       </Form>
+      {specificAuction && 
+        <div onClick={() => setSpecificAuction(undefined)} style={{ backgroundColor: '#d9ffd0', display: 'inline-block', padding: 10, cursor: 'pointer' }}>
+          <strong style={{ marginRight: 13 }}>Selected Auction:</strong>
+          <Badge color="success" pill>{specificAuction}</Badge> <strong style={{ cursor: 'pointer' }} onClick={() => setSpecificAuction(undefined)}>x</strong>
+        </div>
+      }
       {error 
         ?
       <ErrorPre error={error} errorTitle=""/>
@@ -254,8 +269,9 @@ function Trades({ web3 }) {
         <thead>
           <tr>
             <th>Auction Index</th>
-            <th>Token Addresses</th>
             <th>Volumes</th>
+            <th>Times</th>
+            <th>Fees</th>
           </tr>
         </thead>
         <tbody>
