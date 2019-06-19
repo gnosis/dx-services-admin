@@ -26,9 +26,9 @@ export default {
       icon: 'fa fa-line-chart',
     },
     {
-      name: 'Trades',
-      url: '/trades',
-      icon: 'fa fa-exchange',
+      name: 'Past Auctions',
+      url: '/past-auctions',
+      icon: 'fa fa-arrow-left',
     },
     {
       name: 'MGN Holders',

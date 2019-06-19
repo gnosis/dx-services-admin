@@ -31,7 +31,7 @@ const URL = 'https://api.thegraph.com/subgraphs/name/gnosis/dutchx'
 const MAINNET_WETH_ADDRESS = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
 const MAINNET_GNO_ADDRESS = '0x6810e776880c02933d47db1b9fc05908e5386b96'
 
-function Trades({ web3 }) {
+function PastAuctions({ web3 }) {
   const [trades, setTrades] = useState([])
   const [availableTokens, setAvailableTokens] = useState([])
   const [maxAuctions, setMaxAuctions] = useState(501)
@@ -40,7 +40,7 @@ function Trades({ web3 }) {
   // Data Selection
   const [sellTokenFilter, setSellTokenFilter] = useState((tokenFromURL(window.location.href) && tokenFromURL(window.location.href).sellToken) || MAINNET_WETH_ADDRESS)
   const [buyTokenFilter, setBuyTokenFilter] = useState((tokenFromURL(window.location.href) && tokenFromURL(window.location.href).buyToken) || MAINNET_GNO_ADDRESS)
-  const [numberOfAuctions, setNumberOfAuctions] = useState(10)
+  const [numberOfAuctions, setNumberOfAuctions] = useState(50)
   const [specificAuction, setSpecificAuction] = useState(undefined)
   // App
   const [loading, setLoading] = useState(false)
@@ -112,12 +112,12 @@ function Trades({ web3 }) {
         })
 
         console.group()
-        console.debug('Checking sellToken: ', sellTokenFilter)
-        console.debug('Checking buyToken: ', buyTokenFilter)
-        console.debug('Checking with currentAuctionIndex = ', currentAuctionIndex)
-        console.debug('Checking with numberOfAuctions = ', numberOfAuctions)
-        console.debug('Checking with auctionIndex_gt = ', currentAuctionIndex - numberOfAuctions)
-        console.debug('DATA = ', data)
+          console.debug('Checking sellToken: ', sellTokenFilter)
+          console.debug('Checking buyToken: ', buyTokenFilter)
+          console.debug('Checking with currentAuctionIndex = ', currentAuctionIndex)
+          console.debug('Checking with numberOfAuctions = ', numberOfAuctions)
+          console.debug('Checking with auctionIndex_gt = ', currentAuctionIndex - numberOfAuctions)
+          console.debug('DATA = ', data)
         console.groupEnd()
 
         if (!data.auctions) throw new Error('Range too large/small or no record of data at set params - please try a different range')
@@ -182,7 +182,11 @@ function Trades({ web3 }) {
     <tr key={auctionIndex * Math.random()}>
       {/* NAME */}
       <td>
-        <Badge color="success" pill>{auctionIndex}</Badge>
+        <Badge 
+          color="success" pill
+        >
+          {auctionIndex}
+        </Badge>
       </td>
       {/* SECTION */}
       <td>
@@ -200,16 +204,13 @@ function Trades({ web3 }) {
         </ul>
       </td>
       <td>
-        <Badge pill color="warning">FEES</Badge>
-        <ul>
-          <li><strong>Total fees paid:</strong> <Badge pill>{(totalFeesPaid / 10**18).toFixed(4)}</Badge></li>
-        </ul>
+        <strong>{(totalFeesPaid / 10**18).toFixed(4)}</strong> ETH
       </td>
     </tr>
 
   // Data Loading
   if (loading) return <Loading />
-  console.debug('SELECTED AUCTION = ', specificAuction)
+  
   return (
     <PageWrapper pageTitle="DutchX Trades">
       <AttentionBanner title="MAINNET ONLY" subText="This feature is currently only available for Mainnet. Please check back later for data on other networks."/>
@@ -282,7 +283,7 @@ function Trades({ web3 }) {
   )
 }
 
-export default ErrorHOC(Web3HOC(Trades))
+export default ErrorHOC(Web3HOC(PastAuctions))
 
 // {safeData
 //     // Sort by operatorAddressIndex greatest to least
