@@ -26,6 +26,11 @@ const navArray = [
     icon: 'fa fa-arrow-left',
   },
   {
+    name: 'Trades',
+    url: '/trades',
+    icon: 'fa fa-exchange',
+  },
+  {
     name: 'MGN Holders',
     url: '/mgn-holders',
     icon: 'cui-briefcase icons',

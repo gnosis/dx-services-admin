@@ -31,8 +31,8 @@ const URL = 'https://api.thegraph.com/subgraphs/name/gnosis/dutchx'
 const MAINNET_WETH_ADDRESS = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
 const MAINNET_GNO_ADDRESS = '0x6810e776880c02933d47db1b9fc05908e5386b96'
 
-function PastAuctions({ web3 }) {
-  const [pastAuctions, setPastAuctions] = useState([])
+function Trades({ web3 }) {
+  const [trades, setTrades] = useState([])
   const [availableTokens, setAvailableTokens] = useState([])
   const [maxAuctions, setMaxAuctions] = useState(501)
   // const [safeTypeFilter, setSafeTypeFilter] = useState('')
@@ -142,7 +142,7 @@ function PastAuctions({ web3 }) {
 
     setLoading(true)
 
-    const pastAuctionsSub = from(graphQLDataFetch())
+    const tradesSub = from(graphQLDataFetch())
     .subscribe({
       next: ({
         bcNetwork,
@@ -150,7 +150,7 @@ function PastAuctions({ web3 }) {
         currentAuctionIndex,
       }) => {
         setNetwork(bcNetwork)
-        setPastAuctions(auctions)
+        setTrades(auctions)
         setMaxAuctions(currentAuctionIndex)
       },
       error: appError => {
@@ -161,7 +161,7 @@ function PastAuctions({ web3 }) {
     })
 
     return () => {
-      pastAuctionsSub && pastAuctionsSub.unsubscribe()
+      tradesSub && tradesSub.unsubscribe()
     }
   }, [sellTokenFilter, buyTokenFilter, numberOfAuctions, specificAuction])
 
@@ -171,8 +171,6 @@ function PastAuctions({ web3 }) {
 
   const renderTrades = ({
     auctionIndex,
-    sellToken,
-    buyToken,
     sellVolume,
     buyVolume,
     startTime,
@@ -182,9 +180,11 @@ function PastAuctions({ web3 }) {
     <tr key={auctionIndex * Math.random()}>
       {/* NAME */}
       <td>
-        <a href={`${window.location.origin}/#/trades?sellToken=${sellToken}&buyToken=${buyToken}&auctionIndex=${auctionIndex}`}>
-          <Badge color="success" pill>{auctionIndex}</Badge>
-        </a>
+        <Badge 
+          color="success" pill
+        >
+          {auctionIndex}
+        </Badge>
       </td>
       {/* SECTION */}
       <td>
@@ -274,52 +274,11 @@ function PastAuctions({ web3 }) {
           </tr>
         </thead>
         <tbody>
-          {pastAuctions && pastAuctions.map(trade => renderTrades(trade))}
+          {trades && trades.map(trade => renderTrades(trade))}
         </tbody>
       </Table>}
     </PageWrapper>
   )
 }
 
-export default ErrorHOC(Web3HOC(PastAuctions))
-
-// {safeData
-//     // Sort by operatorAddressIndex greatest to least
-//     .sort((a, b) => b.operatorAddressIndex - a.operatorAddressIndex)
-//     // filter out TYPE
-//     .filter(({ safeModuleType }) => safeTypeFilter ? safeModuleType === safeTypeFilter : true)
-//     // filter out NAME
-//     .filter(({ name }) => safeNameFilter ? name === safeNameFilter : true)
-//     .map(({
-//       name,
-//       markets,
-//       safeAddress,
-//       uniswapArbitrageAddress,
-//       uniswapExchangeAddress,
-//       // operatorAddressIndex,
-//       operatorAddress,
-//       safeModuleType,
-//       safeModuleAddress,
-//       // minimumAmountInUsdForToken,
-//     }) =>
-//       <tr key={`safe-${safeAddress}`}>
-//         {/* Safe Name */}
-//         <td><Badge color="primary" className="p-2" pill>{name}</Badge></td>
-//         {/* <td>{markets.map(({ tokenA, tokenB }) => [<p><Badge key={`safe-market-${tokenA}-${tokenB}`}>{`${tokenA}-${tokenB}`}</Badge></p>])}</td>
-//                     <td>{renderAccountLink(safeAddress)}</td> */}
-//         {/* Type */}
-//         <td><Badge color="success" className="p-2" pill>{safeModuleType}</Badge></td>
-//         {/* Safe Info */}
-//         <td>
-//           <ul>
-//             <li>Safe account: {renderAccountLink(safeAddress)}</li>
-//             <li>Markets: {markets.map(({ tokenA, tokenB }) => [<span key={`safe-market-${tokenA}-${tokenB}`} style={{ padding: '0px 5px' }}><Badge>{`${tokenA}-${tokenB}`}</Badge></span>])}</li>
-//             <li>Safe module contract: {renderEtherscanLink(safeModuleAddress)}</li>
-//             {uniswapArbitrageAddress && <li>Uniswap's arbitrage contract: {renderEtherscanLink(uniswapArbitrageAddress, 'readContract')}</li>}
-//             {uniswapExchangeAddress && <li>Uniswap's Exchange: {renderEtherscanLink(uniswapExchangeAddress, 'readContract')}</li>}
-//             {/* Operator Address */}
-//             <li>Operator: {renderEtherscanLink(operatorAddress)}</li>
-//           </ul>
-//         </td>
-//       </tr>
-//     )}
+export default ErrorHOC(Web3HOC(Trades))
