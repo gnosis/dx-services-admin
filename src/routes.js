@@ -22,7 +22,7 @@ const routes = [
   { path: '/mgn-holders', exact: true, name: 'MGN Holders', component: MgnHolders },
   { path: '/accounts/:address', exact: true, name: 'Balances', component: AccountDetails },
   { path: '/safes', exact: true, name: 'DutchX Safes', component: Safes },
-  { path: '/past-auctions', exact: true, name: 'DutchX PastAuctions', component: PastAuctions },
+  { path: '/past-auctions', exact: true, name: 'DutchX Past Auctions', component: PastAuctions },
 ];
 
 export default routes;

@@ -32,7 +32,7 @@ const MAINNET_WETH_ADDRESS = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
 const MAINNET_GNO_ADDRESS = '0x6810e776880c02933d47db1b9fc05908e5386b96'
 
 function PastAuctions({ web3 }) {
-  const [trades, setTrades] = useState([])
+  const [pastAuctions, setPastAuctions] = useState([])
   const [availableTokens, setAvailableTokens] = useState([])
   const [maxAuctions, setMaxAuctions] = useState(501)
   // const [safeTypeFilter, setSafeTypeFilter] = useState('')
@@ -142,7 +142,7 @@ function PastAuctions({ web3 }) {
 
     setLoading(true)
 
-    const tradesSubscription = from(graphQLDataFetch())
+    const pastAuctionsSub = from(graphQLDataFetch())
     .subscribe({
       next: ({
         bcNetwork,
@@ -150,7 +150,7 @@ function PastAuctions({ web3 }) {
         currentAuctionIndex,
       }) => {
         setNetwork(bcNetwork)
-        setTrades(auctions)
+        setPastAuctions(auctions)
         setMaxAuctions(currentAuctionIndex)
       },
       error: appError => {
@@ -161,7 +161,7 @@ function PastAuctions({ web3 }) {
     })
 
     return () => {
-      tradesSubscription && tradesSubscription.unsubscribe()
+      pastAuctionsSub && pastAuctionsSub.unsubscribe()
     }
   }, [sellTokenFilter, buyTokenFilter, numberOfAuctions, specificAuction])
 
@@ -171,8 +171,6 @@ function PastAuctions({ web3 }) {
 
   const renderTrades = ({
     auctionIndex,
-    sellToken,
-    buyToken,
     sellVolume,
     buyVolume,
     startTime,
@@ -212,7 +210,7 @@ function PastAuctions({ web3 }) {
   if (loading) return <Loading />
   
   return (
-    <PageWrapper pageTitle="DutchX Trades">
+    <PageWrapper pageTitle="DutchX Past Auctions">
       <AttentionBanner title="MAINNET ONLY" subText="This feature is currently only available for Mainnet. Please check back later for data on other networks."/>
       <Form>
         <FormGroup row>
@@ -276,7 +274,7 @@ function PastAuctions({ web3 }) {
           </tr>
         </thead>
         <tbody>
-          {trades && trades.map(trade => renderTrades(trade))}
+          {pastAuctions && pastAuctions.map(trade => renderTrades(trade))}
         </tbody>
       </Table>}
     </PageWrapper>
