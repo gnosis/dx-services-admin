@@ -270,7 +270,7 @@ function MarketList({
     return (
       <tr key={`bot-${id}`} style={{ backgroundColor }}>
         <td>
-            <a href={`${window.location.origin}/#/trades?sellToken=${tokenA.address}&buyToken=${tokenB.address}`}>
+            <a href={`${window.location.origin}/#/past-auctions?sellToken=${tokenA.address}&buyToken=${tokenB.address}`}>
               <Badge color="primary" className="p-2" pill title={`${tokenA.address}-${tokenB.address}`}>
                 {tokenA.symbol + '-' + tokenB.symbol + '-' + auctionIndex}
               </Badge>
