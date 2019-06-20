@@ -111,14 +111,14 @@ function PastAuctions({ web3 }) {
           }`
         })
 
-        console.group()
-          console.debug('Checking sellToken: ', sellTokenFilter)
-          console.debug('Checking buyToken: ', buyTokenFilter)
-          console.debug('Checking with currentAuctionIndex = ', currentAuctionIndex)
-          console.debug('Checking with numberOfAuctions = ', numberOfAuctions)
-          console.debug('Checking with auctionIndex_gt = ', currentAuctionIndex - numberOfAuctions)
-          console.debug('DATA = ', data)
-        console.groupEnd()
+        // console.group()
+        //   console.debug('Checking sellToken: ', sellTokenFilter)
+        //   console.debug('Checking buyToken: ', buyTokenFilter)
+        //   console.debug('Checking with currentAuctionIndex = ', currentAuctionIndex)
+        //   console.debug('Checking with numberOfAuctions = ', numberOfAuctions)
+        //   console.debug('Checking with auctionIndex_gt = ', currentAuctionIndex - numberOfAuctions)
+        //   console.debug('DATA = ', data)
+        // console.groupEnd()
 
         if (!data.auctions) throw new Error('Range too large/small or no record of data at set params - please try a different range')
  
@@ -171,6 +171,8 @@ function PastAuctions({ web3 }) {
 
   const renderTrades = ({
     auctionIndex,
+    sellToken,
+    buyToken,
     sellVolume,
     buyVolume,
     startTime,
@@ -180,11 +182,9 @@ function PastAuctions({ web3 }) {
     <tr key={auctionIndex * Math.random()}>
       {/* NAME */}
       <td>
-        <Badge 
-          color="success" pill
-        >
-          {auctionIndex}
-        </Badge>
+        <a href={`${window.location.origin}/#/trades?sellToken=${sellToken}&buyToken=${buyToken}&auctionIndex=${auctionIndex}`}>
+          <Badge color="success" pill>{auctionIndex}</Badge>
+        </a>
       </td>
       {/* SECTION */}
       <td>
@@ -282,44 +282,3 @@ function PastAuctions({ web3 }) {
 }
 
 export default ErrorHOC(Web3HOC(PastAuctions))
-
-// {safeData
-//     // Sort by operatorAddressIndex greatest to least
-//     .sort((a, b) => b.operatorAddressIndex - a.operatorAddressIndex)
-//     // filter out TYPE
-//     .filter(({ safeModuleType }) => safeTypeFilter ? safeModuleType === safeTypeFilter : true)
-//     // filter out NAME
-//     .filter(({ name }) => safeNameFilter ? name === safeNameFilter : true)
-//     .map(({
-//       name,
-//       markets,
-//       safeAddress,
-//       uniswapArbitrageAddress,
-//       uniswapExchangeAddress,
-//       // operatorAddressIndex,
-//       operatorAddress,
-//       safeModuleType,
-//       safeModuleAddress,
-//       // minimumAmountInUsdForToken,
-//     }) =>
-//       <tr key={`safe-${safeAddress}`}>
-//         {/* Safe Name */}
-//         <td><Badge color="primary" className="p-2" pill>{name}</Badge></td>
-//         {/* <td>{markets.map(({ tokenA, tokenB }) => [<p><Badge key={`safe-market-${tokenA}-${tokenB}`}>{`${tokenA}-${tokenB}`}</Badge></p>])}</td>
-//                     <td>{renderAccountLink(safeAddress)}</td> */}
-//         {/* Type */}
-//         <td><Badge color="success" className="p-2" pill>{safeModuleType}</Badge></td>
-//         {/* Safe Info */}
-//         <td>
-//           <ul>
-//             <li>Safe account: {renderAccountLink(safeAddress)}</li>
-//             <li>Markets: {markets.map(({ tokenA, tokenB }) => [<span key={`safe-market-${tokenA}-${tokenB}`} style={{ padding: '0px 5px' }}><Badge>{`${tokenA}-${tokenB}`}</Badge></span>])}</li>
-//             <li>Safe module contract: {renderEtherscanLink(safeModuleAddress)}</li>
-//             {uniswapArbitrageAddress && <li>Uniswap's arbitrage contract: {renderEtherscanLink(uniswapArbitrageAddress, 'readContract')}</li>}
-//             {uniswapExchangeAddress && <li>Uniswap's Exchange: {renderEtherscanLink(uniswapExchangeAddress, 'readContract')}</li>}
-//             {/* Operator Address */}
-//             <li>Operator: {renderEtherscanLink(operatorAddress)}</li>
-//           </ul>
-//         </td>
-//       </tr>
-//     )}
