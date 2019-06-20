@@ -62,7 +62,10 @@ function Safes({ web3 }) {
         setNetwork(network)
         setSafeData(safeData)
       },
-      error: appError => setError(appError),
+      error: appError => {
+        setError(appError)
+        setLoading(false)
+      },
       complete: () => setLoading(false),
     })
 

@@ -210,6 +210,7 @@ function MarketList({
       },
       error: (appError) => {
         setError(appError)
+        setLoading(false)
       },
       complete: () => setLoading(false),
     })
@@ -269,9 +270,11 @@ function MarketList({
     return (
       <tr key={`bot-${id}`} style={{ backgroundColor }}>
         <td>
-          <Badge color="primary" className="p-2" pill title={`${tokenA.address}-${tokenB.address}`}>
-            {tokenA.symbol + '-' + tokenB.symbol + '-' + auctionIndex}
-          </Badge>
+            <a href={`${window.location.origin}/#/past-auctions?sellToken=${tokenA.address}&buyToken=${tokenB.address}`}>
+              <Badge color="primary" className="p-2" pill title={`${tokenA.address}-${tokenB.address}`}>
+                {tokenA.symbol + '-' + tokenB.symbol + '-' + auctionIndex}
+              </Badge>
+            </a>
         </td>
         <td>
           {renderEtherscanLink(tokenA)}
