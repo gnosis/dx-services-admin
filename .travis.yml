@@ -17,7 +17,7 @@ matrix:
     env:
     - DIST='public'
     - DEV_BUCKET_NAME=${DEV_PUBLIC_BUCKET_NAME}
-    - STAGING_BUCKET_NAME=${DEV_PUBLIC_BUCKET_NAME}
+    - STAGING_BUCKET_NAME=${STAGING_PUBLIC_BUCKET_NAME}
   - os: linux
     dist: xenial
     env:
