@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 
 import { Col, Table, Badge, FormGroup, Form } from 'reactstrap'
-import { PageFilter, PageFilterSubmit, PageWrapper } from '../../containers'
+import { PageFilter, PageFilterSubmit, FilterLabel, PageWrapper } from '../../containers'
 
 import ErrorHOC from '../../HOCs/ErrorHOC'
 import Web3HOC from '../../HOCs/Web3HOC'
@@ -13,17 +13,19 @@ import ErrorPre from '../Error'
 
 import getDxService from '../../services/dxService'
 
+import { shortenHash } from '../../utils'
+
 import { from } from 'rxjs'
 
 function tokenFromURL(url) {
-	if (!url || (url.search('sellToken') === -1 || url.search('buyToken') === -1)) return false 
+	if (!url || (url.search('sellToken') === -1 || url.search('buyToken') === -1 || url.search('auctionIndex') === -1)) return false 
 
-	const [[, sellToken], [, buyToken]] = url
+	const [[, sellToken], [, buyToken], [, auctionIndex]] = url
 		.split('?')[1]
 		.split('&')
 		.map(item => item.split('='))	
 
-	return { sellToken, buyToken }
+	return { sellToken, buyToken, auctionIndex }
 }
 
 // GraphQL DutchX Query
@@ -32,19 +34,31 @@ const MAINNET_WETH_ADDRESS = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
 const MAINNET_GNO_ADDRESS = '0x6810e776880c02933d47db1b9fc05908e5386b96'
 
 function Trades({ web3 }) {
-  const [trades, setTrades] = useState([])
-  const [availableTokens, setAvailableTokens] = useState([])
-  const [maxAuctions, setMaxAuctions] = useState(501)
-  // const [safeTypeFilter, setSafeTypeFilter] = useState('')
-  const [network, setNetwork] = useState(undefined)
-  // Data Selection
-  const [sellTokenFilter, setSellTokenFilter] = useState((tokenFromURL(window.location.href) && tokenFromURL(window.location.href).sellToken) || MAINNET_WETH_ADDRESS)
-  const [buyTokenFilter, setBuyTokenFilter] = useState((tokenFromURL(window.location.href) && tokenFromURL(window.location.href).buyToken) || MAINNET_GNO_ADDRESS)
-  const [numberOfAuctions, setNumberOfAuctions] = useState(50)
-  const [specificAuction, setSpecificAuction] = useState(undefined)
+  // DefaultState
+  const defaultState = {
+    // Tokens
+    sellTokenFilter: tokenFromURL(window.location.href) ? tokenFromURL(window.location.href).sellToken : MAINNET_WETH_ADDRESS,
+    buyTokenFilter: tokenFromURL(window.location.href) ? tokenFromURL(window.location.href).buyToken : MAINNET_GNO_ADDRESS,
+    specificAuction: tokenFromURL(window.location.href) ? tokenFromURL(window.location.href).auctionIndex : 1,
+    numberOfTraders: 50,
+    numberOfBuyOrders: 10,
+    numberOfSellOrders: 10,
+  }
+
+  // State + Setters
+  const [trades, setTrades]                         = useState([])
+  const [network, setNetwork]                       = useState(undefined)
+  const [availableTokens, setAvailableTokens]       = useState([])
+  // Data Filters
+  const [buyTokenFilter, setBuyTokenFilter]         = useState(defaultState.buyTokenFilter)
+  const [sellTokenFilter, setSellTokenFilter]       = useState(defaultState.sellTokenFilter)
+  const [numberOfTraders, setNumberOfTraders]       = useState(defaultState.numberOfTraders)
+  const [specificAuction, setSpecificAuction]       = useState(defaultState.specificAuction)
+  const [numberOfBuyOrders, setNumberOfBuyOrders]   = useState(defaultState.numberOfBuyOrders)
+  const [numberOfSellOrders, setNumberOfSellOrders] = useState(defaultState.numberOfSellOrders)
   // App
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(undefined)
+  const [error, setError]                           = useState(undefined)
+  const [loading, setLoading]                       = useState(false)
 
   useEffect(() => {
     setLoading(true)
@@ -84,54 +98,38 @@ function Trades({ web3 }) {
     async function graphQLDataFetch() {
       try {
         const bcNetwork = network || await web3.getNetworkId()
-        const dxContract = await web3.getDutchX(bcNetwork)
-        
-        const currentAuctionIndex = (await dxContract.methods.getAuctionIndex(sellTokenFilter, buyTokenFilter).call()).toString()
         
         const { data : { data } } = await axios.post(URL, { 
           query: `{
-            auctions(
-              ${!specificAuction ? `first: ${numberOfAuctions},` : ''} 
-              where: { 
-                sellToken_contains: ${JSON.stringify(sellTokenFilter)}, 
-                buyToken_contains: ${JSON.stringify(buyTokenFilter)}, 
-                sellVolume_gt: 0, 
-                ${specificAuction ? `auctionIndex: ${specificAuction}` : `auctionIndex_gte: ${currentAuctionIndex - numberOfAuctions}`}
-            }) {
-              auctionIndex
-              sellVolume
-              buyVolume
-              sellToken
-              buyToken
-              cleared
-              startTime
-              clearingTime
-              totalFeesPaid
+            auctions(where: { id: "${sellTokenFilter}-${buyTokenFilter}-${specificAuction}" }) {
+              traders (first: ${numberOfTraders}) {
+                id
+                buyOrders(first: ${numberOfBuyOrders}) {
+                  amount
+                  timestamp
+                  transactionHash
+                }
+                sellOrders(first: ${numberOfSellOrders}) {
+                  amount
+                  timestamp
+                  transactionHash
+                }
+              }
             }
           }`
         })
 
-        console.group()
-          console.debug('Checking sellToken: ', sellTokenFilter)
-          console.debug('Checking buyToken: ', buyTokenFilter)
-          console.debug('Checking with currentAuctionIndex = ', currentAuctionIndex)
-          console.debug('Checking with numberOfAuctions = ', numberOfAuctions)
-          console.debug('Checking with auctionIndex_gt = ', currentAuctionIndex - numberOfAuctions)
-          console.debug('DATA = ', data)
-        console.groupEnd()
-
-        if (!data.auctions) throw new Error('Range too large/small or no record of data at set params - please try a different range')
+        if (!data.auctions || !data.auctions.length) throw new Error('Range too large/small or no record of data at set params - please try a different filter combination')
  
         // Cache auctions
-        const { auctions } = data
-
+        const { auctions: [{ traders }] } = data
+        
         // Auto sort new choices DESC
-        auctions.sort((a, b) => b.auctionIndex - a.auctionIndex)
+        // auctions.sort((a, b) => b.auctionIndex - a.auctionIndex)
 
         return {
           bcNetwork, 
-          auctions,
-          currentAuctionIndex,
+          traders,
         }
       } catch (error) {
         const err = new Error(error.message)
@@ -146,63 +144,87 @@ function Trades({ web3 }) {
     .subscribe({
       next: ({
         bcNetwork,
-        auctions,
-        currentAuctionIndex,
+        traders,
       }) => {
         setNetwork(bcNetwork)
-        setTrades(auctions)
-        setMaxAuctions(currentAuctionIndex)
+        setTrades(traders)
       },
       error: appError => {
         setError(appError)
         setLoading(false)
       },
-      complete: () => setLoading(false),
+      complete: () => {
+        setError(undefined)
+        setLoading(false)
+      },
     })
 
     return () => {
       tradesSub && tradesSub.unsubscribe()
     }
-  }, [sellTokenFilter, buyTokenFilter, numberOfAuctions, specificAuction])
+  }, [sellTokenFilter, buyTokenFilter, numberOfTraders, numberOfBuyOrders, numberOfSellOrders, specificAuction])
 
   // eslint-disable-next-line eqeqeq
-  // const renderEtherscanLink = (address, section) => <a href={`https://${network == '4' ? 'rinkeby.etherscan' : 'etherscan'}.io/address/${address}${section ? '#' + section : ''}`} target="_blank" rel="noopener noreferrer">{address}</a>
+  const renderEtherscanLink = (address, section, text, type = 'address', style) => <a href={`https://${network == '4' ? 'rinkeby.etherscan' : 'etherscan'}.io/${type}/${address}${section ? '#' + section : ''}`} target="_blank" rel="noopener noreferrer" style={style}>{text || address}</a>
   // const renderAccountLink = address => address && <Link to={'/accounts/' + address}>{address}</Link>
 
   const renderTrades = ({
-    auctionIndex,
-    sellVolume,
-    buyVolume,
-    startTime,
-    clearingTime,
-    totalFeesPaid,
+    id,
+    buyOrders,
+    sellOrders,
   }) =>
-    <tr key={auctionIndex * Math.random()}>
-      {/* NAME */}
+    <tr key={id}>
+      {/* ID */}
       <td>
         <Badge 
           color="success" pill
         >
-          {auctionIndex}
+          {renderEtherscanLink(id, null, shortenHash(id, 38), 'address', { color: 'white', fontSize: '1.2em' })}
         </Badge>
       </td>
-      {/* SECTION */}
+      {/* BUY SECTION */}
       <td>
-        <Badge pill color="warning">VOLUMES</Badge>
-        <ul>
-          <li><strong>Sell volume:</strong> {(sellVolume / 10**18).toFixed(4)}</li>
-          <li><strong>Buy volume:</strong> {(buyVolume / 10**18).toFixed(4)}</li>
-        </ul>
+        <Table>
+          <thead>
+            <tr>
+              <th>Hash</th>
+              <th>Amount</th>
+              <th>Timestamp</th>
+            </tr>
+          </thead>
+          <tbody>
+            {(
+              buyOrders.map(({ amount, transactionHash, timestamp }) => 
+                <tr key={transactionHash}>
+                  <td><code title={transactionHash} style={{cursor: 'pointer'}}>{renderEtherscanLink(transactionHash, null, shortenHash(transactionHash), 'tx')}</code></td>
+                  <td>{(amount/10**18).toFixed(4)}</td>
+                  <td>{(new Date(timestamp * 1000)).toUTCString()}</td>
+                </tr>
+            ))}
+          </tbody>
+        </Table>
       </td>
+      {/* SELL SECTION */}
       <td>
-        <Badge pill color="warning">TIMES</Badge>
-        <ul>
-          <li><strong>Starting time:</strong> {(new Date(startTime * 1000)).toUTCString()}</li>
-          <li><strong>Clearing time:</strong> {(new Date(clearingTime * 1000)).toUTCString()}</li>
-        </ul>
-      </td>
-      <td>
-        <strong>{(totalFeesPaid / 10**18).toFixed(4)}</strong> ETH
+        <Table>
+            <thead>
+              <tr>
+                <th>Hash</th>
+                <th>Amount</th>
+                <th>Timestamp</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(
+                sellOrders.map(({ amount, transactionHash, timestamp }) => 
+                  <tr key={transactionHash}>
+                    <td><code title={transactionHash} style={{cursor: 'pointer'}}>{renderEtherscanLink(transactionHash, null, shortenHash(transactionHash), 'tx')}</code></td>
+                    <td>{(amount/10**18).toFixed(4)}</td>
+                    <td>{(new Date(timestamp * 1000)).toUTCString()}</td>
+                  </tr>
+              ))}
+            </tbody>
+          </Table>
       </td>
     </tr>
 
@@ -216,6 +238,7 @@ function Trades({ web3 }) {
         <FormGroup row>
           {/* Filter SellToken */}
           <Col sm={6} className="py-2">
+            <p>Token Filters</p>
             <PageFilter
               type="select"
               title="Sell Token"
@@ -234,32 +257,80 @@ function Trades({ web3 }) {
               render={availableTokens.map(({ name, address, symbol }) => <option key={address + Math.random()} value={address}>{name} [{symbol}]</option>)}
             />
           </Col>
-          {/* Filter AuctionIndex Range Type */}
+          {/* Filter Number of Traders/Specific Auction Range Type */}
           <Col sm={6} className="py-2">
-            <PageFilter
-              type="select"
-              title="Number of auctions to show"
-              showWhat={numberOfAuctions}
-              changeFunction={event => setNumberOfAuctions(event.target.value)}
+            <p>Trade / Auction Filters</p>
+            <PageFilterSubmit
+              type="number"
+              title="Number of traders to show"
+              showWhat={numberOfTraders}
+              submitFunction={setNumberOfTraders}
               inputName="trades"
-              render={Array.from({length: maxAuctions}, (_, i) => <option key={i + Math.random()} value={i}>{i}</option>)}
             />
+            {/* Filter specific auction index to show */}
             <PageFilterSubmit
               type="number"
               title="Specific auction to show"
-              showWhat={numberOfAuctions}
+              showWhat={numberOfTraders}
               submitFunction={setSpecificAuction}
               inputName="trades"
             />
           </Col>
+          {/* Filter Sell/Buy Orders */}
+          <Col sm={6} className="py-2">
+              <p>Order Filters</p>
+              {/* Sell Orders */}
+              <PageFilterSubmit
+                type="number"
+                title="Number of sell orders to show"
+                showWhat={numberOfSellOrders}
+                submitFunction={setNumberOfSellOrders}
+                inputName="trades"
+              />
+              {/* Buy Orders */}
+              <PageFilterSubmit
+                type="number"
+                title="Number of buy orders to show"
+                showWhat={numberOfBuyOrders}
+                submitFunction={setNumberOfBuyOrders}
+                inputName="trades"
+              />
+            </Col>
         </FormGroup>
       </Form>
-      {specificAuction && 
-        <div onClick={() => setSpecificAuction(undefined)} style={{ backgroundColor: '#d9ffd0', display: 'inline-block', padding: 10, cursor: 'pointer' }}>
-          <strong style={{ marginRight: 13 }}>Selected Auction:</strong>
-          <Badge color="success" pill>{specificAuction}</Badge> <strong style={{ cursor: 'pointer' }} onClick={() => setSpecificAuction(undefined)}>x</strong>
-        </div>
-      }
+       
+      {/* FILTER LABELS */}
+      <>
+        {specificAuction && 
+          <FilterLabel 
+            onClickHandler={() => setSpecificAuction(defaultState.specificAuction)}
+            filterData={specificAuction}
+            filterTitle = "Selected Auction"
+          />
+        }
+        {numberOfTraders && 
+          <FilterLabel 
+            onClickHandler={() => setNumberOfTraders(defaultState.numberOfTraders)}
+            filterData={numberOfTraders}
+            filterTitle = "Number of Traders"
+          />
+        }
+        {numberOfBuyOrders && 
+          <FilterLabel 
+            onClickHandler={() => setNumberOfBuyOrders(defaultState.numberOfBuyOrders)}
+            filterData={numberOfBuyOrders}
+            filterTitle = "Number of Buy Orders"
+          />
+        }
+        {numberOfSellOrders && 
+          <FilterLabel 
+            onClickHandler={() => setNumberOfSellOrders(defaultState.numberOfSellOrders)}
+            filterData={numberOfSellOrders}
+            filterTitle = "Number of Sell Orders"
+          />
+        }
+      </>
+
       {error 
         ?
       <ErrorPre error={error} errorTitle=""/>
@@ -267,10 +338,9 @@ function Trades({ web3 }) {
       <Table responsive hover>
         <thead>
           <tr>
-            <th>Auction Index</th>
-            <th>Volumes</th>
-            <th>Times</th>
-            <th>Fees</th>
+            <th>Trader Account</th>
+            <th>Buy Order</th>
+            <th>Sell Orders</th>
           </tr>
         </thead>
         <tbody>
