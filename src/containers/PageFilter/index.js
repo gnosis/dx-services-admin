@@ -62,7 +62,7 @@ function PageFilterSubmit ({
 }) {
     const [inputValue, setInputValue] = useState('')
 
-    const handleChange = e => setInputValue(e.target.value)
+    const handleChange = e => setInputValue(Math.round(e.target.value))
 
     return (
         <InputGroup>
@@ -75,7 +75,16 @@ function PageFilterSubmit ({
                     id={inputID || inputName}
                     innerRef={ref}
                 />
-                <button value={inputValue} onClick={(e) => (e.preventDefault(), submitFunction(inputValue))}>{buttonText}</button>
+                <button
+                    className="btn btn-primary"
+                    disabled={!inputValue}
+                    onClick={(e) => { 
+                        e.preventDefault()
+                        submitFunction(inputValue)
+                    }}
+                >
+                    {buttonText}
+                </button>
         </InputGroup>    
 )}
 
