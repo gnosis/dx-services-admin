@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Input, InputGroupAddon, InputGroup } from 'reactstrap'
+import { Badge, Input, InputGroupAddon, InputGroup } from 'reactstrap'
 
 const PageFilter = ({
     type,
@@ -88,7 +88,20 @@ function PageFilterSubmit ({
         </InputGroup>    
 )}
 
+const FilterLabel = ({
+    onClickHandler = () => null,
+    badgeColour="success",
+    customStyle,
+    filterTitle='Filter Title',
+    filterData,
+  }) =>
+    <div onClick={onClickHandler} style={{ backgroundColor: '#d9ffd0', display: 'inline-block', padding: 10, margin: 2, cursor: 'pointer', ...customStyle }}>
+      <strong>{filterTitle}:</strong>
+      <Badge color={badgeColour} style={{ margin: '0 5px' }} pill>{filterData}</Badge> <strong style={{ cursor: 'pointer' }} onClick={onClickHandler}>x</strong>
+    </div>
+
 export {
     PageFilter as default,
     PageFilterSubmit,
+    FilterLabel,
 }

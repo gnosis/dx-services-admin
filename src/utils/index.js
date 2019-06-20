@@ -72,3 +72,5 @@ export const fetcher = async (url, options) =>
         console.error(e) 
         throw new Error(`Error occurred on fetch from ${url}`)
     })
+
+export const shortenHash = (hash, endHash = 61) => `${(hash).slice(0, 6)}...${(hash).slice(endHash)}`
