@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 
 import { Col, Table, Badge, FormGroup, Form } from 'reactstrap'
-import { PageFilter, PageFilterSubmit, PageWrapper } from '../../containers'
+import { PageFilter, PageFilterSubmit, FilterLabel, PageWrapper } from '../../containers'
 
 import ErrorHOC from '../../HOCs/ErrorHOC'
 import Web3HOC from '../../HOCs/Web3HOC'
@@ -16,14 +16,14 @@ import getDxService from '../../services/dxService'
 import { from } from 'rxjs'
 
 function tokenFromURL(url) {
-	if (!url || (url.search('sellToken') === -1 || url.search('buyToken') === -1)) return false 
+  if (!url || (url.search('sellToken') === -1 || url.search('buyToken') === -1)) return false
 
-	const [[, sellToken], [, buyToken]] = url
-		.split('?')[1]
-		.split('&')
-		.map(item => item.split('='))	
+  const [[, sellToken], [, buyToken]] = url
+    .split('?')[1]
+    .split('&')
+    .map(item => item.split('='))
 
-	return { sellToken, buyToken }
+  return { sellToken, buyToken }
 }
 
 // GraphQL DutchX Query
@@ -32,15 +32,22 @@ const MAINNET_WETH_ADDRESS = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
 const MAINNET_GNO_ADDRESS = '0x6810e776880c02933d47db1b9fc05908e5386b96'
 
 function PastAuctions({ web3 }) {
+  const defaultState = {
+    auctionLimits: { max: 501, min: 1 },
+    numberOfAuctions: 50,
+    sellTokenFilter: (tokenFromURL(window.location.href) && tokenFromURL(window.location.href).sellToken) || MAINNET_WETH_ADDRESS,
+    buyTokenFilter: (tokenFromURL(window.location.href) && tokenFromURL(window.location.href).buyToken) || MAINNET_GNO_ADDRESS,
+  }
+
   const [pastAuctions, setPastAuctions] = useState([])
   const [availableTokens, setAvailableTokens] = useState([])
-  const [maxAuctions, setMaxAuctions] = useState(501)
+  const [auctionLimits, setAuctionLimits] = useState(defaultState.auctionLimits)
   // const [safeTypeFilter, setSafeTypeFilter] = useState('')
   const [network, setNetwork] = useState(undefined)
   // Data Selection
-  const [sellTokenFilter, setSellTokenFilter] = useState((tokenFromURL(window.location.href) && tokenFromURL(window.location.href).sellToken) || MAINNET_WETH_ADDRESS)
-  const [buyTokenFilter, setBuyTokenFilter] = useState((tokenFromURL(window.location.href) && tokenFromURL(window.location.href).buyToken) || MAINNET_GNO_ADDRESS)
-  const [numberOfAuctions, setNumberOfAuctions] = useState(50)
+  const [sellTokenFilter, setSellTokenFilter] = useState(defaultState.sellTokenFilter)
+  const [buyTokenFilter, setBuyTokenFilter] = useState(defaultState.buyTokenFilter)
+  const [numberOfAuctions, setNumberOfAuctions] = useState(defaultState.numberOfAuctions)
   const [specificAuction, setSpecificAuction] = useState(undefined)
   // App
   const [loading, setLoading] = useState(false)
@@ -85,18 +92,19 @@ function PastAuctions({ web3 }) {
       try {
         const bcNetwork = network || await web3.getNetworkId()
         const dxContract = await web3.getDutchX(bcNetwork)
-        
+
         const currentAuctionIndex = (await dxContract.methods.getAuctionIndex(sellTokenFilter, buyTokenFilter).call()).toString()
-        
-        const { data : { data } } = await axios.post(URL, { 
+
+        const { data: { data } } = await axios.post(URL, {
           query: `{
             auctions(
-              ${!specificAuction ? `first: ${numberOfAuctions},` : ''} 
+              ${!specificAuction ? `first: 50` : ''} 
+              orderBy: auctionIndex
               where: { 
-                sellToken_contains: ${JSON.stringify(sellTokenFilter)}, 
-                buyToken_contains: ${JSON.stringify(buyTokenFilter)}, 
+                sellToken: ${JSON.stringify(sellTokenFilter)}, 
+                buyToken: ${JSON.stringify(buyTokenFilter)}, 
                 sellVolume_gt: 0, 
-                ${specificAuction ? `auctionIndex: ${specificAuction}` : `auctionIndex_gte: ${currentAuctionIndex - numberOfAuctions}`}
+                ${specificAuction ? `auctionIndex: ${specificAuction}` : `auctionIndex_gte: ${Math.max(currentAuctionIndex - numberOfAuctions)}`}
             }) {
               auctionIndex
               sellVolume
@@ -111,17 +119,17 @@ function PastAuctions({ web3 }) {
           }`
         })
 
-        // console.group()
+        console.group()
         //   console.debug('Checking sellToken: ', sellTokenFilter)
         //   console.debug('Checking buyToken: ', buyTokenFilter)
-        //   console.debug('Checking with currentAuctionIndex = ', currentAuctionIndex)
-        //   console.debug('Checking with numberOfAuctions = ', numberOfAuctions)
-        //   console.debug('Checking with auctionIndex_gt = ', currentAuctionIndex - numberOfAuctions)
+        console.debug('Checking with currentAuctionIndex = ', currentAuctionIndex)
+        console.debug('Checking with numberOfAuctions = ', numberOfAuctions)
+        console.debug('Checking with auctionIndex_gt = ', currentAuctionIndex - numberOfAuctions)
         //   console.debug('DATA = ', data)
-        // console.groupEnd()
+        console.groupEnd()
 
         if (!data.auctions) throw new Error('Range too large/small or no record of data at set params - please try a different range')
- 
+
         // Cache auctions
         const { auctions } = data
 
@@ -129,7 +137,7 @@ function PastAuctions({ web3 }) {
         auctions.sort((a, b) => b.auctionIndex - a.auctionIndex)
 
         return {
-          bcNetwork, 
+          bcNetwork,
           auctions,
           currentAuctionIndex,
         }
@@ -143,22 +151,22 @@ function PastAuctions({ web3 }) {
     setLoading(true)
 
     const pastAuctionsSub = from(graphQLDataFetch())
-    .subscribe({
-      next: ({
-        bcNetwork,
-        auctions,
-        currentAuctionIndex,
-      }) => {
-        setNetwork(bcNetwork)
-        setPastAuctions(auctions)
-        setMaxAuctions(currentAuctionIndex)
-      },
-      error: appError => {
-        setError(appError)
-        setLoading(false)
-      },
-      complete: () => setLoading(false),
-    })
+      .subscribe({
+        next: ({
+          bcNetwork,
+          auctions,
+          currentAuctionIndex,
+        }) => {
+          setNetwork(bcNetwork)
+          setPastAuctions(auctions)
+          setAuctionLimits({ max: currentAuctionIndex, min: Math.max(currentAuctionIndex - numberOfAuctions) })
+        },
+        error: appError => {
+          setError(appError)
+          setLoading(false)
+        },
+        complete: () => setLoading(false),
+      })
 
     return () => {
       pastAuctionsSub && pastAuctionsSub.unsubscribe()
@@ -190,8 +198,8 @@ function PastAuctions({ web3 }) {
       <td>
         <Badge pill color="warning">VOLUMES</Badge>
         <ul>
-          <li><strong>Sell volume:</strong> {(sellVolume / 10**18).toFixed(4)}</li>
-          <li><strong>Buy volume:</strong> {(buyVolume / 10**18).toFixed(4)}</li>
+          <li><strong>Sell volume:</strong> {(sellVolume / 10 ** 18).toFixed(4)}</li>
+          <li><strong>Buy volume:</strong> {(buyVolume / 10 ** 18).toFixed(4)}</li>
         </ul>
       </td>
       <td>
@@ -202,16 +210,19 @@ function PastAuctions({ web3 }) {
         </ul>
       </td>
       <td>
-        <strong>{(totalFeesPaid / 10**18).toFixed(4)}</strong> ETH
+        <strong>{(totalFeesPaid / 10 ** 18).toFixed(4)}</strong> ETH
       </td>
     </tr>
 
   // Data Loading
   if (loading) return <Loading />
-  
+  console.group()
+  console.debug('auctionLimits.max = ', auctionLimits.max)
+  console.debug('auctionLimits.min = ', auctionLimits.min)
+  console.groupEnd()
   return (
     <PageWrapper pageTitle="DutchX Past Auctions">
-      <AttentionBanner title="MAINNET ONLY" subText="This feature is currently only available for Mainnet. Please check back later for data on other networks."/>
+      <AttentionBanner title="MAINNET ONLY" subText="This feature is currently only available for Mainnet. Please check back later for data on other networks." />
       <Form>
         <FormGroup row>
           {/* Filter SellToken */}
@@ -236,14 +247,15 @@ function PastAuctions({ web3 }) {
           </Col>
           {/* Filter AuctionIndex Range Type */}
           <Col sm={6} className="py-2">
-            <PageFilter
+            {/* <PageFilter
               type="select"
               title="Number of auctions to show"
               showWhat={numberOfAuctions}
               changeFunction={event => setNumberOfAuctions(event.target.value)}
               inputName="trades"
-              render={Array.from({length: maxAuctions}, (_, i) => <option key={i + Math.random()} value={i}>{i}</option>)}
-            />
+              render={Array.from({length: auctionLimits}, (_, i) => <option key={i + Math.random()} value={i}>{i}</option>)}
+            /> */}
+            {/* Filter specific auction */}
             <PageFilterSubmit
               type="number"
               title="Specific auction to show"
@@ -254,29 +266,53 @@ function PastAuctions({ web3 }) {
           </Col>
         </FormGroup>
       </Form>
-      {specificAuction && 
-        <div onClick={() => setSpecificAuction(undefined)} style={{ backgroundColor: '#d9ffd0', display: 'inline-block', padding: 10, cursor: 'pointer' }}>
-          <strong style={{ marginRight: 13 }}>Selected Auction:</strong>
-          <Badge color="success" pill>{specificAuction}</Badge> <strong style={{ cursor: 'pointer' }} onClick={() => setSpecificAuction(undefined)}>x</strong>
-        </div>
-      }
-      {error 
-        ?
-      <ErrorPre error={error} errorTitle=""/>
+
+      {/* Pagination Control */}
+      {(auctionLimits.min + defaultState.numberOfAuctions) >= auctionLimits.max ? <button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState + defaultState.numberOfAuctions)}>Next</button>
         :
-      <Table responsive hover>
-        <thead>
-          <tr>
-            <th>Auction Index</th>
-            <th>Volumes</th>
-            <th>Times</th>
-            <th>Fees</th>
-          </tr>
-        </thead>
-        <tbody>
-          {pastAuctions && pastAuctions.map(trade => renderTrades(trade))}
-        </tbody>
-      </Table>}
+        ((auctionLimits.min - defaultState.numberOfAuctions) <= 0 && auctionLimits.min <= 0) ? <button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState - defaultState.numberOfAuctions)}>Previous</button>
+          :
+          <>
+            <button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState - defaultState.numberOfAuctions)}>Previous</button>
+            <button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState + defaultState.numberOfAuctions)}>Next</button>
+          </>}
+
+      {/* Filter labels */}
+      <>
+        <FilterLabel
+          onClickHandler={() => setSpecificAuction(undefined)}
+          filterTitle="Selected Auction"
+          filterData={specificAuction}
+        />
+      </>
+
+      {error
+        ?
+        <ErrorPre error={error} errorTitle="" />
+        :
+        <Table responsive hover>
+          <thead>
+            <tr>
+              <th>Auction Index</th>
+              <th>Volumes</th>
+              <th>Times</th>
+              <th>Fees</th>
+            </tr>
+          </thead>
+          <tbody>
+            {pastAuctions && pastAuctions.map(trade => renderTrades(trade))}
+          </tbody>
+        </Table>}
+
+      {/* Pagination Control */}
+      {(auctionLimits.min + defaultState.numberOfAuctions) >= auctionLimits.max ? <button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState + defaultState.numberOfAuctions)}>Next</button>
+        :
+        ((auctionLimits.min - defaultState.numberOfAuctions) <= 0 && auctionLimits.min <= 0) ? <button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState - defaultState.numberOfAuctions)}>Previous</button>
+          :
+          <>
+            <button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState - defaultState.numberOfAuctions)}>Previous</button>
+            <button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState + defaultState.numberOfAuctions)}>Next</button>
+          </>}
     </PageWrapper>
   )
 }

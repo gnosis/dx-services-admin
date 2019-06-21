@@ -95,10 +95,14 @@ const FilterLabel = ({
     filterTitle='Filter Title',
     filterData,
   }) =>
+    filterData
+        ?
     <div onClick={onClickHandler} style={{ backgroundColor: '#d9ffd0', display: 'inline-block', padding: 10, margin: 2, cursor: 'pointer', ...customStyle }}>
       <strong>{filterTitle}:</strong>
       <Badge color={badgeColour} style={{ margin: '0 5px' }} pill>{filterData}</Badge> <strong style={{ cursor: 'pointer' }} onClick={onClickHandler}>x</strong>
     </div>
+        :
+    null
 
 export {
     PageFilter as default,
