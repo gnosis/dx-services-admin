@@ -13,6 +13,8 @@ import ErrorPre from '../Error'
 
 import getDxService from '../../services/dxService'
 
+import { FIXED_DECIMALS } from '../../globals'
+
 import { from } from 'rxjs'
 
 function tokenFromURL(url) {
@@ -24,6 +26,16 @@ function tokenFromURL(url) {
     .map(item => item.split('='))
 
   return { sellToken, buyToken }
+}
+
+const tokenListToName = (tokenList, st, bt) => {
+  if (!tokenList.length) return { sellName: '...', buyName: '...', sellSymbol: '...', buySymbol: '...' }
+  return {
+    sellName: (tokenList.find(token => token.address === st)).name,
+    buyName: (tokenList.find(token => token.address === bt)).name,
+    sellSymbol: (tokenList.find(token => token.address === st)).symbol,
+    buySymbol: (tokenList.find(token => token.address === bt)).symbol,
+  }
 }
 
 // GraphQL DutchX Query
@@ -120,12 +132,12 @@ function PastAuctions({ web3 }) {
         })
 
         console.group()
-        //   console.debug('Checking sellToken: ', sellTokenFilter)
-        //   console.debug('Checking buyToken: ', buyTokenFilter)
-        console.debug('Checking with currentAuctionIndex = ', currentAuctionIndex)
-        console.debug('Checking with numberOfAuctions = ', numberOfAuctions)
-        console.debug('Checking with auctionIndex_gt = ', currentAuctionIndex - numberOfAuctions)
-        //   console.debug('DATA = ', data)
+        //  console.debug('Checking sellToken: ', sellTokenFilter)
+        //  console.debug('Checking buyToken: ', buyTokenFilter)
+        //  console.debug('Checking with currentAuctionIndex = ', currentAuctionIndex)
+        //  console.debug('Checking with numberOfAuctions = ', numberOfAuctions)
+        //  console.debug('Checking with auctionIndex_gt = ', currentAuctionIndex - numberOfAuctions)
+        //  console.debug('DATA = ', data)
         console.groupEnd()
 
         if (!data.auctions) throw new Error('Range too large/small or no record of data at set params - please try a different range')
@@ -172,11 +184,10 @@ function PastAuctions({ web3 }) {
       pastAuctionsSub && pastAuctionsSub.unsubscribe()
     }
   }, [sellTokenFilter, buyTokenFilter, numberOfAuctions, specificAuction])
-
+  
   // eslint-disable-next-line eqeqeq
   // const renderEtherscanLink = (address, section) => <a href={`https://${network == '4' ? 'rinkeby.etherscan' : 'etherscan'}.io/address/${address}${section ? '#' + section : ''}`} target="_blank" rel="noopener noreferrer">{address}</a>
   // const renderAccountLink = address => address && <Link to={'/accounts/' + address}>{address}</Link>
-
   const renderTrades = ({
     auctionIndex,
     sellToken,
@@ -186,40 +197,39 @@ function PastAuctions({ web3 }) {
     startTime,
     clearingTime,
     totalFeesPaid,
-  }) =>
-    <tr key={auctionIndex * Math.random()}>
-      {/* NAME */}
-      <td>
-        <a href={`${window.location.origin}/#/trades?sellToken=${sellToken}&buyToken=${buyToken}&auctionIndex=${auctionIndex}`}>
-          <Badge color="success" pill>{auctionIndex}</Badge>
-        </a>
-      </td>
-      {/* SECTION */}
-      <td>
-        <Badge pill color="warning">VOLUMES</Badge>
-        <ul>
-          <li><strong>Sell volume:</strong> {(sellVolume / 10 ** 18).toFixed(4)}</li>
-          <li><strong>Buy volume:</strong> {(buyVolume / 10 ** 18).toFixed(4)}</li>
-        </ul>
-      </td>
-      <td>
-        <Badge pill color="warning">TIMES</Badge>
-        <ul>
-          <li><strong>Starting time:</strong> {(new Date(startTime * 1000)).toUTCString()}</li>
-          <li><strong>Clearing time:</strong> {(new Date(clearingTime * 1000)).toUTCString()}</li>
-        </ul>
-      </td>
-      <td>
-        <strong>{(totalFeesPaid / 10 ** 18).toFixed(4)}</strong> ETH
-      </td>
-    </tr>
+  }) => {
+    const { sellSymbol, buySymbol } = tokenListToName(availableTokens, sellTokenFilter, buyTokenFilter, auctionIndex)
 
+    return (
+      <tr 
+        key={auctionIndex * Math.random()} 
+        onClick={() => window.location.href=`${window.location.origin}/#/trades?sellToken=${sellToken}&buyToken=${buyToken}&auctionIndex=${auctionIndex}`}
+        style={{ cursor: 'pointer' }}
+      >
+        {/* NAME */}
+        <td>
+          <Badge color="success" pill>{`${sellSymbol}-${buySymbol}-${auctionIndex}`}</Badge>
+        </td>
+        {/* Volumes */}
+        <td>
+          <p><strong>Sell volume:</strong> {(sellVolume / 10 ** 18).toFixed(FIXED_DECIMALS)} [{sellSymbol}]</p>
+          <p><strong>Buy volume:</strong> {(buyVolume / 10 ** 18).toFixed(FIXED_DECIMALS)} [{buySymbol}]</p>
+        </td>
+        {/* Times */}
+        <td>
+          <p><strong>Starting time:</strong> {(new Date(startTime * 1000)).toUTCString()}</p>
+          <p><strong>Clearing time:</strong> {(new Date(clearingTime * 1000)).toUTCString()}</p>
+        </td>
+        {/* L.C */}
+        <td>
+          <strong>{(totalFeesPaid / 10 ** 18).toFixed(FIXED_DECIMALS)}</strong> ETH
+        </td>
+      </tr>
+    )
+  }
   // Data Loading
   if (loading) return <Loading />
-  console.group()
-  console.debug('auctionLimits.max = ', auctionLimits.max)
-  console.debug('auctionLimits.min = ', auctionLimits.min)
-  console.groupEnd()
+  
   return (
     <PageWrapper pageTitle="DutchX Past Auctions">
       <AttentionBanner title="MAINNET ONLY" subText="This feature is currently only available for Mainnet. Please check back later for data on other networks." />
@@ -233,7 +243,7 @@ function PastAuctions({ web3 }) {
               showWhat={sellTokenFilter}
               changeFunction={event => setSellTokenFilter(event.target.value)}
               inputName="trades"
-              render={availableTokens.map(({ name, address, symbol }) => <option key={address + Math.random()} value={address}>{name} [{symbol}]</option>)}
+              render={availableTokens.map(({ name, address, symbol }) => <option key={address + Math.random()} value={address}>{symbol} ({name})</option>)}
             />
             {/* Filter BuyToken */}
             <PageFilter
@@ -242,19 +252,11 @@ function PastAuctions({ web3 }) {
               showWhat={buyTokenFilter}
               changeFunction={event => setBuyTokenFilter(event.target.value)}
               inputName="trades"
-              render={availableTokens.map(({ name, address, symbol }) => <option key={address + Math.random()} value={address}>{name} [{symbol}]</option>)}
+              render={availableTokens.map(({ name, address, symbol }) => <option key={address + Math.random()} value={address}>{symbol} ({name})</option>)}
             />
           </Col>
           {/* Filter AuctionIndex Range Type */}
           <Col sm={6} className="py-2">
-            {/* <PageFilter
-              type="select"
-              title="Number of auctions to show"
-              showWhat={numberOfAuctions}
-              changeFunction={event => setNumberOfAuctions(event.target.value)}
-              inputName="trades"
-              render={Array.from({length: auctionLimits}, (_, i) => <option key={i + Math.random()} value={i}>{i}</option>)}
-            /> */}
             {/* Filter specific auction */}
             <PageFilterSubmit
               type="number"
@@ -293,14 +295,14 @@ function PastAuctions({ web3 }) {
         <Table responsive hover>
           <thead>
             <tr>
-              <th>Auction Index</th>
+              <th>Market</th>
               <th>Volumes</th>
               <th>Times</th>
-              <th>Fees</th>
+              <th>Liquidity Contribution</th>
             </tr>
           </thead>
           <tbody>
-            {pastAuctions && pastAuctions.map(trade => renderTrades(trade))}
+            {pastAuctions && pastAuctions.map(auction => renderTrades(auction))}
           </tbody>
         </Table>}
 
