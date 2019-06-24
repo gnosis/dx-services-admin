@@ -54,7 +54,7 @@ const calculatePercentage = (percentage, auctionStartTime) => {
   const auctionStartTimeInHours = Math.round(Math.abs(new Date(auctionStartTime) - new Date()) / 1000 / 60 / 60)
   const relativePercentage = Math.abs(Number(100 - percentage))
   const sign = auctionStartTimeInHours < 6 ? '+' : auctionStartTime === 0 ? '' : '-'
-  return sign + relativePercentage.toFixed(2) + '%'
+  return sign + relativePercentage.toFixed(FIXED_DECIMALS) + '%'
 }
 
 const HIGH_RUNNING_TIME = 1000 * 60 * 60 * 6.5
@@ -268,13 +268,11 @@ function MarketList({
     }
 
     return (
-      <tr key={`bot-${id}`} style={{ backgroundColor }}>
+      <tr key={`bot-${id}`} style={{ backgroundColor, cursor: 'pointer' }} onClick={() => window.location.href=`${window.location.origin}/#/past-auctions?sellToken=${tokenA.address}&buyToken=${tokenB.address}`}>
         <td>
-            <a href={`${window.location.origin}/#/past-auctions?sellToken=${tokenA.address}&buyToken=${tokenB.address}`}>
-              <Badge color="primary" className="p-2" pill title={`${tokenA.address}-${tokenB.address}`}>
-                {tokenA.symbol + '-' + tokenB.symbol + '-' + auctionIndex}
-              </Badge>
-            </a>
+          <Badge color="primary" className="p-2" pill title={`${tokenA.address}-${tokenB.address}`}>
+            {tokenA.symbol + '-' + tokenB.symbol + '-' + auctionIndex}
+          </Badge>
         </td>
         <td>
           {renderEtherscanLink(tokenA)}
@@ -351,13 +349,13 @@ function MarketList({
       <ul>
         {renderDateRow('Start time', startTime)}
         {/* Sell Volume */}
-        {sellVolume && renderAmountRow('Sell volume', Number(sellVolume / (10 ** sellToken.decimals)).toFixed(2), sellToken.symbol, Number(fundingInUSD).toFixed(2))}
+        {sellVolume && renderAmountRow('Sell volume', Number(sellVolume / (10 ** sellToken.decimals)).toFixed(FIXED_DECIMALS), sellToken.symbol, Number(fundingInUSD).toFixed(FIXED_DECIMALS))}
         {startTime && (
           <React.Fragment>
             {/* Buy Volume */}
-            {buyVolume > 0 && renderAmountRow('Buy volume', Number(buyVolume / (10 ** buyToken.decimals)).toFixed(2), buyToken.symbol, null, Number(boughtPercentage).toFixed(2))}
+            {buyVolume > 0 && renderAmountRow('Buy volume', Number(buyVolume / (10 ** buyToken.decimals)).toFixed(FIXED_DECIMALS), buyToken.symbol, null, Number(boughtPercentage).toFixed(FIXED_DECIMALS))}
             {/* Outstanding Vol */}
-            {outstandingVolume > 0 && renderAmountRow('Oustanding volume', Number(outstandingVolume / (10 ** buyToken.decimals)).toFixed(2), buyToken.symbol)}
+            {outstandingVolume > 0 && renderAmountRow('Oustanding volume', Number(outstandingVolume / (10 ** buyToken.decimals)).toFixed(FIXED_DECIMALS), buyToken.symbol)}
             {/* Price */}
             {price && renderAmountRow('Price', Number(price.numerator / price.denominator).toFixed(FIXED_DECIMALS), buyToken.symbol)}
             {/* Closing Price Increment */}
