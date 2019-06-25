@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
+import moment from 'moment'
 
 import { Col, Table, Badge, FormGroup, Form } from 'reactstrap'
 import { PageFilter, PageFilterSubmit, FilterLabel, PageWrapper } from '../../containers'
@@ -10,33 +11,13 @@ import Web3HOC from '../../HOCs/Web3HOC'
 import AttentionBanner from '../AttentionBanner'
 import Loading from '../Loading'
 import ErrorPre from '../Error'
+import ColourKey from '../ColourKey'
 
 import getDxService from '../../services/dxService'
 
 import { FIXED_DECIMALS } from '../../globals'
 
 import { from } from 'rxjs'
-
-function tokenFromURL(url) {
-  if (!url || (url.search('sellToken') === -1 || url.search('buyToken') === -1)) return false
-
-  const [[, sellToken], [, buyToken]] = url
-    .split('?')[1]
-    .split('&')
-    .map(item => item.split('='))
-
-  return { sellToken, buyToken }
-}
-
-const tokenListToName = (tokenList, st, bt) => {
-  if (!tokenList.length) return { sellName: '...', buyName: '...', sellSymbol: '...', buySymbol: '...' }
-  return {
-    sellName: (tokenList.find(token => token.address === st)).name,
-    buyName: (tokenList.find(token => token.address === bt)).name,
-    sellSymbol: (tokenList.find(token => token.address === st)).symbol,
-    buySymbol: (tokenList.find(token => token.address === bt)).symbol,
-  }
-}
 
 // GraphQL DutchX Query
 const URL = 'https://api.thegraph.com/subgraphs/name/gnosis/dutchx'
@@ -188,6 +169,7 @@ function PastAuctions({ web3 }) {
   // eslint-disable-next-line eqeqeq
   // const renderEtherscanLink = (address, section) => <a href={`https://${network == '4' ? 'rinkeby.etherscan' : 'etherscan'}.io/address/${address}${section ? '#' + section : ''}`} target="_blank" rel="noopener noreferrer">{address}</a>
   // const renderAccountLink = address => address && <Link to={'/accounts/' + address}>{address}</Link>
+
   const renderTrades = ({
     auctionIndex,
     sellToken,
@@ -199,9 +181,10 @@ function PastAuctions({ web3 }) {
     totalFeesPaid,
   }) => {
     const { sellSymbol, buySymbol } = tokenListToName(availableTokens, sellTokenFilter, buyTokenFilter, auctionIndex)
-
+    const anomalyClass = checkTimeForAnomaly(startTime, clearingTime)
     return (
       <tr 
+        className={anomalyClass}
         key={auctionIndex * Math.random()} 
         onClick={() => window.location.href=`${window.location.origin}/#/trades?sellToken=${sellToken}&buyToken=${buyToken}&auctionIndex=${auctionIndex}`}
         style={{ cursor: 'pointer' }}
@@ -215,10 +198,15 @@ function PastAuctions({ web3 }) {
           <p><strong>Sell volume:</strong> {(sellVolume / 10 ** 18).toFixed(FIXED_DECIMALS)} [{sellSymbol}]</p>
           <p><strong>Buy volume:</strong> {(buyVolume / 10 ** 18).toFixed(FIXED_DECIMALS)} [{buySymbol}]</p>
         </td>
+        {/* PRICES */}
+        <td>
+          <p><strong>Closing price:</strong> [PLACEHOLDER TEXT FOR PRICES]</p>
+        </td>
         {/* Times */}
         <td>
-          <p><strong>Starting time:</strong> {(new Date(startTime * 1000)).toUTCString()}</p>
-          <p><strong>Clearing time:</strong> {(new Date(clearingTime * 1000)).toUTCString()}</p>
+          <p><strong>Auction start:</strong> {moment(startTime * 1000).format('YYYY.MM.DD [at] HH:mm')}</p>
+          <p><strong>Auction end:</strong> {moment(clearingTime * 1000).format('YYYY.MM.DD [at] HH:mm')}</p>
+          <p><strong>Duration:</strong> {moment(clearingTime * 1000).from(startTime * 1000, true)}</p>
         </td>
         {/* L.C */}
         <td>
@@ -269,15 +257,22 @@ function PastAuctions({ web3 }) {
         </FormGroup>
       </Form>
 
+      {/* Colour Key */}
+      <ColourKey 
+        colourMap={{
+          "#fff1d0": "Auction duration longer than 6.5 hours, or shorter than 5 hours."
+        }}
+      />
+
       {/* Pagination Control */}
-      {(auctionLimits.min + defaultState.numberOfAuctions) >= auctionLimits.max ? <button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState + defaultState.numberOfAuctions)}>Next</button>
+      {(auctionLimits.min + defaultState.numberOfAuctions) >= auctionLimits.max ? <div><button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState + defaultState.numberOfAuctions)}>Next</button></div>
         :
-        ((auctionLimits.min - defaultState.numberOfAuctions) <= 0 && auctionLimits.min <= 0) ? <button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState - defaultState.numberOfAuctions)}>Previous</button>
+        ((auctionLimits.min - defaultState.numberOfAuctions) <= 0 && auctionLimits.min <= 0) ? <div><button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState - defaultState.numberOfAuctions)}>Previous</button></div>
           :
-          <>
+          <div>
             <button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState - defaultState.numberOfAuctions)}>Previous</button>
             <button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState + defaultState.numberOfAuctions)}>Next</button>
-          </>}
+          </div>}
 
       {/* Filter labels */}
       <>
@@ -297,6 +292,7 @@ function PastAuctions({ web3 }) {
             <tr>
               <th>Market</th>
               <th>Volumes</th>
+              <th>Prices</th>
               <th>Times</th>
               <th>Liquidity Contribution</th>
             </tr>
@@ -307,16 +303,43 @@ function PastAuctions({ web3 }) {
         </Table>}
 
       {/* Pagination Control */}
-      {(auctionLimits.min + defaultState.numberOfAuctions) >= auctionLimits.max ? <button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState + defaultState.numberOfAuctions)}>Next</button>
+      {(auctionLimits.min + defaultState.numberOfAuctions) >= auctionLimits.max ? <div><button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState + defaultState.numberOfAuctions)}>Next</button></div>
         :
-        ((auctionLimits.min - defaultState.numberOfAuctions) <= 0 && auctionLimits.min <= 0) ? <button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState - defaultState.numberOfAuctions)}>Previous</button>
+        ((auctionLimits.min - defaultState.numberOfAuctions) <= 0 && auctionLimits.min <= 0) ? <div><button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState - defaultState.numberOfAuctions)}>Previous</button></div>
           :
-          <>
+          <div>
             <button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState - defaultState.numberOfAuctions)}>Previous</button>
             <button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState + defaultState.numberOfAuctions)}>Next</button>
-          </>}
+          </div>}
     </PageWrapper>
   )
+}
+
+function tokenFromURL(url) {
+  if (!url || (url.search('sellToken') === -1 || url.search('buyToken') === -1)) return false
+
+  const [[, sellToken], [, buyToken]] = url
+    .split('?')[1]
+    .split('&')
+    .map(item => item.split('='))
+
+  return { sellToken, buyToken }
+}
+
+function tokenListToName (tokenList, st, bt) {
+  if (!tokenList.length) return { sellName: '...', buyName: '...', sellSymbol: '...', buySymbol: '...' }
+  return {
+    sellName: (tokenList.find(token => token.address === st)).name,
+    buyName: (tokenList.find(token => token.address === bt)).name,
+    sellSymbol: (tokenList.find(token => token.address === st)).symbol,
+    buySymbol: (tokenList.find(token => token.address === bt)).symbol,
+  }
+}
+
+function checkTimeForAnomaly(time1, time2, classAnomaly = 'warningOrange') {
+  const durationAbs = Math.abs(time1 - time2) / 60 / 60
+
+  return ((durationAbs > 6.5 || durationAbs < 5) && classAnomaly) || null
 }
 
 export default ErrorHOC(Web3HOC(PastAuctions))
