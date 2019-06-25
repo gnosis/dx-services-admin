@@ -1,5 +1,6 @@
 /* eslint-disable eqeqeq */
 import React, { useEffect, useState } from 'react';
+import moment from 'moment'
 
 import { Col, Table, Badge, FormGroup, Form } from 'reactstrap';
 
@@ -10,10 +11,11 @@ import Web3HOC from '../../../HOCs/Web3HOC'
 
 import ErrorPre from '../../Error'
 import Loading from '../../Loading'
+import ColourKey from '../../ColourKey'
 
 import getDxService from '../../../services/dxService'
 
-import moment from 'moment'
+import themeColours from '../../Theme/Colors/ColoursSheet'
 import { FIXED_DECIMALS } from '../../../globals'
 
 import { from } from 'rxjs'
@@ -255,15 +257,15 @@ function MarketList({
     const now = new Date()
     let backgroundColor
     if (!startTime) {
-      backgroundColor = '#f9f9f9'
+      backgroundColor = themeColours.gray
     } else {
       const runningTime = now.getTime() - new Date(startTime).getTime()
       if (runningTime > HIGH_RUNNING_TIME) {
-        backgroundColor = '#ffeeee'
+        backgroundColor = themeColours.red
       } else if (runningTime > NEAR_CLOSING_TIME) {
-        backgroundColor = '#fff9c8'
+        backgroundColor = themeColours.yellow
       } else {
-        backgroundColor = 'white'
+        backgroundColor = themeColours.white
       }
     }
 
@@ -422,6 +424,7 @@ function MarketList({
 
   return (
     <PageWrapper pageTitle="DutchX Markets">
+      {/* FILTERS */}
       <Form>
         <FormGroup row>
           <Col sm={6} className="py-2">
@@ -448,8 +451,19 @@ function MarketList({
         </FormGroup>
       </Form>
 
+      <ColourKey 
+        header="Auction colour key:"
+        colourMap={{
+          [themeColours.red]: "Long running time",
+          [themeColours.yellow]: "Nearing closing time",
+          [themeColours.gray]: "Not yet started",
+        }}
+      />
+
+      {/* ERROR */}
       {erroredMarkets.length > 0 && <ErrorTable erroredMarkets={erroredMarkets}/>}
 
+      {/* DATA */}
       <Table responsive hover>
         <thead>
           <tr>
