@@ -15,14 +15,10 @@ import ColourKey from '../ColourKey'
 
 import getDxService from '../../services/dxService'
 
-import { FIXED_DECIMALS } from '../../globals'
+import { FIXED_DECIMALS, GRAPH_URL, MAINNET_WETH_ADDRESS, MAINNET_GNO_ADDRESS } from '../../globals'
 
 import { from } from 'rxjs'
-
-// GraphQL DutchX Query
-const URL = 'https://api.thegraph.com/subgraphs/name/gnosis/dutchx'
-const MAINNET_WETH_ADDRESS = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-const MAINNET_GNO_ADDRESS = '0x6810e776880c02933d47db1b9fc05908e5386b96'
+import { rZC } from '../../utils';
 
 function PastAuctions({ web3 }) {
   const defaultState = {
@@ -88,7 +84,7 @@ function PastAuctions({ web3 }) {
 
         const currentAuctionIndex = (await dxContract.methods.getAuctionIndex(sellTokenFilter, buyTokenFilter).call()).toString()
 
-        const { data: { data } } = await axios.post(URL, {
+        const { data: { data } } = await axios.post(GRAPH_URL, {
           query: `{
             auctions(
               ${!specificAuction ? `first: 50` : ''} 
@@ -195,12 +191,12 @@ function PastAuctions({ web3 }) {
         </td>
         {/* Volumes */}
         <td>
-          <p><strong>Sell volume:</strong> {(sellVolume / 10 ** 18).toFixed(FIXED_DECIMALS)} [{sellSymbol}]</p>
-          <p><strong>Buy volume:</strong> {(buyVolume / 10 ** 18).toFixed(FIXED_DECIMALS)} [{buySymbol}]</p>
+          <p><strong>Sell volume:</strong> {rZC((sellVolume / 10 ** 18), FIXED_DECIMALS)} [{sellSymbol}]</p>
+          <p><strong>Buy volume:</strong> {rZC((buyVolume / 10 ** 18), FIXED_DECIMALS)} [{buySymbol}]</p>
         </td>
         {/* PRICES */}
         <td>
-          <p><strong>Closing price:</strong> [PLACEHOLDER TEXT FOR PRICES]</p>
+          <p><strong>Closing price:</strong> {rZC((buyVolume / sellVolume), FIXED_DECIMALS)}</p>
         </td>
         {/* Times */}
         <td>
@@ -210,7 +206,7 @@ function PastAuctions({ web3 }) {
         </td>
         {/* L.C */}
         <td>
-          <strong>{(totalFeesPaid / 10 ** 18).toFixed(FIXED_DECIMALS)}</strong> ETH
+          <strong>{rZC((totalFeesPaid / 10 ** 18), FIXED_DECIMALS)}</strong>
         </td>
       </tr>
     )
@@ -260,7 +256,7 @@ function PastAuctions({ web3 }) {
       {/* Colour Key */}
       <ColourKey 
         colourMap={{
-          "#fff1d0": "Auction duration longer than 6.5 hours, or shorter than 5 hours."
+          "#fff1d0": "Auction run-time: Greater than 6.5 hours || Less than 5 hours"
         }}
       />
 
