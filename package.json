@@ -1,7 +1,7 @@
 {
   "name": "@gnosis.pm/dx-services-admin",
   "version": "0.1.4",
-  "description": "dx services admin",
+  "description": "VisualX - GUI for DutchX data",
   "dependencies": {
     "@coreui/coreui": "^2.1.7",
     "@coreui/coreui-plugin-chartjs-custom-tooltips": "^1.2.0",
