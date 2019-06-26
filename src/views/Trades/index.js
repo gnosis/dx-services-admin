@@ -7,9 +7,9 @@ import { PageFilter, PageFilterSubmit, FilterLabel, PageWrapper } from '../../co
 import ErrorHOC from '../../HOCs/ErrorHOC'
 import Web3HOC from '../../HOCs/Web3HOC'
 
-import AttentionBanner from '../AttentionBanner'
-import Loading from '../Loading'
-import ErrorPre from '../Error'
+import AttentionBanner from '../../components/AttentionBanner'
+import Loading from '../../components/Loading'
+import ErrorPre from '../../components/Error'
 
 import getDxService from '../../services/dxService'
 

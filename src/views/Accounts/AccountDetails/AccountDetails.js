@@ -6,8 +6,8 @@ import ErrorHOC from '../../../HOCs/ErrorHOC'
 import Web3HOC from '../../../HOCs/Web3HOC'
 
 import PageWrapper from '../../../containers/PageWrapper';
-import Loading from '../../Loading'
-import ErrorPre from '../../Error'
+import Loading from '../../../components/Loading'
+import ErrorPre from '../../../components/Error'
 
 import getDxService from '../../../services/dxService'
 
