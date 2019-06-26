@@ -16,7 +16,7 @@ export const windowLoaded = new Promise((resolve) => {
 })
 
 export const network2Color = (networkName) => {
-    switch(networkName) {
+    switch (networkName) {
         case 'Mainnet':
             return 'linear-gradient(90deg, rgba(26,152,140,1) 49%, rgba(255,255,255,1) 93%)'
         case 'Rinkeby':
@@ -65,26 +65,32 @@ export const netIdToName = (id) => {
  * @param { options: any{} }
  * @returns JSON
  */
-export const fetcher = async (url, options) => 
+export const fetcher = async (url, options) =>
     fetch(url, options)
-    .then(res => res.json())
-    .catch(e => { 
-        console.error(e) 
-        throw new Error(`Error occurred on fetch from ${url}`)
-    })
+        .then(res => res.json())
+        .catch(e => {
+            console.error(e)
+            throw new Error(`Error occurred on fetch from ${url}`)
+        })
 
 export const shortenHash = (hash, endHash = 61) => `${(hash).slice(0, 6)}...${(hash).slice(endHash)}`
 
 export function recursiveZeroCheck(num, fixAmt = 4) {
-	if (isNaN(num) || isNaN(fixAmt)) throw new Error('Parameters MUST be numbers or numbers in string form')
-	// Explicitly convert params to Number type
+    if (isNaN(num) || isNaN(fixAmt)) throw new Error('Parameters MUST be numbers or numbers in string form')
+    // Explicitly convert params to Number type
     num = Number(num)
     fixAmt = Number(fixAmt)
     // if param is indeed above 0 @ fixAmt then return
-	if (num.toFixed(fixAmt).toString() > 0) return num.toFixed(fixAmt)
+    if (num.toFixed(fixAmt).toString() > 0) return num.toFixed(fixAmt)
     // else increase fixAmt by 1
     ++fixAmt
-	return recursiveZeroCheck(num, fixAmt)
+    return recursiveZeroCheck(num, fixAmt)
 }
 
 export const rZC = recursiveZeroCheck
+
+export function setURLFilterParams(filterString) {
+    if (!window) return false
+    const defaultLocation = window.location.href.split('?')[0]
+    return window.location.replace(`${defaultLocation}${filterString}`)
+}
