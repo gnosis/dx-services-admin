@@ -13,8 +13,8 @@ import ErrorPre from '../../components/Error'
 
 import getDxService from '../../services/dxService'
 
-import { shortenHash, tokenListToName } from '../../utils'
-import { FIXED_DECIMALS, GRAPH_URL, MAINNET_WETH_ADDRESS, MAINNET_GNO_ADDRESS } from '../../globals'
+import { shortenHash } from '../../utils'
+import { FIXED_DECIMALS } from '../../globals'
 
 import { from } from 'rxjs'
 
@@ -29,14 +29,19 @@ function tokenFromURL(url) {
 	return { sellToken, buyToken, auctionIndex }
 }
 
-function Trades({ web3 }) {
+// GraphQL DutchX Query
+const URL = 'https://api.thegraph.com/subgraphs/name/gnosis/dutchx'
+const MAINNET_WETH_ADDRESS = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+const MAINNET_GNO_ADDRESS = '0x6810e776880c02933d47db1b9fc05908e5386b96'
+
+function Traders({ web3 }) {
   // DefaultState
   const defaultState = {
     // Tokens
     sellTokenFilter: tokenFromURL(window.location.href) ? tokenFromURL(window.location.href).sellToken : MAINNET_WETH_ADDRESS,
     buyTokenFilter: tokenFromURL(window.location.href) ? tokenFromURL(window.location.href).buyToken : MAINNET_GNO_ADDRESS,
     specificAuction: tokenFromURL(window.location.href) ? tokenFromURL(window.location.href).auctionIndex : 1,
-    // numberOfTraders: 50,
+    numberOfTraders: 50,
     numberOfBuyOrders: 10,
     numberOfSellOrders: 10,
   }
@@ -48,7 +53,7 @@ function Trades({ web3 }) {
   // Data Filters
   const [buyTokenFilter, setBuyTokenFilter]         = useState(defaultState.buyTokenFilter)
   const [sellTokenFilter, setSellTokenFilter]       = useState(defaultState.sellTokenFilter)
-  // const [numberOfTraders, setNumberOfTraders]       = useState(defaultState.numberOfTraders)
+  const [numberOfTraders, setNumberOfTraders]       = useState(defaultState.numberOfTraders)
   const [specificAuction, setSpecificAuction]       = useState(defaultState.specificAuction)
   const [numberOfBuyOrders, setNumberOfBuyOrders]   = useState(defaultState.numberOfBuyOrders)
   const [numberOfSellOrders, setNumberOfSellOrders] = useState(defaultState.numberOfSellOrders)
@@ -87,7 +92,7 @@ function Trades({ web3 }) {
   }, [])
 
   // mount logic
-  // 1. load endpoint Trades data
+  // 1. load endpoint Traders data
   // 2. set to state
   useEffect(() => {
     // load data
@@ -95,50 +100,37 @@ function Trades({ web3 }) {
       try {
         const bcNetwork = network || await web3.getNetworkId()
         
-        const query = `{
-          auctions(
-            where: {
-              id: "${sellTokenFilter}-${buyTokenFilter}-${specificAuction}",
-            }
-          ) {
-            sellOrders(
-              first: ${numberOfSellOrders}, 
-              orderBy: timestamp
-            ) {
-              trader {
+        const { data : { data } } = await axios.post(URL, { 
+          query: `{
+            auctions(where: { id: "${sellTokenFilter}-${buyTokenFilter}-${specificAuction}" }) {
+              traders (first: ${numberOfTraders}) {
                 id
+                buyOrders(first: ${numberOfBuyOrders}) {
+                  amount
+                  timestamp
+                  transactionHash
+                }
+                sellOrders(first: ${numberOfSellOrders}) {
+                  amount
+                  timestamp
+                  transactionHash
+                }
               }
-              amount
-              timestamp
-              transactionHash
             }
-            buyOrders(
-              first: ${numberOfBuyOrders}, 
-              orderBy: timestamp
-            ) {
-              trader {
-                id
-              }
-              amount
-              timestamp
-              transactionHash
-            }
-          }
-        }`
-
-        const { data : { data } } = await axios.post(GRAPH_URL, { query })
+          }`
+        })
 
         if (!data.auctions || !data.auctions.length) throw new Error('Range too large/small or no record of data at set params - please try a different filter combination')
  
         // Cache auctions
-        const { auctions } = data
+        const { auctions: [{ traders }] } = data
         
         // Auto sort new choices DESC
         // auctions.sort((a, b) => b.auctionIndex - a.auctionIndex)
 
         return {
           bcNetwork, 
-          auctions,
+          traders,
         }
       } catch (error) {
         const err = new Error(error.message)
@@ -153,10 +145,10 @@ function Trades({ web3 }) {
     .subscribe({
       next: ({
         bcNetwork,
-        auctions,
+        traders,
       }) => {
         setNetwork(bcNetwork)
-        setTrades(auctions)
+        setTrades(traders)
       },
       error: appError => {
         setError(appError)
@@ -171,7 +163,7 @@ function Trades({ web3 }) {
     return () => {
       tradesSub && tradesSub.unsubscribe()
     }
-  }, [sellTokenFilter, buyTokenFilter, numberOfBuyOrders, numberOfSellOrders, specificAuction])
+  }, [sellTokenFilter, buyTokenFilter, numberOfTraders, numberOfBuyOrders, numberOfSellOrders, specificAuction])
 
   // eslint-disable-next-line eqeqeq
   const renderEtherscanLink = (address, section, text, type = 'address', style) => <a href={`https://${network == '4' ? 'rinkeby.etherscan' : 'etherscan'}.io/${type}/${address}${section ? '#' + section : ''}`} target="_blank" rel="noopener noreferrer" style={style}>{text || address}</a>
@@ -181,22 +173,41 @@ function Trades({ web3 }) {
     id,
     buyOrders,
     sellOrders,
-  }) => {
-    const { sellSymbol, buySymbol } = tokenListToName(availableTokens, sellTokenFilter, buyTokenFilter, specificAuction)
-
-    return (
-      <tr key={id}>
-        {/* Market */}
-        <td>
-          <Badge 
-            color="success" pill
-          >
-            {sellSymbol}-{buySymbol}-{specificAuction}
-          </Badge>
-        </td>
-        {/* BUY SECTION */}
-        <td>
-          <Table>
+  }) =>
+    <tr key={id}>
+      {/* ID */}
+      <td>
+        <Badge 
+          color="success" pill
+        >
+          {renderEtherscanLink(id, null, shortenHash(id, 38), 'address', { color: 'white', fontSize: '1.2em' })}
+        </Badge>
+      </td>
+      {/* BUY SECTION */}
+      <td>
+        <Table>
+          <thead>
+            <tr>
+              <th>Hash</th>
+              <th>Amount</th>
+              <th>Timestamp</th>
+            </tr>
+          </thead>
+          <tbody>
+            {(
+              buyOrders.map(({ amount, transactionHash, timestamp }) => 
+                <tr key={transactionHash}>
+                  <td><code title={transactionHash} style={{cursor: 'pointer'}}>{renderEtherscanLink(transactionHash, null, shortenHash(transactionHash), 'tx')}</code></td>
+                  <td>{(amount/10**18).toFixed(FIXED_DECIMALS)}</td>
+                  <td>{(new Date(timestamp * 1000)).toUTCString()}</td>
+                </tr>
+            ))}
+          </tbody>
+        </Table>
+      </td>
+      {/* SELL SECTION */}
+      <td>
+        <Table>
             <thead>
               <tr>
                 <th>Hash</th>
@@ -206,7 +217,7 @@ function Trades({ web3 }) {
             </thead>
             <tbody>
               {(
-                buyOrders.map(({ amount, transactionHash, timestamp }) => 
+                sellOrders.map(({ amount, transactionHash, timestamp }) => 
                   <tr key={transactionHash}>
                     <td><code title={transactionHash} style={{cursor: 'pointer'}}>{renderEtherscanLink(transactionHash, null, shortenHash(transactionHash), 'tx')}</code></td>
                     <td>{(amount/10**18).toFixed(FIXED_DECIMALS)}</td>
@@ -215,32 +226,8 @@ function Trades({ web3 }) {
               ))}
             </tbody>
           </Table>
-        </td>
-        {/* SELL SECTION */}
-        <td>
-          <Table>
-              <thead>
-                <tr>
-                  <th>Hash</th>
-                  <th>Amount</th>
-                  <th>Timestamp</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(
-                  sellOrders.map(({ amount, transactionHash, timestamp }) => 
-                    <tr key={transactionHash}>
-                      <td><code title={transactionHash} style={{cursor: 'pointer'}}>{renderEtherscanLink(transactionHash, null, shortenHash(transactionHash), 'tx')}</code></td>
-                      <td>{(amount/10**18).toFixed(4)}</td>
-                      <td>{(new Date(timestamp * 1000)).toUTCString()}</td>
-                    </tr>
-                ))}
-              </tbody>
-            </Table>
-        </td>
-      </tr>
-    )
-  }
+      </td>
+    </tr>
 
   // Data Loading
   if (loading) return <Loading />
@@ -274,17 +261,18 @@ function Trades({ web3 }) {
           {/* Filter Number of Traders/Specific Auction Range Type */}
           <Col sm={6} className="py-2">
             <p>Trade / Auction Filters</p>
-            {/* <PageFilterSubmit
+            <PageFilterSubmit
               type="number"
               title="Number of traders to show"
               showWhat={numberOfTraders}
               submitFunction={setNumberOfTraders}
               inputName="trades"
-            /> */}
+            />
+            {/* Filter specific auction index to show */}
             <PageFilterSubmit
               type="number"
               title="Specific auction to show"
-              // showWhat={numberOfTraders}
+              showWhat={numberOfTraders}
               submitFunction={setSpecificAuction}
               inputName="trades"
             />
@@ -321,13 +309,13 @@ function Trades({ web3 }) {
             filterTitle = "Selected Auction"
           />
         }
-        {/* {numberOfTraders && 
+        {numberOfTraders && 
           <FilterLabel 
             onClickHandler={() => setNumberOfTraders(defaultState.numberOfTraders)}
             filterData={numberOfTraders}
             filterTitle = "Number of Traders"
           />
-        } */}
+        }
         {numberOfBuyOrders && 
           <FilterLabel 
             onClickHandler={() => setNumberOfBuyOrders(defaultState.numberOfBuyOrders)}
@@ -351,7 +339,7 @@ function Trades({ web3 }) {
       <Table responsive hover>
         <thead>
           <tr>
-            <th>Market</th>
+            <th>Trader Account</th>
             <th>Buy Order</th>
             <th>Sell Orders</th>
           </tr>
@@ -364,4 +352,4 @@ function Trades({ web3 }) {
   )
 }
 
-export default ErrorHOC(Web3HOC(Trades))
+export default ErrorHOC(Web3HOC(Traders))
