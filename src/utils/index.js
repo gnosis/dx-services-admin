@@ -94,3 +94,13 @@ export function setURLFilterParams(filterString) {
     const defaultLocation = window.location.href.split('?')[0]
     return window.location.replace(`${defaultLocation}${filterString}`)
 }
+
+export function tokenListToName(tokenList, st, bt) {
+    if (!tokenList.length) return { sellName: '...', buyName: '...', sellSymbol: '...', buySymbol: '...' }
+    return {
+        sellName: (tokenList.find(token => token.address === st)).name,
+        buyName: (tokenList.find(token => token.address === bt)).name,
+        sellSymbol: (tokenList.find(token => token.address === st)).symbol,
+        buySymbol: (tokenList.find(token => token.address === bt)).symbol,
+    }
+}
