@@ -16,9 +16,9 @@ import ColourKey from '../ColourKey'
 import getDxService from '../../services/dxService'
 
 import { FIXED_DECIMALS, GRAPH_URL, MAINNET_WETH_ADDRESS, MAINNET_GNO_ADDRESS } from '../../globals'
+import { setURLFilterParams, rZC } from '../../utils'
 
 import { from } from 'rxjs'
-import { rZC } from '../../utils';
 
 function PastAuctions({ web3 }) {
   const defaultState = {
@@ -62,7 +62,10 @@ function PastAuctions({ web3 }) {
 
     const mountSubscription = from(mountLogic())
       .subscribe({
-        next: tokens => setAvailableTokens(tokens),
+        next: (tokens) => {
+          setURLFilterParams(`?sellToken=${sellTokenFilter}&buyToken=${buyTokenFilter}`)
+          setAvailableTokens(tokens)
+        },
         error: appError => setError(appError),
         complete: () => setLoading(false),
       })
@@ -149,6 +152,8 @@ function PastAuctions({ web3 }) {
           setNetwork(bcNetwork)
           setPastAuctions(auctions)
           setAuctionLimits({ max: currentAuctionIndex, min: Math.max(currentAuctionIndex - numberOfAuctions) })
+
+          setURLFilterParams(`?sellToken=${sellTokenFilter}&buyToken=${buyTokenFilter}`)
         },
         error: appError => {
           setError(appError)
