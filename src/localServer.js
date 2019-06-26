@@ -42,7 +42,7 @@ app.get('/dx/v1/markets', (req, res) => {
   res.send(markets);
 })
 
-app.get('/dx/v1/markets/WETH-:token/state-details', (req, res) => {
+app.get('/dx/v1/markets/:token-:token/state-details', (req, res) => {
   const { token } = req.params
   console.log('State detail for ' + token)
 
