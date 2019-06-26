@@ -8,10 +8,12 @@ import { PageFilter, PageFilterSubmit, FilterLabel, PageWrapper } from '../../co
 import ErrorHOC from '../../HOCs/ErrorHOC'
 import Web3HOC from '../../HOCs/Web3HOC'
 
-import AttentionBanner from '../AttentionBanner'
-import Loading from '../Loading'
-import ErrorPre from '../Error'
-import ColourKey from '../ColourKey'
+import AttentionBanner from '../../components/AttentionBanner'
+import Loading from '../../components/Loading'
+import ErrorPre from '../../components/Error'
+import ColourKey from '../../components/ColourKey'
+
+import RotateButton from '../../components/RotateButton'
 
 import getDxService from '../../services/dxService'
 
@@ -171,6 +173,11 @@ function PastAuctions({ web3 }) {
   // const renderEtherscanLink = (address, section) => <a href={`https://${network == '4' ? 'rinkeby.etherscan' : 'etherscan'}.io/address/${address}${section ? '#' + section : ''}`} target="_blank" rel="noopener noreferrer">{address}</a>
   // const renderAccountLink = address => address && <Link to={'/accounts/' + address}>{address}</Link>
 
+  const handleRotateButton = () => {
+    setSellTokenFilter(buyTokenFilter)
+    setBuyTokenFilter(sellTokenFilter)
+  }
+
   const renderTrades = ({
     auctionIndex,
     sellToken,
@@ -225,25 +232,39 @@ function PastAuctions({ web3 }) {
       <Form>
         <FormGroup row>
           {/* Filter SellToken */}
-          <Col sm={6} className="py-2">
-            <PageFilter
-              type="select"
-              title="Sell Token"
-              showWhat={sellTokenFilter}
-              changeFunction={event => setSellTokenFilter(event.target.value)}
-              inputName="trades"
-              render={availableTokens.map(({ name, address, symbol }) => <option key={address + Math.random()} value={address}>{symbol} ({name})</option>)}
+          <div 
+            style={{
+              flexFlow: 'row nowrap',
+              display: 'flex',
+              justifyContent: 'stretch',
+              alignItems: 'center',
+              flex: 1,
+            }}
+          >
+            <Col sm={6} className="py-2" style={{ minWidth: '88%' }}>
+              <PageFilter
+                type="select"
+                title="Sell Token"
+                showWhat={sellTokenFilter}
+                changeFunction={event => setSellTokenFilter(event.target.value)}
+                inputName="trades"
+                render={availableTokens.map(({ name, address, symbol }) => <option key={address + Math.random()} value={address}>{symbol} ({name})</option>)}
+              />
+              {/* Filter BuyToken */}
+              <PageFilter
+                type="select"
+                title="Buy Token"
+                showWhat={buyTokenFilter}
+                changeFunction={event => setBuyTokenFilter(event.target.value)}
+                inputName="trades"
+                render={availableTokens.map(({ name, address, symbol }) => <option key={address + Math.random()} value={address}>{symbol} ({name})</option>)}
+              />
+            </Col>
+            {/* Switch Tokens */}
+            <RotateButton 
+              onClickHandler={handleRotateButton}
             />
-            {/* Filter BuyToken */}
-            <PageFilter
-              type="select"
-              title="Buy Token"
-              showWhat={buyTokenFilter}
-              changeFunction={event => setBuyTokenFilter(event.target.value)}
-              inputName="trades"
-              render={availableTokens.map(({ name, address, symbol }) => <option key={address + Math.random()} value={address}>{symbol} ({name})</option>)}
-            />
-          </Col>
+          </div>
           {/* Filter AuctionIndex Range Type */}
           <Col sm={6} className="py-2">
             {/* Filter specific auction */}
