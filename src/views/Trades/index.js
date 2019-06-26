@@ -7,13 +7,14 @@ import { PageFilter, PageFilterSubmit, FilterLabel, PageWrapper } from '../../co
 import ErrorHOC from '../../HOCs/ErrorHOC'
 import Web3HOC from '../../HOCs/Web3HOC'
 
-import AttentionBanner from '../AttentionBanner'
-import Loading from '../Loading'
-import ErrorPre from '../Error'
+import AttentionBanner from '../../components/AttentionBanner'
+import Loading from '../../components/Loading'
+import ErrorPre from '../../components/Error'
 
 import getDxService from '../../services/dxService'
 
 import { shortenHash } from '../../utils'
+import { FIXED_DECIMALS } from '../../globals'
 
 import { from } from 'rxjs'
 
@@ -197,7 +198,7 @@ function Trades({ web3 }) {
               buyOrders.map(({ amount, transactionHash, timestamp }) => 
                 <tr key={transactionHash}>
                   <td><code title={transactionHash} style={{cursor: 'pointer'}}>{renderEtherscanLink(transactionHash, null, shortenHash(transactionHash), 'tx')}</code></td>
-                  <td>{(amount/10**18).toFixed(4)}</td>
+                  <td>{(amount/10**18).toFixed(FIXED_DECIMALS)}</td>
                   <td>{(new Date(timestamp * 1000)).toUTCString()}</td>
                 </tr>
             ))}
@@ -219,7 +220,7 @@ function Trades({ web3 }) {
                 sellOrders.map(({ amount, transactionHash, timestamp }) => 
                   <tr key={transactionHash}>
                     <td><code title={transactionHash} style={{cursor: 'pointer'}}>{renderEtherscanLink(transactionHash, null, shortenHash(transactionHash), 'tx')}</code></td>
-                    <td>{(amount/10**18).toFixed(4)}</td>
+                    <td>{(amount/10**18).toFixed(FIXED_DECIMALS)}</td>
                     <td>{(new Date(timestamp * 1000)).toUTCString()}</td>
                   </tr>
               ))}

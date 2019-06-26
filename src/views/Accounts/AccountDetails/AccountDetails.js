@@ -6,8 +6,8 @@ import ErrorHOC from '../../../HOCs/ErrorHOC'
 import Web3HOC from '../../../HOCs/Web3HOC'
 
 import PageWrapper from '../../../containers/PageWrapper';
-import Loading from '../../Loading'
-import ErrorPre from '../../Error'
+import Loading from '../../../components/Loading'
+import ErrorPre from '../../../components/Error'
 
 import getDxService from '../../../services/dxService'
 
@@ -237,8 +237,8 @@ function AccountDetails({
           </Badge>
             &nbsp;<strong>Magnolia Token</strong>
             <ul>
-              <li>Locked Balance: <Badge color={mgnLockedBalance > 0 ? 'success' : 'secondary'} pill>{Number(mgnLockedBalance / (10 ** 18)).toFixed(2)}</Badge></li>
-              <li>Unlocked Balance: <Badge color={mgnUnlockedBalance > 0 ? 'warning' : 'secondary'} pill>{Number(mgnUnlockedBalance / (10 ** 18)).toFixed(2)}</Badge></li>
+              <li>Locked Balance: <Badge color={mgnLockedBalance > 0 ? 'success' : 'secondary'} pill>{Number(mgnLockedBalance / (10 ** 18)).toFixed(FIXED_DECIMALS)}</Badge></li>
+              <li>Unlocked Balance: <Badge color={mgnUnlockedBalance > 0 ? 'warning' : 'secondary'} pill>{Number(mgnUnlockedBalance / (10 ** 18)).toFixed(FIXED_DECIMALS)}</Badge></li>
             </ul>
           </ListGroupItem>}
 
@@ -254,9 +254,9 @@ function AccountDetails({
           </Badge>
             &nbsp;<strong>OWL Token</strong>
             <ul>
-              {/* <li>DutchX: <Badge color={owlBalance > 0 ? 'success' : 'secondary'} pill>{Number(balance / (10 ** decimals)).toFixed(2)}</Badge></li> */}
-              {!owlAllowanceEnabled && <li>Allowance: <Badge color='warning' pill>{Number(owlAllowance / (10 ** 18)).toFixed(2)}</Badge></li>}
-              <li>Balance: <Badge color={owlBalance > 0 ? 'warning' : 'secondary'} pill>{Number(owlBalance / (10 ** 18)).toFixed(2)}</Badge>{owlAllowanceEnabled && <Badge color='success' pill>ENABLED</Badge>}</li>
+              {/* <li>DutchX: <Badge color={owlBalance > 0 ? 'success' : 'secondary'} pill>{Number(balance / (10 ** decimals)).toFixed(FIXED_DECIMALS)}</Badge></li> */}
+              {!owlAllowanceEnabled && <li>Allowance: <Badge color='warning' pill>{Number(owlAllowance / (10 ** 18)).toFixed(FIXED_DECIMALS)}</Badge></li>}
+              <li>Balance: <Badge color={owlBalance > 0 ? 'warning' : 'secondary'} pill>{Number(owlBalance / (10 ** 18)).toFixed(FIXED_DECIMALS)}</Badge>{owlAllowanceEnabled && <Badge color='success' pill>ENABLED</Badge>}</li>
             </ul>
           </ListGroupItem>}
       </ListGroup>
@@ -295,8 +295,8 @@ function AccountDetails({
         </Badge>
         &nbsp;<strong>{name}</strong>
         <ul>
-          <li>DutchX: <Badge color={balance > 0 ? 'success' : 'secondary'} pill>{Number(balance / (10 ** decimals)).toFixed(2)}</Badge></li>
-          <li>ERC20: <Badge color={balanceErc20 > 0 ? 'warning' : 'secondary'} pill>{Number(balanceErc20 / (10 ** decimals)).toFixed(2)}</Badge></li>
+          <li>DutchX: <Badge color={balance > 0 ? 'success' : 'secondary'} pill>{Number(balance / (10 ** decimals)).toFixed(FIXED_DECIMALS)}</Badge></li>
+          <li>ERC20: <Badge color={balanceErc20 > 0 ? 'warning' : 'secondary'} pill>{Number(balanceErc20 / (10 ** decimals)).toFixed(FIXED_DECIMALS)}</Badge></li>
         </ul>
       </ListGroupItem>
     )
