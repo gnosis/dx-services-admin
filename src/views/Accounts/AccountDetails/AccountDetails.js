@@ -1,3 +1,4 @@
+/* eslint-disable eqeqeq */
 import React, { useState, useEffect } from 'react';
 import { ListGroup, ListGroupItem, Badge, FormGroup, Label, Input } from 'reactstrap';
 import Blockies from 'react-blockies'
@@ -199,7 +200,6 @@ function AccountDetails({
         </div>
         <div className="p-2 bd-highlight">
           <h3 className="mt-2"><small>{address}</small></h3>
-          {/* eslint-disable-next-line eqeqeq */}
           <a href={`https://${network == '4' ? 'rinkeby.etherscan' : 'etherscan'}.io/address/${address}`} target="_blank" rel="noopener noreferrer">View on Etherscan</a>
         </div>
       </div>
