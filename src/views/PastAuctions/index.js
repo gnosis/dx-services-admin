@@ -213,8 +213,8 @@ function PastAuctions({ web3 }) {
         </td>
         {/* Times */}
         <td>
-          <p><strong>Auction start:</strong> {moment(startTime * 1000).format('YYYY.MM.DD [at] HH:mm')}</p>
-          <p><strong>Auction end:</strong> {moment(clearingTime * 1000).format('YYYY.MM.DD [at] HH:mm')}</p>
+          <p><strong>Auction start:</strong> {moment(startTime * 1000).format('DD.MM.YYYY [at] HH:mm')}</p>
+          <p><strong>Auction end:</strong> {moment(clearingTime * 1000).format('DD.MM.YYYY [at] HH:mm')}</p>
           <p><strong>Duration:</strong> {moment(clearingTime * 1000).from(startTime * 1000, true)}</p>
         </td>
         {/* L.C */}

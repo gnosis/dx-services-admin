@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
+import moment from 'moment'
 
 import { Col, Table, Badge, FormGroup, Form } from 'reactstrap'
 import { PageFilter, PageFilterSubmit, FilterLabel, PageWrapper } from '../../containers'
@@ -14,7 +15,7 @@ import RotateButton from '../../components/RotateButton'
 
 import getDxService from '../../services/dxService'
 
-import { shortenHash, tokenListToName } from '../../utils'
+import { shortenHash, tokenListToName, setURLFilterParams } from '../../utils'
 import { FIXED_DECIMALS, GRAPH_URL, MAINNET_WETH_ADDRESS, MAINNET_GNO_ADDRESS } from '../../globals'
 
 import { from } from 'rxjs'
@@ -153,6 +154,8 @@ function Trades({ web3 }) {
     .subscribe({
       next: (auctions) => {
         setTrades(auctions)
+        
+        setURLFilterParams(`?sellToken=${sellTokenFilter}&buyToken=${buyTokenFilter}&auctionIndex=${specificAuction}`)
       },
       error: appError => {
         setError(appError)
@@ -211,7 +214,7 @@ function Trades({ web3 }) {
                   <tr key={transactionHash}>
                     <td><code title={transactionHash} style={{cursor: 'pointer'}}>{renderEtherscanLink(transactionHash, null, shortenHash(transactionHash), 'tx')}</code></td>
                     <td>{(amount/10**18).toFixed(FIXED_DECIMALS)}</td>
-                    <td>{(new Date(timestamp * 1000)).toUTCString()}</td>
+                    <td>{moment(timestamp * 1000).format("DD.MM.YYYY [at] HH:mm")}</td>
                   </tr>
               ))}
             </tbody>
@@ -233,7 +236,7 @@ function Trades({ web3 }) {
                     <tr key={transactionHash}>
                       <td><code title={transactionHash} style={{cursor: 'pointer'}}>{renderEtherscanLink(transactionHash, null, shortenHash(transactionHash), 'tx')}</code></td>
                       <td>{(amount/10**18).toFixed(4)}</td>
-                      <td>{(new Date(timestamp * 1000)).toUTCString()}</td>
+                      <td>{moment(timestamp * 1000).format("DD.MM.YYYY [at] mm:hh")}</td>
                     </tr>
                 ))}
               </tbody>
