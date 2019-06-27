@@ -1,3 +1,5 @@
+import moment from 'moment'
+
 export const windowLoaded = new Promise((resolve) => {
     if (typeof window === 'undefined') {
         resolve()
@@ -104,3 +106,5 @@ export function tokenListToName(tokenList, st, bt) {
         buySymbol: (tokenList.find(token => token.address === bt)).symbol,
     }
 }
+
+export const formatTime = (time) => moment(time * 1000).format("LLL")

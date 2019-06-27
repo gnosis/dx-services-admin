@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
-import moment from 'moment'
 
 import { Col, Table, Badge, FormGroup, Form } from 'reactstrap'
 import { PageFilter, PageFilterSubmit, FilterLabel, PageWrapper } from '../../containers'
@@ -15,7 +14,7 @@ import RotateButton from '../../components/RotateButton'
 
 import getDxService from '../../services/dxService'
 
-import { shortenHash, tokenListToName, setURLFilterParams } from '../../utils'
+import { shortenHash, tokenListToName, setURLFilterParams, formatTime } from '../../utils'
 import { FIXED_DECIMALS, GRAPH_URL, MAINNET_WETH_ADDRESS, MAINNET_GNO_ADDRESS } from '../../globals'
 
 import { from } from 'rxjs'
@@ -214,7 +213,7 @@ function Trades({ web3 }) {
                   <tr key={transactionHash}>
                     <td><code title={transactionHash} style={{cursor: 'pointer'}}>{renderEtherscanLink(transactionHash, null, shortenHash(transactionHash), 'tx')}</code></td>
                     <td>{(amount/10**18).toFixed(FIXED_DECIMALS)}</td>
-                    <td>{moment(timestamp * 1000).format("DD.MM.YYYY [at] HH:mm")}</td>
+                    <td>{formatTime(timestamp)}</td>
                   </tr>
               ))}
             </tbody>
@@ -236,7 +235,7 @@ function Trades({ web3 }) {
                     <tr key={transactionHash}>
                       <td><code title={transactionHash} style={{cursor: 'pointer'}}>{renderEtherscanLink(transactionHash, null, shortenHash(transactionHash), 'tx')}</code></td>
                       <td>{(amount/10**18).toFixed(4)}</td>
-                      <td>{moment(timestamp * 1000).format("DD.MM.YYYY [at] mm:hh")}</td>
+                      <td>{formatTime(timestamp)}</td>
                     </tr>
                 ))}
               </tbody>

@@ -18,7 +18,7 @@ import RotateButton from '../../components/RotateButton'
 import getDxService from '../../services/dxService'
 
 import { FIXED_DECIMALS, GRAPH_URL, MAINNET_WETH_ADDRESS, MAINNET_GNO_ADDRESS } from '../../globals'
-import { setURLFilterParams, rZC } from '../../utils'
+import { setURLFilterParams, rZC, formatTime } from '../../utils'
 
 import { from } from 'rxjs'
 
@@ -213,8 +213,8 @@ function PastAuctions({ web3 }) {
         </td>
         {/* Times */}
         <td>
-          <p><strong>Auction start:</strong> {moment(startTime * 1000).format('DD.MM.YYYY [at] HH:mm')}</p>
-          <p><strong>Auction end:</strong> {moment(clearingTime * 1000).format('DD.MM.YYYY [at] HH:mm')}</p>
+          <p><strong>Auction start:</strong> {formatTime(startTime)}</p>
+          <p><strong>Auction end:</strong> {formatTime(clearingTime)}</p>
           <p><strong>Duration:</strong> {moment(clearingTime * 1000).from(startTime * 1000, true)}</p>
         </td>
         {/* L.C */}
