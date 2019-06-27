@@ -12,6 +12,7 @@ import ErrorPre from '../../../components/Error'
 import getDxService from '../../../services/dxService'
 
 import { MGN_PROXY_ADDRESSES, OWL_PROXY_ADDRESSES, DUTCHX_PROXY_ADDRESSES, FIXED_DECIMALS, OWL_ALLOWANCE_THRESHOLD } from '../../../globals'
+import { rZC, netIdToName } from '../../../utils'
 
 import { from } from 'rxjs'
 
@@ -56,18 +57,26 @@ function AccountDetails({
           liquidityContribution,
           { amountUnlocked: mgnUnlockedBalance },
           mgnLockedBalance,
+          mgnErc20Balance,
           owlBalance,
           owlAllowance,
           ethBalance,
         ] = await Promise.all([
+          // LC
           dxService.getLiquidityContribution(account),
+          // MGN
           web3.getToken(MGN_PROXY_ADDRESSES[network], 'MGN', account).then(token => token.methods.unlockedTokens(account).call()).catch(() => false),
           web3.getToken(MGN_PROXY_ADDRESSES[network], 'MGN', account).then(token => token.methods.lockedTokenBalances(account).call()).catch(() => false),
+          web3.getToken(MGN_PROXY_ADDRESSES[network], 'MGN', account).then(token => token.methods.balanceOf(account).call()).catch(() => false),
+          // OWL
           web3.getToken(OWL_PROXY_ADDRESSES[network], 'OWL', account).then(token => token.methods.balanceOf(account).call()).catch(() => false),
           web3.getToken(OWL_PROXY_ADDRESSES[network], 'OWL', account).then(token => token.methods.allowance(account, DUTCHX_PROXY_ADDRESSES[network]).call()).catch(() => false),
+          // ETH
           web3.getCurrentBalance(account),
         ])
 
+        console.debug(mgnLockedBalance, mgnUnlockedBalance, mgnErc20Balance)
+        
         // Get tokenBalances
         let tokens = await dxService.getTokens()
         const balancePromises = tokens.map(async token => {
@@ -93,7 +102,7 @@ function AccountDetails({
           balances,
           liquidityContribution,
           mgnLockedBalance,
-          mgnUnlockedBalance,
+          mgnUnlockedBalance: mgnUnlockedBalance.add(mgnErc20Balance),
           owlAllowance,
           owlBalance,
           network,
@@ -206,7 +215,7 @@ function AccountDetails({
               pill>
               ETH
           </Badge>
-            <strong>{ethBalance && Number(ethBalance / 10 ** 18).toFixed(FIXED_DECIMALS)}</strong>
+            <div className="grayContainer smallerFont"><strong>{ethBalance && rZC(ethBalance.toString() / 10 ** 18, FIXED_DECIMALS)}</strong></div>
           </ListGroupItem>}
       </ListGroup>
       <br />
@@ -221,8 +230,8 @@ function AccountDetails({
               className="p-2 mr-2"
               pill>
               L.C
-          </Badge>
-            <strong>{typeof liquidityContribution !== 'undefined' && (`${liquidityContribution * 100}%`)}</strong>
+            </Badge>
+            <div className="grayContainer smallerFont"><strong>{typeof liquidityContribution !== 'undefined' && (`${liquidityContribution * 100}%`)}</strong></div>
           </ListGroupItem>}
 
         {/* MGN */}
@@ -237,8 +246,8 @@ function AccountDetails({
           </Badge>
             &nbsp;<strong>Magnolia Token</strong>
             <ul>
-              <li>Locked Balance: <Badge color={mgnLockedBalance > 0 ? 'success' : 'secondary'} pill>{Number(mgnLockedBalance / (10 ** 18)).toFixed(FIXED_DECIMALS)}</Badge></li>
-              <li>Unlocked Balance: <Badge color={mgnUnlockedBalance > 0 ? 'warning' : 'secondary'} pill>{Number(mgnUnlockedBalance / (10 ** 18)).toFixed(FIXED_DECIMALS)}</Badge></li>
+              <li>Locked Balance: <Badge color={mgnLockedBalance > 0 ? 'success' : 'secondary'} pill>{rZC(mgnLockedBalance / (10 ** 18), FIXED_DECIMALS)}</Badge></li>
+              <li>Unlocked Balance: <Badge color={mgnUnlockedBalance > 0 ? 'warning' : 'secondary'} pill>{rZC(mgnUnlockedBalance / (10 ** 18), FIXED_DECIMALS)}</Badge></li>
             </ul>
           </ListGroupItem>}
 
@@ -255,8 +264,8 @@ function AccountDetails({
             &nbsp;<strong>OWL Token</strong>
             <ul>
               {/* <li>DutchX: <Badge color={owlBalance > 0 ? 'success' : 'secondary'} pill>{Number(balance / (10 ** decimals)).toFixed(FIXED_DECIMALS)}</Badge></li> */}
-              {!owlAllowanceEnabled && <li>Allowance: <Badge color='warning' pill>{Number(owlAllowance / (10 ** 18)).toFixed(FIXED_DECIMALS)}</Badge></li>}
-              <li>Balance: <Badge color={owlBalance > 0 ? 'warning' : 'secondary'} pill>{Number(owlBalance / (10 ** 18)).toFixed(FIXED_DECIMALS)}</Badge>{owlAllowanceEnabled && <Badge color='success' pill>ENABLED</Badge>}</li>
+              {!owlAllowanceEnabled && <li>Allowance: <Badge color='warning' pill>{rZC(owlAllowance / (10 ** 18), FIXED_DECIMALS)}</Badge></li>}
+              <li>Balance: <Badge color={owlBalance > 0 ? 'warning' : 'secondary'} pill>{rZC(owlBalance / (10 ** 18), FIXED_DECIMALS)}</Badge>{owlAllowanceEnabled && <Badge color='success' pill>ENABLED</Badge>}</li>
             </ul>
           </ListGroupItem>}
       </ListGroup>
@@ -287,16 +296,20 @@ function AccountDetails({
       <ListGroupItem style={{ backgroundColor: hasBalance ? color : '#f9f9f9' }}
         key={'token-' + symbol}
         className={(hasBalance ? '' : 'secondary ') + 'justify-content-between'}>
-        <Badge
-          color="primary"
-          className="p-2 mr-2"
-          pill>
-          {symbol}
-        </Badge>
+        <a href={`https://${network == 1 ? '' : netIdToName(network).toLowerCase() + '.'}etherscan.io/token/${address}`} target="_blank" rel="noopener noreferrer">
+          <Badge
+            color="primary"
+            className="p-2 mr-2"
+            title={address}
+            pill
+          >
+            {symbol}
+          </Badge>
+        </a>
         &nbsp;<strong>{name}</strong>
         <ul>
-          <li>DutchX: <Badge color={balance > 0 ? 'success' : 'secondary'} pill>{Number(balance / (10 ** decimals)).toFixed(FIXED_DECIMALS)}</Badge></li>
-          <li>ERC20: <Badge color={balanceErc20 > 0 ? 'warning' : 'secondary'} pill>{Number(balanceErc20 / (10 ** decimals)).toFixed(FIXED_DECIMALS)}</Badge></li>
+          <li>DutchX: <Badge color={balance > 0 ? 'success' : 'secondary'} pill>{rZC(balance / (10 ** decimals), FIXED_DECIMALS)}</Badge></li>
+          <li>ERC20: <Badge color={balanceErc20 > 0 ? 'warning' : 'secondary'} pill>{rZC(balanceErc20 / (10 ** decimals), FIXED_DECIMALS)}</Badge></li>
         </ul>
       </ListGroupItem>
     )

@@ -33,3 +33,15 @@
     -webkit-transform: rotate(270deg) !important;
     transform: rotate(270deg) !important;
 }
+
+.grayContainer {
+    display: inline;
+    background: #eff1f4;
+    border: 1px dotted #00000036;
+    border-radius: 20px;
+    padding: 1px 12px;
+}
+
+.smallerFont {
+    font-size: smaller;
+}
