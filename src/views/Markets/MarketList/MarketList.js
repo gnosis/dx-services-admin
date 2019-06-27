@@ -1,5 +1,6 @@
 /* eslint-disable eqeqeq */
 import React, { useEffect, useState } from 'react';
+import moment from 'moment'
 
 import { Col, Table, Badge, FormGroup, Form } from 'reactstrap';
 
@@ -8,12 +9,13 @@ import { PageWrapper, PageFilter } from '../../../containers'
 import ErrorHOC from '../../../HOCs/ErrorHOC'
 import Web3HOC from '../../../HOCs/Web3HOC'
 
-import ErrorPre from '../../Error'
-import Loading from '../../Loading'
+import ErrorPre from '../../../components/Error'
+import Loading from '../../../components/Loading'
+import ColourKey from '../../../components/ColourKey'
 
 import getDxService from '../../../services/dxService'
 
-import moment from 'moment'
+import themeColours from '../../Theme/Colors/ColoursSheet'
 import { FIXED_DECIMALS } from '../../../globals'
 
 import { from } from 'rxjs'
@@ -54,7 +56,7 @@ const calculatePercentage = (percentage, auctionStartTime) => {
   const auctionStartTimeInHours = Math.round(Math.abs(new Date(auctionStartTime) - new Date()) / 1000 / 60 / 60)
   const relativePercentage = Math.abs(Number(100 - percentage))
   const sign = auctionStartTimeInHours < 6 ? '+' : auctionStartTime === 0 ? '' : '-'
-  return sign + relativePercentage.toFixed(2) + '%'
+  return sign + relativePercentage.toFixed(FIXED_DECIMALS) + '%'
 }
 
 const HIGH_RUNNING_TIME = 1000 * 60 * 60 * 6.5
@@ -210,6 +212,7 @@ function MarketList({
       },
       error: (appError) => {
         setError(appError)
+        setLoading(false)
       },
       complete: () => setLoading(false),
     })
@@ -254,20 +257,20 @@ function MarketList({
     const now = new Date()
     let backgroundColor
     if (!startTime) {
-      backgroundColor = '#f9f9f9'
+      backgroundColor = themeColours.gray
     } else {
       const runningTime = now.getTime() - new Date(startTime).getTime()
       if (runningTime > HIGH_RUNNING_TIME) {
-        backgroundColor = '#ffeeee'
+        backgroundColor = themeColours.red
       } else if (runningTime > NEAR_CLOSING_TIME) {
-        backgroundColor = '#fff9c8'
+        backgroundColor = themeColours.yellow
       } else {
-        backgroundColor = 'white'
+        backgroundColor = themeColours.white
       }
     }
 
     return (
-      <tr key={`bot-${id}`} style={{ backgroundColor }}>
+      <tr key={`bot-${id}`} style={{ backgroundColor, cursor: 'pointer' }} onClick={() => window.location.href=`${window.location.origin}/#/past-auctions?sellToken=${tokenA.address}&buyToken=${tokenB.address}`}>
         <td>
           <Badge color="primary" className="p-2" pill title={`${tokenA.address}-${tokenB.address}`}>
             {tokenA.symbol + '-' + tokenB.symbol + '-' + auctionIndex}
@@ -348,13 +351,13 @@ function MarketList({
       <ul>
         {renderDateRow('Start time', startTime)}
         {/* Sell Volume */}
-        {sellVolume && renderAmountRow('Sell volume', Number(sellVolume / (10 ** sellToken.decimals)).toFixed(2), sellToken.symbol, Number(fundingInUSD).toFixed(2))}
+        {sellVolume && renderAmountRow('Sell volume', Number(sellVolume / (10 ** sellToken.decimals)).toFixed(FIXED_DECIMALS), sellToken.symbol, Number(fundingInUSD).toFixed(FIXED_DECIMALS))}
         {startTime && (
           <React.Fragment>
             {/* Buy Volume */}
-            {buyVolume > 0 && renderAmountRow('Buy volume', Number(buyVolume / (10 ** buyToken.decimals)).toFixed(2), buyToken.symbol, null, Number(boughtPercentage).toFixed(2))}
+            {buyVolume > 0 && renderAmountRow('Buy volume', Number(buyVolume / (10 ** buyToken.decimals)).toFixed(FIXED_DECIMALS), buyToken.symbol, null, Number(boughtPercentage).toFixed(FIXED_DECIMALS))}
             {/* Outstanding Vol */}
-            {outstandingVolume > 0 && renderAmountRow('Oustanding volume', Number(outstandingVolume / (10 ** buyToken.decimals)).toFixed(2), buyToken.symbol)}
+            {outstandingVolume > 0 && renderAmountRow('Oustanding volume', Number(outstandingVolume / (10 ** buyToken.decimals)).toFixed(FIXED_DECIMALS), buyToken.symbol)}
             {/* Price */}
             {price && renderAmountRow('Price', Number(price.numerator / price.denominator).toFixed(FIXED_DECIMALS), buyToken.symbol)}
             {/* Closing Price Increment */}
@@ -421,6 +424,7 @@ function MarketList({
 
   return (
     <PageWrapper pageTitle="DutchX Markets">
+      {/* FILTERS */}
       <Form>
         <FormGroup row>
           <Col sm={6} className="py-2">
@@ -447,8 +451,19 @@ function MarketList({
         </FormGroup>
       </Form>
 
+      <ColourKey 
+        header="Auction colour key:"
+        colourMap={{
+          [themeColours.red]: "Long running time",
+          [themeColours.yellow]: "Nearing closing time",
+          [themeColours.gray]: "Not yet started",
+        }}
+      />
+
+      {/* ERROR */}
       {erroredMarkets.length > 0 && <ErrorTable erroredMarkets={erroredMarkets}/>}
 
+      {/* DATA */}
       <Table responsive hover>
         <thead>
           <tr>

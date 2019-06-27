@@ -7,8 +7,8 @@ import { PageFilter, PageWrapper } from '../../containers'
 import ErrorHOC from '../../HOCs/ErrorHOC'
 import Web3HOC from '../../HOCs/Web3HOC'
 
-import Loading from '../Loading'
-import ErrorPre from '../Error'
+import Loading from '../../components/Loading'
+import ErrorPre from '../../components/Error'
 
 import getDxService from '../../services/dxService'
 
@@ -62,7 +62,10 @@ function Safes({ web3 }) {
         setNetwork(network)
         setSafeData(safeData)
       },
-      error: appError => setError(appError),
+      error: appError => {
+        setError(appError)
+        setLoading(false)
+      },
       complete: () => setLoading(false),
     })
 

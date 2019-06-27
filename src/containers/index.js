@@ -1,5 +1,5 @@
 import DefaultLayout from './DefaultLayout';
-import PageFilter from './PageFilter';
+import PageFilter, { PageFilterSubmit, FilterLabel } from './PageFilter';
 import PageWrapper from './PageWrapper';
 
-export { DefaultLayout, PageFilter, PageWrapper };
+export { DefaultLayout, PageFilter, PageFilterSubmit, FilterLabel, PageWrapper };

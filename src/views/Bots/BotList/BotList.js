@@ -7,8 +7,8 @@ import { PageWrapper, PageFilter } from '../../../containers'
 import ErrorHOC from '../../../HOCs/ErrorHOC'
 import Web3HOC from '../../../HOCs/Web3HOC'
 
-import Loading from '../../Loading'
-import ErrorPre from '../../Error'
+import Loading from '../../../components/Loading'
+import ErrorPre from '../../../components/Error'
 
 import moment from 'moment'
 
@@ -80,7 +80,10 @@ function BotList({
         botAddress,
         network,
       }),
-      error: appError => setError(appError),
+      error: appError => {
+        setError(appError)
+        setLoading(false)
+      },
       complete: () => setLoading(false)
     })
 

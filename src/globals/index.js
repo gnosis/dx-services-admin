@@ -18,6 +18,11 @@ export const DUTCHX_PROXY_ADDRESSES = {
 
 export const DX_GRAPHS_URL = 'https://explore.duneanalytics.com/public/dashboards/nigajDs8cp1lkmoXYNgdo3jMh2XCzUIiLk0J5Fst'
 
+// GraphQL DutchX Query
+export const GRAPH_URL = 'https://api.thegraph.com/subgraphs/name/gnosis/dutchx'
+export const MAINNET_WETH_ADDRESS = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+export const MAINNET_GNO_ADDRESS = '0x6810e776880c02933d47db1b9fc05908e5386b96'
+
 /* export const MGN_PROXY_ADDRESSES = new Proxy(
     {
         1: '0x80f222a749a2e18eb7f676d371f19ad7efeee3b7',

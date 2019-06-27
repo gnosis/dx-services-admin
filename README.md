@@ -1,7 +1,7 @@
-# DutchX service admin
-Web administration that shows information about the DutchX including:
+# VisualX
+Web app providing information about the DutchX including:
 * Markets listed in the DutchX
-* Running bots and their config
+* Running bots and their config (Admin only)
 * Info about accounts balances
 * Trades for every market
 

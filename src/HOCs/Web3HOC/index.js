@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 import getWeb3API from '../../services/web3Service'
-import ErrorPre from '../../views/Error'
+import ErrorPre from '../../components/Error'
 import MetaMaskSVG from '../../assets/svg/MetaMask.svg'
 
 import { from, of } from 'rxjs'
