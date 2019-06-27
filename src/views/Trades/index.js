@@ -10,6 +10,7 @@ import Web3HOC from '../../HOCs/Web3HOC'
 import AttentionBanner from '../../components/AttentionBanner'
 import Loading from '../../components/Loading'
 import ErrorPre from '../../components/Error'
+import RotateButton from '../../components/RotateButton'
 
 import getDxService from '../../services/dxService'
 
@@ -67,7 +68,7 @@ function Trades({ web3 }) {
         // get all available tokens on DutchX Protocol
         const tokens = await dxService.getTokens()
 
-        return tokens
+        return { tokens, bcNetwork }
       } catch (mountError) {
         console.error(mountError)
         throw new Error(mountError)
@@ -76,7 +77,10 @@ function Trades({ web3 }) {
 
     const mountSubscription = from(mountLogic())
       .subscribe({
-        next: tokens => setAvailableTokens(tokens),
+        next: ({ tokens, bcNetwork }) => {
+          setNetwork(bcNetwork)
+          setAvailableTokens(tokens)
+        },
         error: appError => setError(appError),
         complete: () => setLoading(false),
       })
@@ -93,14 +97,13 @@ function Trades({ web3 }) {
     // load data
     async function graphQLDataFetch() {
       try {
-        const bcNetwork = network || await web3.getNetworkId()
-        
         const query = `{
           auctions(
             where: {
               id: "${sellTokenFilter}-${buyTokenFilter}-${specificAuction}",
             }
           ) {
+            id
             sellOrders(
               first: ${numberOfSellOrders}, 
               orderBy: timestamp
@@ -136,10 +139,7 @@ function Trades({ web3 }) {
         // Auto sort new choices DESC
         // auctions.sort((a, b) => b.auctionIndex - a.auctionIndex)
 
-        return {
-          bcNetwork, 
-          auctions,
-        }
+        return auctions
       } catch (error) {
         const err = new Error(error.message)
         console.error(err)
@@ -151,11 +151,7 @@ function Trades({ web3 }) {
 
     const tradesSub = from(graphQLDataFetch())
     .subscribe({
-      next: ({
-        bcNetwork,
-        auctions,
-      }) => {
-        setNetwork(bcNetwork)
+      next: (auctions) => {
         setTrades(auctions)
       },
       error: appError => {
@@ -172,6 +168,11 @@ function Trades({ web3 }) {
       tradesSub && tradesSub.unsubscribe()
     }
   }, [sellTokenFilter, buyTokenFilter, numberOfBuyOrders, numberOfSellOrders, specificAuction])
+
+  const handleRotateButton = () => {
+    setSellTokenFilter(buyTokenFilter)
+    setBuyTokenFilter(sellTokenFilter)
+  }
 
   // eslint-disable-next-line eqeqeq
   const renderEtherscanLink = (address, section, text, type = 'address', style) => <a href={`https://${network == '4' ? 'rinkeby.etherscan' : 'etherscan'}.io/${type}/${address}${section ? '#' + section : ''}`} target="_blank" rel="noopener noreferrer" style={style}>{text || address}</a>
@@ -251,29 +252,40 @@ function Trades({ web3 }) {
       <Form>
         <FormGroup row>
           {/* Filter SellToken */}
-          <Col sm={6} className="py-2">
-            <p>Token Filters</p>
-            <PageFilter
-              type="select"
-              title="Sell Token"
-              showWhat={sellTokenFilter}
-              changeFunction={event => setSellTokenFilter(event.target.value)}
-              inputName="trades"
-              render={availableTokens.map(({ name, address, symbol }) => <option key={address + Math.random()} value={address}>{name} [{symbol}]</option>)}
+          <div 
+            style={{
+              flexFlow: 'row nowrap',
+              display: 'flex',
+              justifyContent: 'stretch',
+              alignItems: 'center',
+              flex: 1,
+            }}
+          >
+            <Col sm={6} className="py-2" style={{ minWidth: '88%' }}>
+              <PageFilter
+                type="select"
+                title="Sell Token"
+                showWhat={sellTokenFilter}
+                changeFunction={event => setSellTokenFilter(event.target.value)}
+                inputName="trades"
+                render={availableTokens.map(({ name, address, symbol }) => <option key={address + Math.random()} value={address}>{name} [{symbol}]</option>)}
+              />
+              {/* Filter BuyToken */}
+              <PageFilter
+                type="select"
+                title="Buy Token"
+                showWhat={buyTokenFilter}
+                changeFunction={event => setBuyTokenFilter(event.target.value)}
+                inputName="trades"
+                render={availableTokens.map(({ name, address, symbol }) => <option key={address + Math.random()} value={address}>{name} [{symbol}]</option>)}
+              />
+            </Col>
+            <RotateButton 
+              onClickHandler={handleRotateButton}
             />
-            {/* Filter BuyToken */}
-            <PageFilter
-              type="select"
-              title="Buy Token"
-              showWhat={buyTokenFilter}
-              changeFunction={event => setBuyTokenFilter(event.target.value)}
-              inputName="trades"
-              render={availableTokens.map(({ name, address, symbol }) => <option key={address + Math.random()} value={address}>{name} [{symbol}]</option>)}
-            />
-          </Col>
+          </div>
           {/* Filter Number of Traders/Specific Auction Range Type */}
           <Col sm={6} className="py-2">
-            <p>Trade / Auction Filters</p>
             {/* <PageFilterSubmit
               type="number"
               title="Number of traders to show"
@@ -291,7 +303,6 @@ function Trades({ web3 }) {
           </Col>
           {/* Filter Sell/Buy Orders */}
           <Col sm={6} className="py-2">
-              <p>Order Filters</p>
               {/* Sell Orders */}
               <PageFilterSubmit
                 type="number"
