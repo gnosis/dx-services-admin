@@ -44,6 +44,9 @@ function PastAuctions({ web3 }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(undefined)
 
+  // Grab DX instance
+  const getDxContract = async (net) => web3.getDutchX(net)
+
   useEffect(() => {
     setLoading(true)
 
@@ -51,11 +54,11 @@ function PastAuctions({ web3 }) {
       try {
         const bcNetwork = network || await web3.getNetworkId()
         const dxService = await getDxService(bcNetwork, web3)
-
+        
         // get all available tokens on DutchX Protocol
         const tokens = await dxService.getTokens()
 
-        return tokens
+        return { tokens, bcNetwork }
       } catch (mountError) {
         console.error(mountError)
         throw new Error(mountError)
@@ -64,8 +67,9 @@ function PastAuctions({ web3 }) {
 
     const mountSubscription = from(mountLogic())
       .subscribe({
-        next: (tokens) => {
+        next: ({ bcNetwork, tokens }) => {
           setURLFilterParams(`?sellToken=${sellTokenFilter}&buyToken=${buyTokenFilter}`)
+          setNetwork(bcNetwork)
           setAvailableTokens(tokens)
         },
         error: appError => setError(appError),
@@ -85,10 +89,8 @@ function PastAuctions({ web3 }) {
     async function graphQLDataFetch() {
       try {
         const bcNetwork = network || await web3.getNetworkId()
-        const dxContract = await web3.getDutchX(bcNetwork)
-
-        const currentAuctionIndex = (await dxContract.methods.getAuctionIndex(sellTokenFilter, buyTokenFilter).call()).toString()
-
+        const currentAuctionIndex = (await (await getDxContract(bcNetwork)).methods.getAuctionIndex(sellTokenFilter, buyTokenFilter).call()).toString()
+        
         const { data: { data } } = await axios.post(GRAPH_URL, {
           query: `{
             auctions(
@@ -113,14 +115,15 @@ function PastAuctions({ web3 }) {
           }`
         })
 
-        console.group()
+        // console.group()
         //  console.debug('Checking sellToken: ', sellTokenFilter)
         //  console.debug('Checking buyToken: ', buyTokenFilter)
         //  console.debug('Checking with currentAuctionIndex = ', currentAuctionIndex)
         //  console.debug('Checking with numberOfAuctions = ', numberOfAuctions)
         //  console.debug('Checking with auctionIndex_gt = ', currentAuctionIndex - numberOfAuctions)
+        //  console.debug('{ max: currentAuctionIndex, min: Math.max(currentAuctionIndex - numberOfAuctions) }', { max: currentAuctionIndex, min: Math.max(currentAuctionIndex - numberOfAuctions) })
         //  console.debug('DATA = ', data)
-        console.groupEnd()
+        // console.groupEnd()
 
         if (!data.auctions) throw new Error('Range too large/small or no record of data at set params - please try a different range')
 
@@ -147,11 +150,9 @@ function PastAuctions({ web3 }) {
     const pastAuctionsSub = from(graphQLDataFetch())
       .subscribe({
         next: ({
-          bcNetwork,
           auctions,
           currentAuctionIndex,
         }) => {
-          setNetwork(bcNetwork)
           setPastAuctions(auctions)
           setAuctionLimits({ max: currentAuctionIndex, min: Math.max(currentAuctionIndex - numberOfAuctions) })
 
@@ -225,7 +226,7 @@ function PastAuctions({ web3 }) {
   }
   // Data Loading
   if (loading) return <Loading />
-  
+  console.debug('defaultState.numberOfAuctions > auctionLimits.max', defaultState.numberOfAuctions, auctionLimits.max, defaultState.numberOfAuctions > auctionLimits.max)
   return (
     <PageWrapper pageTitle="DutchX Past Auctions">
       <AttentionBanner title="MAINNET ONLY" subText="This feature is currently only available for Mainnet. Please check back later for data on other networks." />
@@ -287,14 +288,16 @@ function PastAuctions({ web3 }) {
       />
 
       {/* Pagination Control */}
-      {(auctionLimits.min + defaultState.numberOfAuctions) >= auctionLimits.max ? <div><button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState + defaultState.numberOfAuctions)}>Next</button></div>
+      {defaultState.numberOfAuctions > auctionLimits.max ? null
         :
-        ((auctionLimits.min - defaultState.numberOfAuctions) <= 0 && auctionLimits.min <= 0) ? <div><button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState - defaultState.numberOfAuctions)}>Previous</button></div>
+        (auctionLimits.min + defaultState.numberOfAuctions) >= auctionLimits.max ? <div><button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState + defaultState.numberOfAuctions)}>Next</button></div>
           :
-          <div>
-            <button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState - defaultState.numberOfAuctions)}>Previous</button>
-            <button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState + defaultState.numberOfAuctions)}>Next</button>
-          </div>}
+          ((auctionLimits.min - defaultState.numberOfAuctions) <= 0 && auctionLimits.min <= 0) ? <div><button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState - defaultState.numberOfAuctions)}>Previous</button></div>
+            :
+            <div>
+              <button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState - defaultState.numberOfAuctions)}>Previous</button>
+              <button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState + defaultState.numberOfAuctions)}>Next</button>
+            </div>}
 
       {/* Filter labels */}
       <>
@@ -325,14 +328,16 @@ function PastAuctions({ web3 }) {
         </Table>}
 
       {/* Pagination Control */}
-      {(auctionLimits.min + defaultState.numberOfAuctions) >= auctionLimits.max ? <div><button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState + defaultState.numberOfAuctions)}>Next</button></div>
+      {defaultState.numberOfAuctions > auctionLimits.max ? null
         :
-        ((auctionLimits.min - defaultState.numberOfAuctions) <= 0 && auctionLimits.min <= 0) ? <div><button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState - defaultState.numberOfAuctions)}>Previous</button></div>
+        (auctionLimits.min + defaultState.numberOfAuctions) >= auctionLimits.max ? <div><button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState + defaultState.numberOfAuctions)}>Next</button></div>
           :
-          <div>
-            <button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState - defaultState.numberOfAuctions)}>Previous</button>
-            <button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState + defaultState.numberOfAuctions)}>Next</button>
-          </div>}
+          ((auctionLimits.min - defaultState.numberOfAuctions) <= 0 && auctionLimits.min <= 0) ? <div><button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState - defaultState.numberOfAuctions)}>Previous</button></div>
+            :
+            <div>
+              <button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState - defaultState.numberOfAuctions)}>Previous</button>
+              <button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState + defaultState.numberOfAuctions)}>Next</button>
+            </div>}
     </PageWrapper>
   )
 }
