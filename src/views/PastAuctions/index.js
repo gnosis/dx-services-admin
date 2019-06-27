@@ -288,7 +288,7 @@ function PastAuctions({ web3 }) {
       />
 
       {/* Pagination Control */}
-      {defaultState.numberOfAuctions > auctionLimits.max ? null
+      {specificAuction || defaultState.numberOfAuctions > auctionLimits.max ? null
         :
         (auctionLimits.min + defaultState.numberOfAuctions) >= auctionLimits.max ? <div><button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState + defaultState.numberOfAuctions)}>Next</button></div>
           :
@@ -300,13 +300,13 @@ function PastAuctions({ web3 }) {
             </div>}
 
       {/* Filter labels */}
-      <>
+      <div>
         <FilterLabel
           onClickHandler={() => setSpecificAuction(undefined)}
           filterTitle="Selected Auction"
           filterData={specificAuction}
         />
-      </>
+      </div>
 
       {error
         ?
@@ -328,7 +328,7 @@ function PastAuctions({ web3 }) {
         </Table>}
 
       {/* Pagination Control */}
-      {defaultState.numberOfAuctions > auctionLimits.max ? null
+      {specificAuction || defaultState.numberOfAuctions > auctionLimits.max ? null
         :
         (auctionLimits.min + defaultState.numberOfAuctions) >= auctionLimits.max ? <div><button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState + defaultState.numberOfAuctions)}>Next</button></div>
           :
