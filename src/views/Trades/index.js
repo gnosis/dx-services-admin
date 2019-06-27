@@ -135,6 +135,7 @@ function Trades({ web3 }) {
  
         // Cache auctions
         const { auctions } = data
+        console.log("TCL: graphQLDataFetch -> auctions", auctions)
         
         // Auto sort new choices DESC
         // auctions.sort((a, b) => b.auctionIndex - a.auctionIndex)
@@ -202,15 +203,17 @@ function Trades({ web3 }) {
           <Table>
             <thead>
               <tr>
-                <th>Hash</th>
+                <th>Trader</th>
+                <th>TX Hash</th>
                 <th>Amount</th>
                 <th>Timestamp</th>
               </tr>
             </thead>
             <tbody>
               {(
-                buyOrders.map(({ amount, transactionHash, timestamp }) => 
+                buyOrders.map(({ amount, trader: { id: trader }, transactionHash, timestamp }) => 
                   <tr key={transactionHash}>
+                    <td><code title={trader} style={{cursor: 'pointer'}}>{renderEtherscanLink(trader, null, shortenHash(trader, 37), 'address')}</code></td>
                     <td><code title={transactionHash} style={{cursor: 'pointer'}}>{renderEtherscanLink(transactionHash, null, shortenHash(transactionHash), 'tx')}</code></td>
                     <td>{(amount/10**18).toFixed(FIXED_DECIMALS)}</td>
                     <td>{formatTime(timestamp)}</td>
@@ -224,15 +227,17 @@ function Trades({ web3 }) {
           <Table>
               <thead>
                 <tr>
-                  <th>Hash</th>
+                  <th>Trader</th>
+                  <th>TX Hash</th>
                   <th>Amount</th>
                   <th>Timestamp</th>
                 </tr>
               </thead>
               <tbody>
                 {(
-                  sellOrders.map(({ amount, transactionHash, timestamp }) => 
+                  sellOrders.map(({ amount, trader: { id: trader }, transactionHash, timestamp }) => 
                     <tr key={transactionHash}>
+                      <td><code title={trader} style={{cursor: 'pointer'}}>{renderEtherscanLink(trader, null, shortenHash(trader, 37), 'address')}</code></td>
                       <td><code title={transactionHash} style={{cursor: 'pointer'}}>{renderEtherscanLink(transactionHash, null, shortenHash(transactionHash), 'tx')}</code></td>
                       <td>{(amount/10**18).toFixed(4)}</td>
                       <td>{formatTime(timestamp)}</td>
