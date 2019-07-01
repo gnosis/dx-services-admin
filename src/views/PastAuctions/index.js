@@ -9,13 +9,13 @@ import ErrorHOC from '../../HOCs/ErrorHOC'
 import Web3HOC from '../../HOCs/Web3HOC'
 
 import AttentionBanner from '../../components/AttentionBanner'
-import Loading from '../../components/Loading'
-import ErrorPre from '../../components/Error'
 import ColourKey from '../../components/ColourKey'
-
+import ErrorPre from '../../components/Error'
+import Loading from '../../components/Loading'
+import Pagination from '../../components/Pagination'
 import RotateButton from '../../components/RotateButton'
 
-import getDxService from '../../services/dxService'
+import { getDxContract, getTokensAndNetwork } from '../../api'
 
 import { FIXED_DECIMALS, GRAPH_URL, MAINNET_WETH_ADDRESS, MAINNET_GNO_ADDRESS } from '../../globals'
 import { setURLFilterParams, rZC, formatTime } from '../../utils'
@@ -44,28 +44,10 @@ function PastAuctions({ web3 }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(undefined)
 
-  // Grab DX instance
-  const getDxContract = async (net) => web3.getDutchX(net)
-
   useEffect(() => {
     setLoading(true)
 
-    async function mountLogic() {
-      try {
-        const bcNetwork = network || await web3.getNetworkId()
-        const dxService = await getDxService(bcNetwork, web3)
-        
-        // get all available tokens on DutchX Protocol
-        const tokens = await dxService.getTokens()
-
-        return { tokens, bcNetwork }
-      } catch (mountError) {
-        console.error(mountError)
-        throw new Error(mountError)
-      }
-    }
-
-    const mountSubscription = from(mountLogic())
+    const mountSubscription = from(getTokensAndNetwork(web3, network))
       .subscribe({
         next: ({ bcNetwork, tokens }) => {
           setURLFilterParams(`?sellToken=${sellTokenFilter}&buyToken=${buyTokenFilter}`)
@@ -89,7 +71,7 @@ function PastAuctions({ web3 }) {
     async function graphQLDataFetch() {
       try {
         const bcNetwork = network || await web3.getNetworkId()
-        const currentAuctionIndex = (await (await getDxContract(bcNetwork)).methods.getAuctionIndex(sellTokenFilter, buyTokenFilter).call()).toString()
+        const currentAuctionIndex = (await (await getDxContract(bcNetwork, web3)).methods.getAuctionIndex(sellTokenFilter, buyTokenFilter).call()).toString()
         
         const { data: { data } } = await axios.post(GRAPH_URL, {
           query: `{
@@ -226,7 +208,7 @@ function PastAuctions({ web3 }) {
   }
   // Data Loading
   if (loading) return <Loading />
-  console.debug('defaultState.numberOfAuctions > auctionLimits.max', defaultState.numberOfAuctions, auctionLimits.max, defaultState.numberOfAuctions > auctionLimits.max)
+
   return (
     <PageWrapper pageTitle="DutchX Past Auctions">
       <AttentionBanner title="MAINNET ONLY" subText="This feature is currently only available for Mainnet. Please check back later for data on other networks." />
@@ -288,16 +270,14 @@ function PastAuctions({ web3 }) {
       />
 
       {/* Pagination Control */}
-      {specificAuction || defaultState.numberOfAuctions > auctionLimits.max ? null
-        :
-        (auctionLimits.min + defaultState.numberOfAuctions) >= auctionLimits.max ? <div><button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState + defaultState.numberOfAuctions)}>Next</button></div>
-          :
-          ((auctionLimits.min - defaultState.numberOfAuctions) <= 0 && auctionLimits.min <= 0) ? <div><button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState - defaultState.numberOfAuctions)}>Previous</button></div>
-            :
-            <div>
-              <button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState - defaultState.numberOfAuctions)}>Previous</button>
-              <button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState + defaultState.numberOfAuctions)}>Next</button>
-            </div>}
+      <Pagination 
+        specificAuction={specificAuction}
+        showPerPage={defaultState.numberOfAuctions}
+        maxLimit={auctionLimits.max}
+        minLimit={auctionLimits.min}
+        previousPageHandler={() => setNumberOfAuctions(prevState => prevState - defaultState.numberOfAuctions)}
+        nextPageHandler={() => setNumberOfAuctions(prevState => {console.log('prevState =', prevState); return prevState + defaultState.numberOfAuctions }) }
+      />
 
       {/* Filter labels */}
       <div>
@@ -328,16 +308,15 @@ function PastAuctions({ web3 }) {
         </Table>}
 
       {/* Pagination Control */}
-      {specificAuction || defaultState.numberOfAuctions > auctionLimits.max ? null
-        :
-        (auctionLimits.min + defaultState.numberOfAuctions) >= auctionLimits.max ? <div><button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState + defaultState.numberOfAuctions)}>Next</button></div>
-          :
-          ((auctionLimits.min - defaultState.numberOfAuctions) <= 0 && auctionLimits.min <= 0) ? <div><button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState - defaultState.numberOfAuctions)}>Previous</button></div>
-            :
-            <div>
-              <button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState - defaultState.numberOfAuctions)}>Previous</button>
-              <button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState + defaultState.numberOfAuctions)}>Next</button>
-            </div>}
+      <Pagination 
+        specificAuction={specificAuction}
+        showPerPage={defaultState.numberOfAuctions}
+        maxLimit={auctionLimits.max}
+        minLimit={auctionLimits.min}
+        previousPageHandler={() => setNumberOfAuctions(prevState => prevState - defaultState.numberOfAuctions)}
+        nextPageHandler={() => setNumberOfAuctions(prevState => {console.log('prevState =', prevState); return prevState + defaultState.numberOfAuctions }) }
+      />
+      
     </PageWrapper>
   )
 }
