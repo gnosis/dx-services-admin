@@ -12,7 +12,7 @@ import Loading from '../../components/Loading'
 import ErrorPre from '../../components/Error'
 import RotateButton from '../../components/RotateButton'
 
-import getDxService from '../../services/dxService'
+import { getTokensAndNetwork } from '../../api'
 
 import { shortenHash, tokenListToName, setURLFilterParams, formatTime } from '../../utils'
 import { FIXED_DECIMALS, GRAPH_URL, MAINNET_WETH_ADDRESS, MAINNET_GNO_ADDRESS } from '../../globals'
@@ -60,22 +60,7 @@ function Trades({ web3 }) {
   useEffect(() => {
     setLoading(true)
 
-    async function mountLogic() {
-      try {
-        const bcNetwork = network || await web3.getNetworkId()
-        const dxService = await getDxService(bcNetwork, web3)
-
-        // get all available tokens on DutchX Protocol
-        const tokens = await dxService.getTokens()
-
-        return { tokens, bcNetwork }
-      } catch (mountError) {
-        console.error(mountError)
-        throw new Error(mountError)
-      }
-    }
-
-    const mountSubscription = from(mountLogic())
+    const mountSubscription = from(getTokensAndNetwork(web3, network))
       .subscribe({
         next: ({ tokens, bcNetwork }) => {
           setNetwork(bcNetwork)
