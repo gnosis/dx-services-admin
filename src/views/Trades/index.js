@@ -1,3 +1,4 @@
+/* eslint-disable eqeqeq */
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 
@@ -162,9 +163,7 @@ function Trades({ web3 }) {
     setBuyTokenFilter(sellTokenFilter)
   }
 
-  // eslint-disable-next-line eqeqeq
   const renderEtherscanLink = (address, section, text, type = 'address', style) => <a href={`https://${network == '4' ? 'rinkeby.etherscan' : 'etherscan'}.io/${type}/${address}${section ? '#' + section : ''}`} target="_blank" rel="noopener noreferrer" style={style}>{text || address}</a>
-  // const renderAccountLink = address => address && <Link to={'/accounts/' + address}>{address}</Link>
 
   const renderTrades = ({
     id,
