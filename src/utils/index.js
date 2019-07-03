@@ -79,7 +79,7 @@ export const shortenHash = (hash, endHash = 61) => `${(hash).slice(0, 6)}...${(h
 
 export function recursiveZeroCheck(num, fixAmt = 4) {
     if (num === 0) return num
-    if (isNaN(num) || isNaN(fixAmt)) throw new Error('Parameters MUST be numbers or numbers in string form')
+    if (isNaN(num) || isNaN(fixAmt)) return num// throw new Error('Parameters MUST be numbers or numbers in string form')
     // Explicitly convert params to Number type
     num = Number(num)
     fixAmt = Number(fixAmt)
