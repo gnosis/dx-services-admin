@@ -12,13 +12,10 @@ const PageFilter = ({
     changeFunction, 
     inputName, 
     inputID, 
-    optionValue = "",
     // Render prop
     render,
     // Ref, if necessary
     ref,
-    // To require a submit button
-    useSubmit,
 }) => 
     <InputGroup>
         <InputGroupAddon addonType="prepend">{title}</InputGroupAddon>
