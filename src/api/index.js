@@ -10,7 +10,7 @@ export async function getTokensAndNetwork(web3Instance, networkParam) {
       
       // get all available tokens on DutchX Protocol
       const tokens = await dxService.getTokens()
-
+      tokens.push({ name: 'None selected', symbol: '', address: '' })
       return { tokens, bcNetwork }
     } catch (error) {
       console.error(error)
