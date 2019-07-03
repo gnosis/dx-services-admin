@@ -1,22 +1,34 @@
 import React from 'react'
 
+import PrimaryButton from '../PrimaryButton'
+
 const Pagination = ({
-    specificAuction,
-    showPerPage,
-    maxLimit,
-    minLimit,
+    canPaginate,
+    // clickHandlers
     nextPageHandler,
     previousPageHandler,
+    // misc
+    skipAmount,
 }) =>
-    specificAuction || showPerPage > maxLimit ? null
+    // Single page with < 50 entries
+    !canPaginate && skipAmount === 0
+        ?
+        null
         :
-        (minLimit + showPerPage) >= maxLimit ? <div><button className="btn btn-primary" style={{ margin: 3 }} onClick={nextPageHandler}>Next</button></div>
+        // Prev/Next
+        canPaginate && skipAmount > 0
+            ?
+            <div>
+                <PrimaryButton text="Previous" onClickHandler={previousPageHandler} />
+                <PrimaryButton text="Next" onClickHandler={nextPageHandler} />
+            </div>
             :
-            ((minLimit - showPerPage) <= 0 && minLimit <= 0) ? <div><button className="btn btn-primary" style={{ margin: 3 }} onClick={previousPageHandler}>Previous</button></div>
+            // Previous only
+            !canPaginate && skipAmount > 0
+                ?
+                <div><PrimaryButton text="Previous" onClickHandler={previousPageHandler} /></div>
                 :
-                <div>
-                    <button className="btn btn-primary" style={{ margin: 3 }} onClick={previousPageHandler}>Previous</button>
-                    <button className="btn btn-primary" style={{ margin: 3 }} onClick={nextPageHandler}>Next</button>
-                </div>
+                // Next only
+                <div><PrimaryButton text="Next" onClickHandler={nextPageHandler} /></div>
 
 export default Pagination
