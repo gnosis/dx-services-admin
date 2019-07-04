@@ -175,7 +175,7 @@ function PastAuctions({ web3 }) {
       <tr
         className={anomalyClass}
         key={auctionIndex * Math.random()}
-        onClick={() => window.location.href = `${window.location.origin}/#/trades?sellToken=${sellToken}&buyToken=${buyToken}&auctionIndex=${auctionIndex}`}
+        onClick={() => window.location.href = `${window.location.origin}/#/past-auctions-trades?sellToken=${sellToken}&buyToken=${buyToken}&auctionIndex=${auctionIndex}`}
         style={{ cursor: 'pointer' }}
       >
         {/* NAME */}
