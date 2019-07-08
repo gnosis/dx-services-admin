@@ -1,3 +1,4 @@
+/* eslint-disable eqeqeq */
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import moment from 'moment'
@@ -9,66 +10,49 @@ import ErrorHOC from '../../HOCs/ErrorHOC'
 import Web3HOC from '../../HOCs/Web3HOC'
 
 import AttentionBanner from '../../components/AttentionBanner'
-import Loading from '../../components/Loading'
-import ErrorPre from '../../components/Error'
 import ColourKey from '../../components/ColourKey'
-
+import ErrorPre from '../../components/Error'
+import Loading from '../../components/Loading'
+import Pagination from '../../components/Pagination'
 import RotateButton from '../../components/RotateButton'
 
-import getDxService from '../../services/dxService'
+import { getTokensAndNetwork } from '../../api'
 
-import { FIXED_DECIMALS, GRAPH_URL, MAINNET_WETH_ADDRESS, MAINNET_GNO_ADDRESS } from '../../globals'
+import { FIXED_DECIMALS, GRAPH_URL } from '../../globals'
 import { setURLFilterParams, rZC, formatTime } from '../../utils'
 
 import { from } from 'rxjs'
 
 function PastAuctions({ web3 }) {
   const defaultState = {
-    auctionLimits: { max: 501, min: 1 },
+    canPaginate: false,
     numberOfAuctions: 50,
-    sellTokenFilter: (tokenFromURL(window.location.href) && tokenFromURL(window.location.href).sellToken) || MAINNET_WETH_ADDRESS,
-    buyTokenFilter: (tokenFromURL(window.location.href) && tokenFromURL(window.location.href).buyToken) || MAINNET_GNO_ADDRESS,
+    sellTokenFilter: (tokenFromURL(window.location.href).sellToken) || '',
+    buyTokenFilter: (tokenFromURL(window.location.href).buyToken) || '',
   }
 
+  const [paginationSize, setPaginationSize] = useState(50)
   const [pastAuctions, setPastAuctions] = useState([])
   const [availableTokens, setAvailableTokens] = useState([])
-  const [auctionLimits, setAuctionLimits] = useState(defaultState.auctionLimits)
-  // const [safeTypeFilter, setSafeTypeFilter] = useState('')
+  const [canPaginate, setCanPaginate] = useState(defaultState.canPaginate)
   const [network, setNetwork] = useState(undefined)
   // Data Selection
   const [sellTokenFilter, setSellTokenFilter] = useState(defaultState.sellTokenFilter)
   const [buyTokenFilter, setBuyTokenFilter] = useState(defaultState.buyTokenFilter)
-  const [numberOfAuctions, setNumberOfAuctions] = useState(defaultState.numberOfAuctions)
   const [specificAuction, setSpecificAuction] = useState(undefined)
   // App
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(undefined)
 
-  // Grab DX instance
-  const getDxContract = async (net) => web3.getDutchX(net)
+  const [skipAmount, setSkipAmount] = useState(0)
 
   useEffect(() => {
     setLoading(true)
 
-    async function mountLogic() {
-      try {
-        const bcNetwork = network || await web3.getNetworkId()
-        const dxService = await getDxService(bcNetwork, web3)
-        
-        // get all available tokens on DutchX Protocol
-        const tokens = await dxService.getTokens()
-
-        return { tokens, bcNetwork }
-      } catch (mountError) {
-        console.error(mountError)
-        throw new Error(mountError)
-      }
-    }
-
-    const mountSubscription = from(mountLogic())
+    const mountSubscription = from(getTokensAndNetwork(web3, network))
       .subscribe({
         next: ({ bcNetwork, tokens }) => {
-          setURLFilterParams(`?sellToken=${sellTokenFilter}&buyToken=${buyTokenFilter}`)
+          sellTokenFilter && setURLFilterParams(`?sellToken=${sellTokenFilter}&buyToken=${buyTokenFilter}`)
           setNetwork(bcNetwork)
           setAvailableTokens(tokens)
         },
@@ -82,26 +66,31 @@ function PastAuctions({ web3 }) {
   }, [])
 
   // mount logic
-  // 1. load endpoint Trades data
+  // 1. load endpoint Past Auctions data
   // 2. set to state
   useEffect(() => {
+    setError(undefined)
     // load data
     async function graphQLDataFetch() {
       try {
         const bcNetwork = network || await web3.getNetworkId()
-        const currentAuctionIndex = (await (await getDxContract(bcNetwork)).methods.getAuctionIndex(sellTokenFilter, buyTokenFilter).call()).toString()
-        
+
         const { data: { data } } = await axios.post(GRAPH_URL, {
           query: `{
             auctions(
-              ${!specificAuction ? `first: 50` : ''} 
-              orderBy: auctionIndex
-              where: { 
-                sellToken: ${JSON.stringify(sellTokenFilter)}, 
-                buyToken: ${JSON.stringify(buyTokenFilter)}, 
-                sellVolume_gt: 0, 
-                ${specificAuction ? `auctionIndex: ${specificAuction}` : `auctionIndex_gte: ${Math.max(currentAuctionIndex - numberOfAuctions)}`}
-            }) {
+              ${!specificAuction ? `first: ${paginationSize + 1}, skip: ${skipAmount}` : ''}
+                
+                orderBy: startTime
+                orderDirection: desc
+                
+                where: { 
+                  sellVolume_gt: 0
+                  ${sellTokenFilter ? `sellToken: ${JSON.stringify(sellTokenFilter)}` : ''} 
+                  ${buyTokenFilter ? `buyToken: ${JSON.stringify(buyTokenFilter)}` : ''}  
+                  ${specificAuction ? `auctionIndex: ${specificAuction}` : ''}
+                },                
+            ) {
+              id
               auctionIndex
               sellVolume
               buyVolume
@@ -116,27 +105,21 @@ function PastAuctions({ web3 }) {
         })
 
         // console.group()
-        //  console.debug('Checking sellToken: ', sellTokenFilter)
-        //  console.debug('Checking buyToken: ', buyTokenFilter)
-        //  console.debug('Checking with currentAuctionIndex = ', currentAuctionIndex)
-        //  console.debug('Checking with numberOfAuctions = ', numberOfAuctions)
-        //  console.debug('Checking with auctionIndex_gt = ', currentAuctionIndex - numberOfAuctions)
-        //  console.debug('{ max: currentAuctionIndex, min: Math.max(currentAuctionIndex - numberOfAuctions) }', { max: currentAuctionIndex, min: Math.max(currentAuctionIndex - numberOfAuctions) })
-        //  console.debug('DATA = ', data)
+        // console.debug('Checking sellToken: ', sellTokenFilter)
+        // console.debug('Checking buyToken: ', buyTokenFilter)
+        // console.debug('DATA = ', data)
         // console.groupEnd()
 
-        if (!data.auctions) throw new Error('Range too large/small or no record of data at set params - please try a different range')
+        if (!data.auctions || !data.auctions.length > 0) throw new Error('Range too large/small or no record of data at set params - please try a different range')
 
         // Cache auctions
-        const { auctions } = data
-
-        // Auto sort new choices DESC
-        auctions.sort((a, b) => b.auctionIndex - a.auctionIndex)
-
+        let { auctions } = data
+        const pagination = auctions.length > 50
+        
         return {
           bcNetwork,
           auctions,
-          currentAuctionIndex,
+          pagination
         }
       } catch (error) {
         const err = new Error(error.message)
@@ -151,12 +134,12 @@ function PastAuctions({ web3 }) {
       .subscribe({
         next: ({
           auctions,
-          currentAuctionIndex,
+          pagination
         }) => {
           setPastAuctions(auctions)
-          setAuctionLimits({ max: currentAuctionIndex, min: Math.max(currentAuctionIndex - numberOfAuctions) })
+          setCanPaginate(pagination)
 
-          setURLFilterParams(`?sellToken=${sellTokenFilter}&buyToken=${buyTokenFilter}`)
+          sellTokenFilter && setURLFilterParams(`?sellToken=${sellTokenFilter}&buyToken=${buyTokenFilter}`)
         },
         error: appError => {
           setError(appError)
@@ -168,11 +151,7 @@ function PastAuctions({ web3 }) {
     return () => {
       pastAuctionsSub && pastAuctionsSub.unsubscribe()
     }
-  }, [sellTokenFilter, buyTokenFilter, numberOfAuctions, specificAuction])
-  
-  // eslint-disable-next-line eqeqeq
-  // const renderEtherscanLink = (address, section) => <a href={`https://${network == '4' ? 'rinkeby.etherscan' : 'etherscan'}.io/address/${address}${section ? '#' + section : ''}`} target="_blank" rel="noopener noreferrer">{address}</a>
-  // const renderAccountLink = address => address && <Link to={'/accounts/' + address}>{address}</Link>
+  }, [sellTokenFilter, buyTokenFilter, skipAmount, specificAuction])
 
   const handleRotateButton = () => {
     setSellTokenFilter(buyTokenFilter)
@@ -189,13 +168,14 @@ function PastAuctions({ web3 }) {
     clearingTime,
     totalFeesPaid,
   }) => {
-    const { sellSymbol, buySymbol } = tokenListToName(availableTokens, sellTokenFilter, buyTokenFilter, auctionIndex)
+    const { sellSymbol, buySymbol } = tokenListToName(availableTokens, sellToken, buyToken, auctionIndex)
     const anomalyClass = checkTimeForAnomaly(startTime, clearingTime)
+
     return (
-      <tr 
+      <tr
         className={anomalyClass}
-        key={auctionIndex * Math.random()} 
-        onClick={() => window.location.href=`${window.location.origin}/#/trades?sellToken=${sellToken}&buyToken=${buyToken}&auctionIndex=${auctionIndex}`}
+        key={auctionIndex * Math.random()}
+        onClick={() => window.location.href = `${window.location.origin}/#/past-auctions-trades?sellToken=${sellToken}&buyToken=${buyToken}&auctionIndex=${auctionIndex}`}
         style={{ cursor: 'pointer' }}
       >
         {/* NAME */}
@@ -224,16 +204,17 @@ function PastAuctions({ web3 }) {
       </tr>
     )
   }
-  // Data Loading
-  if (loading) return <Loading />
-  console.debug('defaultState.numberOfAuctions > auctionLimits.max', defaultState.numberOfAuctions, auctionLimits.max, defaultState.numberOfAuctions > auctionLimits.max)
+
   return (
     <PageWrapper pageTitle="DutchX Past Auctions">
-      <AttentionBanner title="MAINNET ONLY" subText="This feature is currently only available for Mainnet. Please check back later for data on other networks." />
+      <AttentionBanner
+        title="MAINNET ONLY"
+        subText="This feature is currently only available for Mainnet. Please check back later for data on other networks."
+      />
       <Form>
         <FormGroup row>
           {/* Filter SellToken */}
-          <div 
+          <div
             style={{
               flexFlow: 'row nowrap',
               display: 'flex',
@@ -247,22 +228,28 @@ function PastAuctions({ web3 }) {
                 type="select"
                 title="Sell Token"
                 showWhat={sellTokenFilter}
-                changeFunction={event => setSellTokenFilter(event.target.value)}
+                changeFunction={(event) => {
+                  setSkipAmount(0)
+                  setSellTokenFilter(event.target.value)
+                }}
                 inputName="trades"
-                render={availableTokens.map(({ name, address, symbol }) => <option key={address + Math.random()} value={address}>{symbol} ({name})</option>)}
+                render={availableTokens.map(({ name, address, symbol }) => <option key={address} value={address}>{symbol} ({name})</option>)}
               />
               {/* Filter BuyToken */}
               <PageFilter
                 type="select"
                 title="Buy Token"
                 showWhat={buyTokenFilter}
-                changeFunction={event => setBuyTokenFilter(event.target.value)}
+                changeFunction={(event) => {
+                  setSkipAmount(0)
+                  setBuyTokenFilter(event.target.value)
+                }}
                 inputName="trades"
-                render={availableTokens.map(({ name, address, symbol }) => <option key={address + Math.random()} value={address}>{symbol} ({name})</option>)}
+                render={availableTokens.map(({ name, address, symbol }) => <option key={address} value={address}>{symbol} ({name})</option>)}
               />
             </Col>
             {/* Switch Tokens */}
-            <RotateButton 
+            <RotateButton
               onClickHandler={handleRotateButton}
             />
           </div>
@@ -272,7 +259,6 @@ function PastAuctions({ web3 }) {
             <PageFilterSubmit
               type="number"
               title="Specific auction to show"
-              showWhat={numberOfAuctions}
               submitFunction={setSpecificAuction}
               inputName="trades"
             />
@@ -281,63 +267,62 @@ function PastAuctions({ web3 }) {
       </Form>
 
       {/* Colour Key */}
-      <ColourKey 
+      <ColourKey
         colourMap={{
           "#fff1d0": "Auction run-time: Greater than 6.5 hours || Less than 5 hours"
         }}
       />
-
-      {/* Pagination Control */}
-      {specificAuction || defaultState.numberOfAuctions > auctionLimits.max ? null
-        :
-        (auctionLimits.min + defaultState.numberOfAuctions) >= auctionLimits.max ? <div><button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState + defaultState.numberOfAuctions)}>Next</button></div>
-          :
-          ((auctionLimits.min - defaultState.numberOfAuctions) <= 0 && auctionLimits.min <= 0) ? <div><button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState - defaultState.numberOfAuctions)}>Previous</button></div>
-            :
-            <div>
-              <button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState - defaultState.numberOfAuctions)}>Previous</button>
-              <button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState + defaultState.numberOfAuctions)}>Next</button>
-            </div>}
-
-      {/* Filter labels */}
-      <div>
-        <FilterLabel
-          onClickHandler={() => setSpecificAuction(undefined)}
-          filterTitle="Selected Auction"
-          filterData={specificAuction}
-        />
-      </div>
-
       {error
         ?
         <ErrorPre error={error} errorTitle="" />
         :
-        <Table responsive hover>
-          <thead>
-            <tr>
-              <th>Market</th>
-              <th>Volumes</th>
-              <th>Prices</th>
-              <th>Times</th>
-              <th>Liquidity Contribution</th>
-            </tr>
-          </thead>
-          <tbody>
-            {pastAuctions && pastAuctions.map(auction => renderTrades(auction))}
-          </tbody>
-        </Table>}
-
-      {/* Pagination Control */}
-      {specificAuction || defaultState.numberOfAuctions > auctionLimits.max ? null
-        :
-        (auctionLimits.min + defaultState.numberOfAuctions) >= auctionLimits.max ? <div><button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState + defaultState.numberOfAuctions)}>Next</button></div>
+        loading
+          ?
+          // Data Loading
+          <Loading />
           :
-          ((auctionLimits.min - defaultState.numberOfAuctions) <= 0 && auctionLimits.min <= 0) ? <div><button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState - defaultState.numberOfAuctions)}>Previous</button></div>
-            :
+          <>
+            {/* Pagination Control */}
+            <Pagination
+              canPaginate={canPaginate}
+              skipAmount={skipAmount}
+              nextPageHandler={() => setSkipAmount(prev => prev + paginationSize)}
+              previousPageHandler={() => setSkipAmount(prev => prev - paginationSize)}
+            />
+
+            {/* Filter labels */}
             <div>
-              <button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState - defaultState.numberOfAuctions)}>Previous</button>
-              <button className="btn btn-primary" style={{ margin: 3 }} onClick={() => setNumberOfAuctions(prevState => prevState + defaultState.numberOfAuctions)}>Next</button>
-            </div>}
+              <FilterLabel
+                onClickHandler={() => setSpecificAuction(undefined)}
+                filterTitle="Selected Auction"
+                filterData={specificAuction}
+              />
+            </div>
+
+            <Table responsive hover>
+              <thead>
+                <tr>
+                  <th>Market</th>
+                  <th>Volumes</th>
+                  <th>Prices</th>
+                  <th>Times</th>
+                  <th>Liquidity Contribution</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pastAuctions && pastAuctions.map(auction => renderTrades(auction))}
+              </tbody>
+            </Table>
+
+            {/* Pagination Control */}
+            <Pagination
+              canPaginate={canPaginate}
+              skipAmount={skipAmount}
+              nextPageHandler={() => setSkipAmount(prev => prev + paginationSize)}
+              previousPageHandler={() => setSkipAmount(prev => prev - paginationSize)}
+            />
+          </>}
+
     </PageWrapper>
   )
 }
@@ -353,7 +338,7 @@ function tokenFromURL(url) {
   return { sellToken, buyToken }
 }
 
-function tokenListToName (tokenList, st, bt) {
+function tokenListToName(tokenList, st, bt) {
   if (!tokenList.length) return { sellName: '...', buyName: '...', sellSymbol: '...', buySymbol: '...' }
   return {
     sellName: (tokenList.find(token => token.address === st)).name,

@@ -26,6 +26,11 @@ const navArray = [
     icon: 'fa fa-arrow-left',
   },
   {
+    name: 'Past Auctions Trades',
+    url: '/past-auctions-trades',
+    icon: 'fa fa-money',
+  },
+  {
     name: 'Trades',
     url: '/trades',
     icon: 'fa fa-exchange',

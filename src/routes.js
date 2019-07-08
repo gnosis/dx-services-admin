@@ -10,6 +10,7 @@ const MgnHolders = React.lazy(() => import('./views/MgnHolders'));
 const AccountDetails = React.lazy(() => import('./views/Accounts/AccountDetails/AccountDetails'));
 const Safes = React.lazy(() => import('./views/Safes'));
 const PastAuctions = React.lazy(() => import('./views/PastAuctions'));
+const PastAuctionsTrades = React.lazy(() => import('./views/PastAuctions/PastAuctionsTrades.js'));
 const Trades = React.lazy(() => import('./views/Trades'));
 
 // https://github.com/ReactTraining/react-router/tree/master/packages/react-router-config
@@ -25,6 +26,7 @@ const routes = [
   { path: '/safes', exact: true, name: 'DutchX Safes', component: Safes },
   { path: '/trades', exact: true, name: 'Trades', component: Trades },
   { path: '/past-auctions', exact: true, name: 'Past Auctions', component: PastAuctions },
+  { path: '/past-auctions-trades', exact: true, name: 'Past Auctions Trades', component: PastAuctionsTrades },
 ];
 
 export default routes;

@@ -79,7 +79,7 @@ export const shortenHash = (hash, endHash = 61) => `${(hash).slice(0, 6)}...${(h
 
 export function recursiveZeroCheck(num, fixAmt = 4) {
     if (num === 0) return num
-    if (isNaN(num) || isNaN(fixAmt)) throw new Error('Parameters MUST be numbers or numbers in string form')
+    if (isNaN(num) || isNaN(fixAmt)) return num// throw new Error('Parameters MUST be numbers or numbers in string form')
     // Explicitly convert params to Number type
     num = Number(num)
     fixAmt = Number(fixAmt)
@@ -92,20 +92,24 @@ export function recursiveZeroCheck(num, fixAmt = 4) {
 
 export const rZC = recursiveZeroCheck
 
-export function setURLFilterParams(filterString) {
+export function setURLFilterParams(filterString, moveNow) {
     if (!window) return false
     const defaultLocation = window.location.href.split('?')[0]
-    return window.location.replace(`${defaultLocation}${filterString}`)
+    return moveNow ? window.location.href = `${defaultLocation}${filterString}` : window.location.replace(`${defaultLocation}${filterString}`)
 }
 
 export function tokenListToName(tokenList, st, bt) {
-    if (!tokenList.length) return { sellName: '...', buyName: '...', sellSymbol: '...', buySymbol: '...' }
+    if (!tokenList.length) return { sellName: '...', buyName: '...', sellSymbol: '...', buySymbol: '...', sellDecimal: 18, buyDecimal: 18 }
     return {
         sellName: (tokenList.find(token => token.address === st)).name,
-        buyName: (tokenList.find(token => token.address === bt)).name,
         sellSymbol: (tokenList.find(token => token.address === st)).symbol,
+        sellDecimal: (tokenList.find(token => token.address === st)).decimals,
+        buyName: (tokenList.find(token => token.address === bt)).name,
         buySymbol: (tokenList.find(token => token.address === bt)).symbol,
+        buyDecimal: (tokenList.find(token => token.address === bt)).decimals,
     }
 }
 
 export const formatTime = (time) => moment(time * 1000).format("LLL")
+
+export const queryLineMaker = (dataCheck, queryString) => `${dataCheck ? `${queryString.toString()}: "${dataCheck}"` : ''}`
