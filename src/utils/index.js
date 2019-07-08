@@ -99,12 +99,14 @@ export function setURLFilterParams(filterString) {
 }
 
 export function tokenListToName(tokenList, st, bt) {
-    if (!tokenList.length) return { sellName: '...', buyName: '...', sellSymbol: '...', buySymbol: '...' }
+    if (!tokenList.length) return { sellName: '...', buyName: '...', sellSymbol: '...', buySymbol: '...', sellDecimal: 18, buyDecimal: 18 }
     return {
         sellName: (tokenList.find(token => token.address === st)).name,
-        buyName: (tokenList.find(token => token.address === bt)).name,
         sellSymbol: (tokenList.find(token => token.address === st)).symbol,
+        sellDecimal: (tokenList.find(token => token.address === st)).decimals,
+        buyName: (tokenList.find(token => token.address === bt)).name,
         buySymbol: (tokenList.find(token => token.address === bt)).symbol,
+        buyDecimal: (tokenList.find(token => token.address === bt)).decimals,
     }
 }
 
