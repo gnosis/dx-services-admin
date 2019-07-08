@@ -15,7 +15,7 @@ import RotateButton from '../../components/RotateButton'
 
 import { getTokensAndNetwork } from '../../api'
 
-import { shortenHash, tokenListToName, setURLFilterParams, formatTime } from '../../utils'
+import { shortenHash, tokenListToName, setURLFilterParams, formatTime, rZC } from '../../utils'
 import { FIXED_DECIMALS, GRAPH_URL } from '../../globals'
 
 import { from } from 'rxjs'
@@ -31,32 +31,33 @@ function tokenFromURL(url) {
 	return { sellToken, buyToken, auctionIndex }
 }
 
-function PastAuctionTrades({ web3 }) {
+function Trades({ web3 }) {
   // DefaultState
   const defaultState = {
     // Tokens
-    sellTokenFilter: tokenFromURL(window.location.href) && tokenFromURL(window.location.href).sellToken ? tokenFromURL(window.location.href).sellToken : undefined,
-    buyTokenFilter: tokenFromURL(window.location.href) && tokenFromURL(window.location.href).buyToken ? tokenFromURL(window.location.href).buyToken : undefined,
+    sellTokenFilter: tokenFromURL(window.location.href) && tokenFromURL(window.location.href).sellToken ? tokenFromURL(window.location.href).sellToken : '',
+    buyTokenFilter: tokenFromURL(window.location.href) && tokenFromURL(window.location.href).buyToken ? tokenFromURL(window.location.href).buyToken : '',
     specificAuction: tokenFromURL(window.location.href) && tokenFromURL(window.location.href).auctionIndex,
     // numberOfTraders: 50,
     numberOfBuyOrders: 20,
     numberOfSellOrders: 20,
+    numberOfOrders: 50,
   }
 
   // State + Setters
-  const [trades, setTrades]                         = useState([])
+  const [trades, setTrades]                         = useState({ buyOrders: [], sellOrders: [], tradesCombined: [] })
   const [network, setNetwork]                       = useState(undefined)
   const [availableTokens, setAvailableTokens]       = useState([])
+  // App
+  const [error, setError]                           = useState(undefined)
+  const [loading, setLoading]                       = useState(false)
+  
   // Data Filters
   const [buyTokenFilter, setBuyTokenFilter]         = useState(defaultState.buyTokenFilter)
   const [sellTokenFilter, setSellTokenFilter]       = useState(defaultState.sellTokenFilter)
   // const [numberOfTraders, setNumberOfTraders]       = useState(defaultState.numberOfTraders)
   const [specificAuction, setSpecificAuction]       = useState(defaultState.specificAuction)
-  const [numberOfBuyOrders, setNumberOfBuyOrders]   = useState(defaultState.numberOfBuyOrders)
-  const [numberOfSellOrders, setNumberOfSellOrders] = useState(defaultState.numberOfSellOrders)
-  // App
-  const [error, setError]                           = useState(undefined)
-  const [loading, setLoading]                       = useState(false)
+  const [numberOfOrders, setNumberOfOrders] = useState(defaultState.numberOfOrders)
 
   useEffect(() => {
     setLoading(true)
@@ -77,7 +78,7 @@ function PastAuctionTrades({ web3 }) {
   }, [])
 
   // mount logic
-  // 1. load endpoint PastAuctionTrades data
+  // 1. load endpoint Trades dataed
   // 2. set to state
   useEffect(() => {
     setError(undefined)
@@ -85,47 +86,58 @@ function PastAuctionTrades({ web3 }) {
     async function graphQLDataFetch() {
       try {
         const query = `{
-          auctions(
-            ${sellTokenFilter && buyTokenFilter ? `where: { id: "${sellTokenFilter}-${buyTokenFilter}-${specificAuction}" }` : 'orderBy: timestamp'}
+          sellOrders(
+            first: ${numberOfOrders / 2}, 
+            orderBy: timestamp, 
+            orderDirection: desc
+            where: {
+              ${sellTokenFilter && buyTokenFilter ? `auction_contains: "${(sellTokenFilter)}-${(buyTokenFilter)}"` : ''}
+            }
           ) {
             id
-            sellOrders(
-              first: ${numberOfSellOrders}, 
-              orderBy: timestamp
-            ) {
-              trader {
-                id
-              }
-              amount
-              timestamp
-              transactionHash
+            transactionHash
+            timestamp
+            trader {
+              id
             }
-            buyOrders(
-              first: ${numberOfBuyOrders}, 
-              orderBy: timestamp
-            ) {
-              trader {
-                id
-              }
-              amount
-              timestamp
-              transactionHash
+            amount
+            auction {
+              id
+            }
+          }
+          buyOrders(
+            first: ${numberOfOrders / 2},
+            orderBy: timestamp, 
+            orderDirection: desc
+            where: {
+              ${sellTokenFilter && buyTokenFilter ? `auction_contains: "${(sellTokenFilter)}-${(buyTokenFilter)}"` : ''}
+            }
+          ) {
+            id
+            transactionHash
+            timestamp
+            trader {
+              id
+            }
+            amount
+            auction {
+              id
             }
           }
         }`
 
-        const { data : { data } } = await axios.post(GRAPH_URL, { query })
+        const { data: { data } } = await axios.post(GRAPH_URL, { query })
 
-        if (!data.auctions || !data.auctions.length) throw new Error('Range too large/small or no record of data at set params - please try a different filter combination')
- 
+        if (!data || (!data.buyOrders.length && !data.sellOrders.length)) throw new Error('Range too large/small or no record of data at set params - please try a different filter combination')
+        
         // Cache auctions
-        const { auctions } = data
-        console.log("TCL: graphQLDataFetch -> auctions", auctions)
+        const { buyOrders, sellOrders } = data
+        const tradesCombined = combineAndSortOrders(sellOrders, buyOrders, { prop: 'timestamp', order: 'dsc' })
         
         // Auto sort new choices DESC
         // auctions.sort((a, b) => b.auctionIndex - a.auctionIndex)
 
-        return auctions
+        return { buyOrders, sellOrders, tradesCombined }
       } catch (error) {
         const err = new Error(error.message)
         console.error(err)
@@ -137,10 +149,10 @@ function PastAuctionTrades({ web3 }) {
 
     const tradesSub = from(graphQLDataFetch())
     .subscribe({
-      next: (auctions) => {
-        setTrades(auctions)
+      next: ({ buyOrders, sellOrders, tradesCombined }) => {
+        setTrades({ buyOrders, sellOrders, tradesCombined })
         
-        setURLFilterParams(`?sellToken=${sellTokenFilter}&buyToken=${buyTokenFilter}&auctionIndex=${specificAuction}`)
+        sellTokenFilter && specificAuction && setURLFilterParams(`?sellToken=${sellTokenFilter}&buyToken=${buyTokenFilter}&auctionIndex=${specificAuction}`)
       },
       error: appError => {
         setError(appError)
@@ -155,7 +167,7 @@ function PastAuctionTrades({ web3 }) {
     return () => {
       tradesSub && tradesSub.unsubscribe()
     }
-  }, [sellTokenFilter, buyTokenFilter, numberOfBuyOrders, numberOfSellOrders, specificAuction])
+  }, [sellTokenFilter, buyTokenFilter, numberOfOrders, specificAuction])
 
   const handleRotateButton = () => {
     setSellTokenFilter(buyTokenFilter)
@@ -165,70 +177,37 @@ function PastAuctionTrades({ web3 }) {
   const renderEtherscanLink = (address, section, text, type = 'address', style) => <a href={`https://${network == '4' ? 'rinkeby.etherscan' : 'etherscan'}.io/${type}/${address}${section ? '#' + section : ''}`} target="_blank" rel="noopener noreferrer" style={style}>{text || address}</a>
 
   const renderTrades = ({
-    id,
-    buyOrders,
-    sellOrders,
+    amount,
+    id: tradeID,
+    /* tokenPair: {
+      token1: sellToken,
+      token2: buyToken,
+    }, */
+    auction: { id: auctionID },
+    trader: { id: traderID },
+    timestamp,
+    transactionHash,
+    type,
   }) => {
-    const { sellSymbol, buySymbol } = tokenListToName(availableTokens, sellTokenFilter, buyTokenFilter, specificAuction)
+    const [sellToken, buyToken, auctionIndex] = auctionID.split('-')
+    const { sellSymbol, buySymbol, sellDecimal, buyDecimal } = tokenListToName(availableTokens, sellToken, buyToken)
 
     return (
-      <tr key={id}>
+      <tr key={tradeID}>
         {/* Market */}
         <td>
-          <Badge 
-            color="success" pill
-          >
-            {sellSymbol}-{buySymbol}-{specificAuction}
-          </Badge>
+          <Badge color="success" pill>{sellSymbol}-{buySymbol}-{auctionIndex}</Badge>
         </td>
-        {/* BUY SECTION */}
-        <td>
-          <Table>
-            <thead>
-              <tr>
-                <th>Trader</th>
-                <th>TX Hash</th>
-                <th>Amount</th>
-                <th>Timestamp</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(
-                buyOrders.map(({ amount, trader: { id: trader }, transactionHash, timestamp }) => 
-                  <tr key={transactionHash}>
-                    <td><code title={trader} style={{cursor: 'pointer'}}>{renderEtherscanLink(trader, null, shortenHash(trader, 37), 'address')}</code></td>
-                    <td><code title={transactionHash} style={{cursor: 'pointer'}}>{renderEtherscanLink(transactionHash, null, shortenHash(transactionHash), 'tx')}</code></td>
-                    <td>{(amount/10**18).toFixed(FIXED_DECIMALS)}</td>
-                    <td>{formatTime(timestamp)}</td>
-                  </tr>
-              ))}
-            </tbody>
-          </Table>
-        </td>
-        {/* SELL SECTION */}
-        <td>
-          <Table>
-              <thead>
-                <tr>
-                  <th>Trader</th>
-                  <th>TX Hash</th>
-                  <th>Amount</th>
-                  <th>Timestamp</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(
-                  sellOrders.map(({ amount, trader: { id: trader }, transactionHash, timestamp }) => 
-                    <tr key={transactionHash}>
-                      <td><code title={trader} style={{cursor: 'pointer'}}>{renderEtherscanLink(trader, null, shortenHash(trader, 37), 'address')}</code></td>
-                      <td><code title={transactionHash} style={{cursor: 'pointer'}}>{renderEtherscanLink(transactionHash, null, shortenHash(transactionHash), 'tx')}</code></td>
-                      <td>{(amount/10**18).toFixed(4)}</td>
-                      <td>{formatTime(timestamp)}</td>
-                    </tr>
-                ))}
-              </tbody>
-            </Table>
-        </td>
+        {/* Amount */}
+        <td>{rZC((amount/10**(type === 'Sell Order' ? sellDecimal : buyDecimal)), FIXED_DECIMALS)}</td>
+        {/* Sell or Buy Order */}
+        <td><code>{type}</code></td>
+        {/* Trader Acct */}
+        <td><code title={traderID} style={{cursor: 'pointer'}}>{renderEtherscanLink(traderID, null, shortenHash(traderID, 37), 'address')}</code></td>
+        {/* Tx Hash */}
+        <td><code title={transactionHash} style={{cursor: 'pointer'}}>{renderEtherscanLink(transactionHash, null, shortenHash(transactionHash), 'tx')}</code></td>
+        {/* When */}
+        <td>{formatTime(timestamp)}</td>
       </tr>
     )
   }
@@ -255,7 +234,7 @@ function PastAuctionTrades({ web3 }) {
                 showWhat={sellTokenFilter}
                 changeFunction={event => setSellTokenFilter(event.target.value)}
                 inputName="trades"
-                render={availableTokens.map(({ name, address, symbol }) => <option key={address + Math.random()} value={address}>{name} [{symbol}]</option>)}
+                render={availableTokens.map(({ name, address, symbol }) => <option key={address + Math.random()} value={address}>{name} {symbol && [symbol]}</option>)}
               />
               {/* Filter BuyToken */}
               <PageFilter
@@ -264,7 +243,7 @@ function PastAuctionTrades({ web3 }) {
                 showWhat={buyTokenFilter}
                 changeFunction={event => setBuyTokenFilter(event.target.value)}
                 inputName="trades"
-                render={availableTokens.map(({ name, address, symbol }) => <option key={address + Math.random()} value={address}>{name} [{symbol}]</option>)}
+                render={availableTokens.map(({ name, address, symbol }) => <option key={address + Math.random()} value={address}>{name} {symbol && [symbol]}</option>)}
               />
             </Col>
             <RotateButton 
@@ -273,13 +252,6 @@ function PastAuctionTrades({ web3 }) {
           </div>
           {/* Filter Number of Traders/Specific Auction Range Type */}
           <Col sm={6} className="py-2">
-            {/* <PageFilterSubmit
-              type="number"
-              title="Number of traders to show"
-              showWhat={numberOfTraders}
-              submitFunction={setNumberOfTraders}
-              inputName="trades"
-            /> */}
             <PageFilterSubmit
               type="number"
               title="Specific auction to show"
@@ -290,20 +262,13 @@ function PastAuctionTrades({ web3 }) {
           </Col>
           {/* Filter Sell/Buy Orders */}
           <Col sm={6} className="py-2">
-              {/* Sell Orders */}
-              <PageFilterSubmit
-                type="number"
-                title="Number of sell orders to show"
-                showWhat={numberOfSellOrders}
-                submitFunction={setNumberOfSellOrders}
-                inputName="trades"
-              />
-              {/* Buy Orders */}
-              <PageFilterSubmit
-                type="number"
-                title="Number of buy orders to show"
-                showWhat={numberOfBuyOrders}
-                submitFunction={setNumberOfBuyOrders}
+              {/* Orders */}
+              <PageFilter
+                type="select"
+                title="Number of orders to show"
+                showWhat={numberOfOrders}
+                filterWhat={[50, 100, 150, 200]}
+                changeFunction={(e) => setNumberOfOrders(e.target.value)}
                 inputName="trades"
               />
             </Col>
@@ -326,18 +291,11 @@ function PastAuctionTrades({ web3 }) {
             filterTitle = "Number of Traders"
           />
         } */}
-        {numberOfBuyOrders && 
+        {numberOfOrders && 
           <FilterLabel 
-            onClickHandler={() => setNumberOfBuyOrders(defaultState.numberOfBuyOrders)}
-            filterData={numberOfBuyOrders}
-            filterTitle = "Number of Buy Orders"
-          />
-        }
-        {numberOfSellOrders && 
-          <FilterLabel 
-            onClickHandler={() => setNumberOfSellOrders(defaultState.numberOfSellOrders)}
-            filterData={numberOfSellOrders}
-            filterTitle = "Number of Sell Orders"
+            onClickHandler={() => setNumberOfOrders(defaultState.numberOfOrders)}
+            filterData={numberOfOrders}
+            filterTitle = "Number of Orders"
           />
         }
       </>
@@ -354,16 +312,26 @@ function PastAuctionTrades({ web3 }) {
         <thead>
           <tr>
             <th>Market</th>
-            <th>Buy Order</th>
-            <th>Sell Orders</th>
+            <th>Amount</th>
+            <th>Type</th>
+            <th>Trader</th>
+            <th>TX Hash</th>
+            <th>Timestamp</th>
           </tr>
         </thead>
         <tbody>
-          {trades && trades.map(trade => renderTrades(trade))}
+          {trades.tradesCombined && trades.tradesCombined.map(trade => renderTrades(trade))}
         </tbody>
       </Table>}
     </PageWrapper>
   )
 }
 
-export default ErrorHOC(Web3HOC(PastAuctionTrades))
+function combineAndSortOrders(sOrders, bOrders, sortOptions = { prop: 'timestamp', order: 'dsc' }) {
+	return (
+    bOrders.map(orders => ({ ...orders, type: 'Buy Order' }))
+      .concat(sOrders.map(orders => ({ ...orders, type: 'Sell Order' })))
+      .sort((a,b) => sortOptions.order === 'dsc' ? a[sortOptions.prop] - b[sortOptions.prop] : b[sortOptions.prop] - a[sortOptions.prop]))
+}
+
+export default ErrorHOC(Web3HOC(Trades))
