@@ -9,27 +9,18 @@ import ErrorHOC from '../../HOCs/ErrorHOC'
 import Web3HOC from '../../HOCs/Web3HOC'
 
 import AttentionBanner from '../../components/AttentionBanner'
-import Loading from '../../components/Loading'
 import ErrorPre from '../../components/Error'
+import Loading from '../../components/Loading'
+import Pagination from '../../components/Pagination'
+import PrimaryButton from '../../components/PrimaryButton';
 import RotateButton from '../../components/RotateButton'
 
 import { getTokensAndNetwork } from '../../api'
 
-import { shortenHash, tokenListToName, setURLFilterParams, formatTime, rZC } from '../../utils'
+import { queryLineMaker, shortenHash, tokenListToName, setURLFilterParams, formatTime, rZC } from '../../utils'
 import { FIXED_DECIMALS, GRAPH_URL } from '../../globals'
 
 import { from } from 'rxjs'
-
-function tokenFromURL(url) {
-	if (!url || (url.search('sellToken') === -1 || url.search('buyToken') === -1 || url.search('auctionIndex') === -1)) return false 
-
-	const [[, sellToken], [, buyToken], [, auctionIndex]] = url
-		.split('?')[1]
-		.split('&')
-		.map(item => item.split('='))	
-
-	return { sellToken, buyToken, auctionIndex }
-}
 
 function Trades({ web3 }) {
   // DefaultState
@@ -38,10 +29,9 @@ function Trades({ web3 }) {
     sellTokenFilter: tokenFromURL(window.location.href) && tokenFromURL(window.location.href).sellToken ? tokenFromURL(window.location.href).sellToken : '',
     buyTokenFilter: tokenFromURL(window.location.href) && tokenFromURL(window.location.href).buyToken ? tokenFromURL(window.location.href).buyToken : '',
     specificAuction: tokenFromURL(window.location.href) && tokenFromURL(window.location.href).auctionIndex,
-    // numberOfTraders: 50,
-    numberOfBuyOrders: 20,
-    numberOfSellOrders: 20,
-    numberOfOrders: 50,
+    paginationSize: 50,
+    canPaginate: false,
+    orderType: 'All',
   }
 
   // State + Setters
@@ -52,12 +42,16 @@ function Trades({ web3 }) {
   const [error, setError]                           = useState(undefined)
   const [loading, setLoading]                       = useState(false)
   
+  // Pagination
+  const [paginationSize, setPaginationSize]         = useState(defaultState.paginationSize)
+  const [canPaginate, setCanPaginate]               = useState(defaultState.canPaginate)
+  const [skipAmount, setSkipAmount]                 = useState(0)
+  
   // Data Filters
+  const [orderType, setOrderType]                   = useState(defaultState.orderType)
   const [buyTokenFilter, setBuyTokenFilter]         = useState(defaultState.buyTokenFilter)
   const [sellTokenFilter, setSellTokenFilter]       = useState(defaultState.sellTokenFilter)
-  // const [numberOfTraders, setNumberOfTraders]       = useState(defaultState.numberOfTraders)
   const [specificAuction, setSpecificAuction]       = useState(defaultState.specificAuction)
-  const [numberOfOrders, setNumberOfOrders] = useState(defaultState.numberOfOrders)
 
   useEffect(() => {
     setLoading(true)
@@ -87,11 +81,14 @@ function Trades({ web3 }) {
       try {
         const query = `{
           sellOrders(
-            first: ${numberOfOrders / 2}, 
+            first: ${paginationSize + 1},
+            skip: ${skipAmount}, 
             orderBy: timestamp, 
             orderDirection: desc
             where: {
-              ${sellTokenFilter && buyTokenFilter ? `auction_contains: "${(sellTokenFilter)}-${(buyTokenFilter)}"` : ''}
+              ${queryLineMaker(sellTokenFilter, 'auction_starts_with')}
+              ${queryLineMaker(buyTokenFilter, 'auction_contains')}
+              ${queryLineMaker(specificAuction, 'auction_ends_with')}
             }
           ) {
             id
@@ -106,11 +103,14 @@ function Trades({ web3 }) {
             }
           }
           buyOrders(
-            first: ${numberOfOrders / 2},
+            first: ${paginationSize + 1},
+            skip: ${skipAmount},
             orderBy: timestamp, 
             orderDirection: desc
             where: {
-              ${sellTokenFilter && buyTokenFilter ? `auction_contains: "${(sellTokenFilter)}-${(buyTokenFilter)}"` : ''}
+              ${queryLineMaker(sellTokenFilter, 'auction_starts_with')}
+              ${queryLineMaker(buyTokenFilter, 'auction_contains')}
+              ${queryLineMaker(specificAuction, 'auction_ends_with')}
             }
           ) {
             id
@@ -133,11 +133,12 @@ function Trades({ web3 }) {
         // Cache auctions
         const { buyOrders, sellOrders } = data
         const tradesCombined = combineAndSortOrders(sellOrders, buyOrders, { prop: 'timestamp', order: 'dsc' })
+        const pagination = tradesCombined.length > (paginationSize * 2)
         
         // Auto sort new choices DESC
         // auctions.sort((a, b) => b.auctionIndex - a.auctionIndex)
 
-        return { buyOrders, sellOrders, tradesCombined }
+        return { buyOrders, sellOrders, tradesCombined, pagination }
       } catch (error) {
         const err = new Error(error.message)
         console.error(err)
@@ -149,10 +150,11 @@ function Trades({ web3 }) {
 
     const tradesSub = from(graphQLDataFetch())
     .subscribe({
-      next: ({ buyOrders, sellOrders, tradesCombined }) => {
+      next: ({ buyOrders, sellOrders, tradesCombined, pagination }) => {
         setTrades({ buyOrders, sellOrders, tradesCombined })
+        setCanPaginate(pagination)
         
-        sellTokenFilter && specificAuction && setURLFilterParams(`?sellToken=${sellTokenFilter}&buyToken=${buyTokenFilter}&auctionIndex=${specificAuction}`)
+        setURLFilterParams(`?${sellTokenFilter ? `sellToken=${sellTokenFilter}&` : ''}${buyTokenFilter ? `buyToken=${buyTokenFilter}&` : ''}${specificAuction ? `auctionIndex=${specificAuction}&` : ''}`)
       },
       error: appError => {
         setError(appError)
@@ -167,11 +169,24 @@ function Trades({ web3 }) {
     return () => {
       tradesSub && tradesSub.unsubscribe()
     }
-  }, [sellTokenFilter, buyTokenFilter, numberOfOrders, specificAuction])
+  }, [sellTokenFilter, buyTokenFilter, paginationSize, skipAmount, specificAuction])
+
+  // Grabs token name from availableTokens
+  function getTokenInfo(type = sellTokenFilter, prop = 'symbol') {
+    const token = availableTokens.find(token => token.address === type)
+
+    return token && token[prop]
+  }
 
   const handleRotateButton = () => {
     setSellTokenFilter(buyTokenFilter)
     setBuyTokenFilter(sellTokenFilter)
+  }
+
+  const handleResetButton = () => {
+    setSellTokenFilter('')
+    setBuyTokenFilter('')
+    setSpecificAuction('')
   }
 
   const renderEtherscanLink = (address, section, text, type = 'address', style) => <a href={`https://${network == '4' ? 'rinkeby.etherscan' : 'etherscan'}.io/${type}/${address}${section ? '#' + section : ''}`} target="_blank" rel="noopener noreferrer" style={style}>{text || address}</a>
@@ -179,10 +194,6 @@ function Trades({ web3 }) {
   const renderTrades = ({
     amount,
     id: tradeID,
-    /* tokenPair: {
-      token1: sellToken,
-      token2: buyToken,
-    }, */
     auction: { id: auctionID },
     trader: { id: traderID },
     timestamp,
@@ -193,7 +204,7 @@ function Trades({ web3 }) {
     const { sellSymbol, buySymbol, sellDecimal, buyDecimal } = tokenListToName(availableTokens, sellToken, buyToken)
 
     return (
-      <tr key={tradeID}>
+      <tr key={tradeID} style={{ backgroundColor: type === 'Sell Order' ? "#f0f8ff" : "#fff0fc" }}>
         {/* Market */}
         <td>
           <Badge color="success" pill>{sellSymbol}-{buySymbol}-{auctionIndex}</Badge>
@@ -212,6 +223,13 @@ function Trades({ web3 }) {
     )
   }
   
+  // Filters current data stream
+  const filteredTrades = trades.tradesCombined.filter((trade) => {
+    if (orderType === 'All') return trade
+    
+    return trade.type === orderType
+  })
+
   return (
     <PageWrapper pageTitle="DutchX Past Auctions">
       <AttentionBanner title="MAINNET ONLY" subText="This feature is currently only available for Mainnet. Please check back later for data on other networks."/>
@@ -232,7 +250,10 @@ function Trades({ web3 }) {
                 type="select"
                 title="Sell Token"
                 showWhat={sellTokenFilter}
-                changeFunction={event => setSellTokenFilter(event.target.value)}
+                changeFunction={event => {
+                  setSkipAmount(0)
+                  setSellTokenFilter(event.target.value)
+                }}
                 inputName="trades"
                 render={availableTokens.map(({ name, address, symbol }) => <option key={address + Math.random()} value={address}>{name} {symbol && [symbol]}</option>)}
               />
@@ -241,7 +262,10 @@ function Trades({ web3 }) {
                 type="select"
                 title="Buy Token"
                 showWhat={buyTokenFilter}
-                changeFunction={event => setBuyTokenFilter(event.target.value)}
+                changeFunction={event => {
+                  setSkipAmount(0)
+                  setBuyTokenFilter(event.target.value)
+                }}
                 inputName="trades"
                 render={availableTokens.map(({ name, address, symbol }) => <option key={address + Math.random()} value={address}>{name} {symbol && [symbol]}</option>)}
               />
@@ -263,42 +287,26 @@ function Trades({ web3 }) {
           {/* Filter Sell/Buy Orders */}
           <Col sm={6} className="py-2">
               {/* Orders */}
-              <PageFilter
+              {/* <PageFilter
                 type="select"
                 title="Number of orders to show"
-                showWhat={numberOfOrders}
+                showWhat={paginationSize}
                 filterWhat={[50, 100, 150, 200]}
-                changeFunction={(e) => setNumberOfOrders(e.target.value)}
+                changeFunction={(e) => setPaginationSize(e.target.value / 2)}
+                inputName="trades"
+              /> */}
+              {/* Order Type */}
+              <PageFilter
+                type="select"
+                title="Type of orders to show"
+                showWhat={orderType}
+                filterWhat={['Sell Order', 'Buy Order', 'All']}
+                changeFunction={(e) => setOrderType(e.target.value)}
                 inputName="trades"
               />
             </Col>
         </FormGroup>
       </Form>
-       
-      {/* FILTER LABELS */}
-      <>
-        {specificAuction && 
-          <FilterLabel 
-            onClickHandler={() => setSpecificAuction(defaultState.specificAuction)}
-            filterData={specificAuction}
-            filterTitle = "Selected Auction"
-          />
-        }
-        {/* {numberOfTraders && 
-          <FilterLabel 
-            onClickHandler={() => setNumberOfTraders(defaultState.numberOfTraders)}
-            filterData={numberOfTraders}
-            filterTitle = "Number of Traders"
-          />
-        } */}
-        {numberOfOrders && 
-          <FilterLabel 
-            onClickHandler={() => setNumberOfOrders(defaultState.numberOfOrders)}
-            filterData={numberOfOrders}
-            filterTitle = "Number of Orders"
-          />
-        }
-      </>
 
       {error 
         ?
@@ -308,21 +316,73 @@ function Trades({ web3 }) {
         ?
       <Loading />
         :
-      <Table responsive hover>
-        <thead>
-          <tr>
-            <th>Market</th>
-            <th>Amount</th>
-            <th>Type</th>
-            <th>Trader</th>
-            <th>TX Hash</th>
-            <th>Timestamp</th>
-          </tr>
-        </thead>
-        <tbody>
-          {trades.tradesCombined && trades.tradesCombined.map(trade => renderTrades(trade))}
-        </tbody>
-      </Table>}
+      <>
+        {/* FILTER LABELS */}
+        <>
+          {/* Pagination Control */}
+          <Pagination
+            canPaginate={canPaginate}
+            skipAmount={skipAmount}
+            nextPageHandler={() => setSkipAmount(prev => prev + paginationSize)}
+            previousPageHandler={() => setSkipAmount(prev => prev - paginationSize)}
+          />
+          {/* Fiter Labels */}
+          {sellTokenFilter && 
+            <FilterLabel 
+              onClickHandler={() => setSellTokenFilter('')}
+              filterData={getTokenInfo(sellTokenFilter, 'symbol') || shortenHash(sellTokenFilter)}
+              filterTitle = "Sell Token"
+            />
+          }
+          {buyTokenFilter && 
+            <FilterLabel 
+              onClickHandler={() => setBuyTokenFilter('')}
+              filterData={getTokenInfo(buyTokenFilter, 'symbol') || shortenHash(buyTokenFilter)}
+              filterTitle = "Buy Token"
+            />
+          }
+          {specificAuction && 
+            <FilterLabel 
+              onClickHandler={() => setSpecificAuction('')}
+              filterData={specificAuction}
+              filterTitle = "Selected Auction"
+            />
+          }
+          {/* {paginationSize && 
+            <FilterLabel 
+              onClickHandler={() => setPaginationSize(defaultState.paginationSize)}
+              filterData={paginationSize}
+              filterTitle = "Number of Orders"
+            />
+          } */}
+          {(sellTokenFilter || buyTokenFilter || specificAuction) 
+            && 
+          <PrimaryButton 
+            onClickHandler={handleResetButton} 
+            text="RESET" 
+            customStyle={{
+              backgroundColor: '#2f353a',
+              fontSize: 'smaller',
+              marginLeft: 10
+            }}
+          />}
+        </>
+        <Table responsive hover>
+          <thead>
+            <tr>
+              <th>Market</th>
+              <th>Amount</th>
+              <th>Type</th>
+              <th>Trader</th>
+              <th>TX Hash</th>
+              <th>Timestamp</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredTrades && filteredTrades.map(trade => renderTrades(trade))}
+          </tbody>
+        </Table>
+      </>}
     </PageWrapper>
   )
 }
@@ -332,6 +392,17 @@ function combineAndSortOrders(sOrders, bOrders, sortOptions = { prop: 'timestamp
     bOrders.map(orders => ({ ...orders, type: 'Buy Order' }))
       .concat(sOrders.map(orders => ({ ...orders, type: 'Sell Order' })))
       .sort((a,b) => sortOptions.order === 'dsc' ? a[sortOptions.prop] - b[sortOptions.prop] : b[sortOptions.prop] - a[sortOptions.prop]))
+}
+
+function tokenFromURL(url) {
+	if (!url || (url.search('sellToken') === -1 || url.search('buyToken') === -1 || url.search('auctionIndex') === -1)) return false 
+
+	const [[, sellToken], [, buyToken], [, auctionIndex]] = url
+		.split('?')[1]
+		.split('&')
+		.map(item => item.split('='))	
+
+	return { sellToken, buyToken, auctionIndex }
 }
 
 export default ErrorHOC(Web3HOC(Trades))
