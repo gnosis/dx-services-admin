@@ -52,7 +52,9 @@ function Trades({ web3 }) {
   const [buyTokenFilter, setBuyTokenFilter]         = useState(defaultState.buyTokenFilter)
   const [sellTokenFilter, setSellTokenFilter]       = useState(defaultState.sellTokenFilter)
   const [specificAuction, setSpecificAuction]       = useState(defaultState.specificAuction)
-
+  const [timeSort, setTimeSort]                     = useState(false)
+  const [amountSort, setAmountSort]                 = useState(false)
+  
   useEffect(() => {
     setLoading(true)
 
@@ -171,6 +173,28 @@ function Trades({ web3 }) {
     }
   }, [sellTokenFilter, buyTokenFilter, paginationSize, skipAmount, specificAuction])
 
+  useEffect(() => {
+    const filteredTrades = trades.tradesCombined.filter((trade) => {
+      if (orderType === 'All') return trade
+      
+      return trade.type === orderType
+    })
+
+    setTrades(prev => ({ ...prev, tradesCombined: filteredTrades }))
+  }, [orderType])
+
+  useEffect(() => {
+    const filteredTrades = trades.tradesCombined.sort((a, b) => timeSort ? a.timestamp - b.timestamp : b.timestamp - a.timestamp)
+
+    setTrades(prev => ({ ...prev, tradesCombined: filteredTrades }))
+  }, [timeSort])
+
+  useEffect(() => {
+    const filteredTrades = trades.tradesCombined.sort((a, b) => amountSort ? a.amount - b.amount : b.amount - a.amount)
+
+    setTrades(prev => ({ ...prev, tradesCombined: filteredTrades }))
+  }, [amountSort])
+
   // Grabs token name from availableTokens
   function getTokenInfo(type = sellTokenFilter, prop = 'symbol') {
     const token = availableTokens.find(token => token.address === type)
@@ -187,6 +211,11 @@ function Trades({ web3 }) {
     setSellTokenFilter('')
     setBuyTokenFilter('')
     setSpecificAuction('')
+  }
+
+  const handleColumnSort = type => {
+    if (type === 'Amount') return setAmountSort(!amountSort)
+    if (type === 'Timestamp') return setTimeSort(!timeSort)
   }
 
   const renderEtherscanLink = (address, section, text, type = 'address', style) => <a href={`https://${network == '4' ? 'rinkeby.etherscan' : 'etherscan'}.io/${type}/${address}${section ? '#' + section : ''}`} target="_blank" rel="noopener noreferrer" style={style}>{text || address}</a>
@@ -224,11 +253,13 @@ function Trades({ web3 }) {
   }
   
   // Filters current data stream
-  const filteredTrades = trades.tradesCombined.filter((trade) => {
-    if (orderType === 'All') return trade
+  // const filteredTrades = trades.tradesCombined.filter((trade) => {
+  //   if (orderType === 'All') return trade
     
-    return trade.type === orderType
-  })
+  //   return trade.type === orderType
+  // })
+    // .sort((a, b) => timeSort ? a.timestamp - b.timestamp : b.timestamp - a.timestamp)
+    // .sort((a, b) => amountSort ? a.amount - b.amount : b.amount - a.amount)
 
   return (
     <PageWrapper pageTitle="DutchX Past Auctions">
@@ -371,15 +402,15 @@ function Trades({ web3 }) {
           <thead>
             <tr>
               <th>Market</th>
-              <th>Amount</th>
+              <th onClick={() => handleColumnSort('Amount')} style={{ cursor: 'pointer' }}>Amount [{amountSort ? 'ASC' : 'DSC'}]</th>
               <th>Type</th>
               <th>Trader</th>
               <th>TX Hash</th>
-              <th>Timestamp</th>
+              <th onClick={() => handleColumnSort('Timestamp')} style={{ cursor: 'pointer' }}>Timestamp [{timeSort ? 'ASC' : 'DSC'}]</th>
             </tr>
           </thead>
           <tbody>
-            {filteredTrades && filteredTrades.map(trade => renderTrades(trade))}
+            {trades.tradesCombined && trades.tradesCombined.map(trade => renderTrades(trade))}
           </tbody>
         </Table>
       </>}
