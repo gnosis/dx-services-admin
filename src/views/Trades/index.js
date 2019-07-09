@@ -43,7 +43,7 @@ function Trades({ web3 }) {
   const [loading, setLoading]                       = useState(false)
   
   // Pagination
-  const [paginationSize, setPaginationSize]         = useState(defaultState.paginationSize)
+  const [paginationSize]                            = useState(defaultState.paginationSize)
   const [canPaginate, setCanPaginate]               = useState(defaultState.canPaginate)
   const [skipAmount, setSkipAmount]                 = useState(0)
   

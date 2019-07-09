@@ -31,20 +31,20 @@ function PastAuctions({ web3 }) {
     buyTokenFilter: (tokenFromURL(window.location.href).buyToken) || '',
   }
 
-  const [paginationSize, setPaginationSize] = useState(50)
-  const [pastAuctions, setPastAuctions] = useState([])
+  const [paginationSize]                      = useState(50)
+  const [pastAuctions, setPastAuctions]       = useState([])
   const [availableTokens, setAvailableTokens] = useState([])
-  const [canPaginate, setCanPaginate] = useState(defaultState.canPaginate)
-  const [network, setNetwork] = useState(undefined)
+  const [canPaginate, setCanPaginate]         = useState(defaultState.canPaginate)
+  const [network, setNetwork]                 = useState(undefined)
   // Data Selection
   const [sellTokenFilter, setSellTokenFilter] = useState(defaultState.sellTokenFilter)
-  const [buyTokenFilter, setBuyTokenFilter] = useState(defaultState.buyTokenFilter)
+  const [buyTokenFilter, setBuyTokenFilter]   = useState(defaultState.buyTokenFilter)
   const [specificAuction, setSpecificAuction] = useState(undefined)
   // App
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(undefined)
+  const [loading, setLoading]                 = useState(false)
+  const [error, setError]                     = useState(undefined)
 
-  const [skipAmount, setSkipAmount] = useState(0)
+  const [skipAmount, setSkipAmount]           = useState(0)
 
   useEffect(() => {
     setLoading(true)
