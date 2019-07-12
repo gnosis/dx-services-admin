@@ -1,6 +1,5 @@
 /* eslint-disable eqeqeq */
 import React, { useEffect, useState } from 'react'
-import axios from 'axios'
 import moment from 'moment'
 
 import { Col, Table, Badge, FormGroup, Form } from 'reactstrap'
@@ -16,25 +15,23 @@ import Loading from '../../components/Loading'
 import Pagination from '../../components/Pagination'
 import RotateButton from '../../components/RotateButton'
 
+import { useGraphQuery } from '../../hooks'
+
 import { getTokensAndNetwork } from '../../api'
 
-import { FIXED_DECIMALS, GRAPH_URL } from '../../globals'
+import { FIXED_DECIMALS } from '../../globals'
 import { setURLFilterParams, rZC, formatTime } from '../../utils'
 
 import { from } from 'rxjs'
 
 function PastAuctions({ web3 }) {
   const defaultState = {
-    canPaginate: false,
-    numberOfAuctions: 50,
     sellTokenFilter: (tokenFromURL(window.location.href).sellToken) || '',
     buyTokenFilter: (tokenFromURL(window.location.href).buyToken) || '',
   }
 
-  const [paginationSize]                      = useState(50)
-  const [pastAuctions, setPastAuctions]       = useState([])
+  // // Data
   const [availableTokens, setAvailableTokens] = useState([])
-  const [canPaginate, setCanPaginate]         = useState(defaultState.canPaginate)
   const [network, setNetwork]                 = useState(undefined)
   // Data Selection
   const [sellTokenFilter, setSellTokenFilter] = useState(defaultState.sellTokenFilter)
@@ -43,8 +40,6 @@ function PastAuctions({ web3 }) {
   // App
   const [loading, setLoading]                 = useState(false)
   const [error, setError]                     = useState(undefined)
-
-  const [skipAmount, setSkipAmount]           = useState(0)
 
   useEffect(() => {
     setLoading(true)
@@ -68,90 +63,30 @@ function PastAuctions({ web3 }) {
   // mount logic
   // 1. load endpoint Past Auctions data
   // 2. set to state
-  useEffect(() => {
-    setError(undefined)
-    // load data
-    async function graphQLDataFetch() {
-      try {
-        const bcNetwork = network || await web3.getNetworkId()
-
-        const { data: { data } } = await axios.post(GRAPH_URL, {
-          query: `{
-            auctions(
-              ${!specificAuction ? `first: ${paginationSize + 1}, skip: ${skipAmount}` : ''}
-                
-                orderBy: startTime
-                orderDirection: desc
-                
-                where: { 
-                  sellVolume_gt: 0
-                  ${sellTokenFilter ? `sellToken: ${JSON.stringify(sellTokenFilter)}` : ''} 
-                  ${buyTokenFilter ? `buyToken: ${JSON.stringify(buyTokenFilter)}` : ''}  
-                  ${specificAuction ? `auctionIndex: ${specificAuction}` : ''}
-                },                
-            ) {
-              id
-              auctionIndex
-              sellVolume
-              buyVolume
-              sellToken
-              buyToken
-              cleared
-              startTime
-              clearingTime
-              totalFeesPaid
-            }
-          }`
-        })
-
-        // console.group()
-        // console.debug('Checking sellToken: ', sellTokenFilter)
-        // console.debug('Checking buyToken: ', buyTokenFilter)
-        // console.debug('DATA = ', data)
-        // console.groupEnd()
-
-        if (!data.auctions || !data.auctions.length > 0) throw new Error('Range too large/small or no record of data at set params - please try a different range')
-
-        // Cache auctions
-        let { auctions } = data
-        const pagination = auctions.length > 50
-        
-        return {
-          bcNetwork,
-          auctions,
-          pagination
-        }
-      } catch (error) {
-        const err = new Error(error.message)
-        console.error(err)
-        throw err
-      }
-    }
-
-    setLoading(true)
-
-    const pastAuctionsSub = from(graphQLDataFetch())
-      .subscribe({
-        next: ({
-          auctions,
-          pagination
-        }) => {
-          setPastAuctions(auctions)
-          setCanPaginate(pagination)
-
-          sellTokenFilter && setURLFilterParams(`?sellToken=${sellTokenFilter}&buyToken=${buyTokenFilter}`)
-        },
-        error: appError => {
-          setError(appError)
-          setLoading(false)
-        },
-        complete: () => setLoading(false),
-      })
-
-    return () => {
-      pastAuctionsSub && pastAuctionsSub.unsubscribe()
-    }
-  }, [sellTokenFilter, buyTokenFilter, skipAmount, specificAuction])
+  const { graphData, paginationData, error: graphQueryError, nextPage, prevPage } = useGraphQuery({
+    rootQueries: ["auctions"],
+    rootArguments: [
+      { queryString: "orderBy", queryCondition: "startTime" },
+      { queryString: "orderDirection", queryCondition: "desc" },
+    ],
+    whereQueries: [
+      { queryString: "sellVolume_gt", queryCondition: "0" },
+      { queryString: "sellToken", queryCondition: sellTokenFilter }, 
+      { queryString: "buyToken", queryCondition: buyTokenFilter },
+      { queryString: "auctionIndex", queryCondition: specificAuction },
+    ],
+    responseProperties: [
+      "id", 
+      "auctionIndex", 
+      "sellVolume", "buyVolume", 
+      "sellToken", "buyToken", 
+      "cleared", 
+      "startTime", "clearingTime", 
+      "totalFeesPaid"
+    ],
+    paginationSize: 50,
+    effectChangeConditions: [sellTokenFilter, buyTokenFilter, specificAuction],
+  })
 
   const handleRotateButton = () => {
     setSellTokenFilter(buyTokenFilter)
@@ -175,7 +110,7 @@ function PastAuctions({ web3 }) {
       <tr
         className={anomalyClass}
         key={auctionIndex * Math.random()}
-        onClick={() => window.location.href = `${window.location.origin}/#/past-auctions-trades?sellToken=${sellToken}&buyToken=${buyToken}&auctionIndex=${auctionIndex}`}
+        onClick={() => window.location.href = `${window.location.origin}/#/trades?sellToken=${sellToken}&buyToken=${buyToken}&auctionIndex=${auctionIndex}`}
         style={{ cursor: 'pointer' }}
       >
         {/* NAME */}
@@ -229,7 +164,7 @@ function PastAuctions({ web3 }) {
                 title="Sell Token"
                 showWhat={sellTokenFilter}
                 changeFunction={(event) => {
-                  setSkipAmount(0)
+                  // setSkipAmount(0)
                   setSellTokenFilter(event.target.value)
                 }}
                 inputName="trades"
@@ -241,7 +176,7 @@ function PastAuctions({ web3 }) {
                 title="Buy Token"
                 showWhat={buyTokenFilter}
                 changeFunction={(event) => {
-                  setSkipAmount(0)
+                  // setSkipAmount(0)
                   setBuyTokenFilter(event.target.value)
                 }}
                 inputName="trades"
@@ -272,9 +207,9 @@ function PastAuctions({ web3 }) {
           "#fff1d0": "Auction run-time: Greater than 6.5 hours || Less than 5 hours"
         }}
       />
-      {error
+      {error || graphQueryError
         ?
-        <ErrorPre error={error} errorTitle="" />
+        <ErrorPre error={error || graphQueryError} errorTitle="" />
         :
         loading
           ?
@@ -284,10 +219,10 @@ function PastAuctions({ web3 }) {
           <>
             {/* Pagination Control */}
             <Pagination
-              canPaginate={canPaginate}
-              skipAmount={skipAmount}
-              nextPageHandler={() => setSkipAmount(prev => prev + paginationSize)}
-              previousPageHandler={() => setSkipAmount(prev => prev - paginationSize)}
+              canPaginate={paginationData.canPaginate}
+              skipAmount={paginationData.paginationSkip}
+              nextPageHandler={nextPage}
+              prevPageHandler={prevPage}
             />
 
             {/* Filter labels */}
@@ -310,16 +245,16 @@ function PastAuctions({ web3 }) {
                 </tr>
               </thead>
               <tbody>
-                {pastAuctions && pastAuctions.map(auction => renderTrades(auction))}
+                {graphData && graphData.auctions && graphData.auctions.map(auction => renderTrades(auction))}
               </tbody>
             </Table>
 
             {/* Pagination Control */}
             <Pagination
-              canPaginate={canPaginate}
-              skipAmount={skipAmount}
-              nextPageHandler={() => setSkipAmount(prev => prev + paginationSize)}
-              previousPageHandler={() => setSkipAmount(prev => prev - paginationSize)}
+              canPaginate={paginationData.canPaginate}
+              skipAmount={paginationData.paginationSkip}
+              nextPageHandler={nextPage}
+              prevPageHandler={prevPage}
             />
           </>}
 
