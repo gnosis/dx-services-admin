@@ -113,3 +113,24 @@ export function tokenListToName(tokenList, st, bt) {
 export const formatTime = (time) => moment(time * 1000).format("LLL")
 
 export const queryLineMaker = (dataCheck, queryString) => `${dataCheck ? `${queryString.toString()}: "${dataCheck}"` : ''}`
+
+export function urlParams2Array(url) {
+    if (!url) return []
+
+    const URL_PARAMS = url.split('?')
+
+    return URL_PARAMS[1]
+        ?
+        URL_PARAMS[1].split('&')
+            .map(item => item.split('='))
+        :
+        []
+}
+
+export const urlParams2Object = url =>
+    urlParams2Array(url)
+        .reduce((acc, curr) => {
+            acc[curr[0]] = curr[1]
+            return acc
+        }, {})
+        
