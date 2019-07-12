@@ -15,7 +15,7 @@ import RotateButton from '../../components/RotateButton'
 
 import { getTokensAndNetwork } from '../../api'
 
-import { shortenHash, tokenListToName, setURLFilterParams, formatTime } from '../../utils'
+import { shortenHash, tokenListToName, setURLFilterParams, formatTime, queryLineMaker } from '../../utils'
 import { FIXED_DECIMALS, GRAPH_URL } from '../../globals'
 
 import { from } from 'rxjs'
@@ -35,9 +35,9 @@ function PastAuctionTrades({ web3 }) {
   // DefaultState
   const defaultState = {
     // Tokens
-    sellTokenFilter: tokenFromURL(window.location.href) && tokenFromURL(window.location.href).sellToken ? tokenFromURL(window.location.href).sellToken : undefined,
-    buyTokenFilter: tokenFromURL(window.location.href) && tokenFromURL(window.location.href).buyToken ? tokenFromURL(window.location.href).buyToken : undefined,
-    specificAuction: tokenFromURL(window.location.href) && tokenFromURL(window.location.href).auctionIndex,
+    sellTokenFilter: tokenFromURL(window.location.href) && tokenFromURL(window.location.href).sellToken ? tokenFromURL(window.location.href).sellToken : '',
+    buyTokenFilter: tokenFromURL(window.location.href) && tokenFromURL(window.location.href).buyToken ? tokenFromURL(window.location.href).buyToken : '',
+    specificAuction: tokenFromURL(window.location.href) && tokenFromURL(window.location.href).auctionIndex ? tokenFromURL(window.location.href).auctionIndex : '',
     // numberOfTraders: 50,
     numberOfBuyOrders: 20,
     numberOfSellOrders: 20,
@@ -86,7 +86,11 @@ function PastAuctionTrades({ web3 }) {
       try {
         const query = `{
           auctions(
-            ${sellTokenFilter && buyTokenFilter ? `where: { id: "${sellTokenFilter}-${buyTokenFilter}-${specificAuction}" }` : 'orderBy: timestamp'}
+            where: {
+              ${queryLineMaker(sellTokenFilter, 'sellToken')}
+              ${queryLineMaker(buyTokenFilter, 'buyToken')}
+              ${queryLineMaker(specificAuction, 'auctionIndex')}
+            }
           ) {
             id
             sellOrders(
@@ -140,7 +144,7 @@ function PastAuctionTrades({ web3 }) {
       next: (auctions) => {
         setTrades(auctions)
         
-        setURLFilterParams(`?sellToken=${sellTokenFilter}&buyToken=${buyTokenFilter}&auctionIndex=${specificAuction}`)
+        setURLFilterParams(`?${sellTokenFilter ? `sellToken=${sellTokenFilter}&` : ''}${buyTokenFilter ? `buyToken=${buyTokenFilter}&` : ''}${specificAuction ? `auctionIndex=${specificAuction}&` : ''}`)
       },
       error: appError => {
         setError(appError)
@@ -169,7 +173,8 @@ function PastAuctionTrades({ web3 }) {
     buyOrders,
     sellOrders,
   }) => {
-    const { sellSymbol, buySymbol } = tokenListToName(availableTokens, sellTokenFilter, buyTokenFilter, specificAuction)
+    const [sellToken, buyToken, auctionIndex] = id.split('-')
+    const { sellSymbol, buySymbol } = tokenListToName(availableTokens, sellToken, buyToken)
 
     return (
       <tr key={id}>
@@ -178,7 +183,7 @@ function PastAuctionTrades({ web3 }) {
           <Badge 
             color="success" pill
           >
-            {sellSymbol}-{buySymbol}-{specificAuction}
+            {sellSymbol}-{buySymbol}-{auctionIndex}
           </Badge>
         </td>
         {/* BUY SECTION */}
