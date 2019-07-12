@@ -20,14 +20,14 @@ import { useGraphQuery } from '../../hooks'
 import { getTokensAndNetwork } from '../../api'
 
 import { FIXED_DECIMALS } from '../../globals'
-import { setURLFilterParams, rZC, formatTime } from '../../utils'
+import { setURLFilterParams, rZC, formatTime, tokenListToName, urlParams2Object } from '../../utils'
 
 import { from } from 'rxjs'
 
 function PastAuctions({ web3 }) {
   const defaultState = {
-    sellTokenFilter: (tokenFromURL(window.location.href).sellToken) || '',
-    buyTokenFilter: (tokenFromURL(window.location.href).buyToken) || '',
+    sellTokenFilter: (urlParams2Object(window.location.href).sellToken) || '',
+    buyTokenFilter: (urlParams2Object(window.location.href).buyToken) || '',
   }
 
   // // Data
@@ -260,27 +260,6 @@ function PastAuctions({ web3 }) {
 
     </PageWrapper>
   )
-}
-
-function tokenFromURL(url) {
-  if (!url || (url.search('sellToken') === -1 || url.search('buyToken') === -1)) return false
-
-  const [[, sellToken], [, buyToken]] = url
-    .split('?')[1]
-    .split('&')
-    .map(item => item.split('='))
-
-  return { sellToken, buyToken }
-}
-
-function tokenListToName(tokenList, st, bt) {
-  if (!tokenList.length) return { sellName: '...', buyName: '...', sellSymbol: '...', buySymbol: '...' }
-  return {
-    sellName: (tokenList.find(token => token.address === st)).name,
-    buyName: (tokenList.find(token => token.address === bt)).name,
-    sellSymbol: (tokenList.find(token => token.address === st)).symbol,
-    buySymbol: (tokenList.find(token => token.address === bt)).symbol,
-  }
 }
 
 function checkTimeForAnomaly(time1, time2, classAnomaly = 'warningOrange') {

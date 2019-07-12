@@ -1,6 +1,5 @@
 /* eslint-disable eqeqeq */
 import React, { useEffect, useState } from 'react'
-import axios from 'axios'
 
 import { Col, Table, Badge, FormGroup, Form } from 'reactstrap'
 import { PageFilter, PageFilterSubmit, FilterLabel, PageWrapper } from '../../containers'
@@ -11,40 +10,31 @@ import Web3HOC from '../../HOCs/Web3HOC'
 import AttentionBanner from '../../components/AttentionBanner'
 import Loading from '../../components/Loading'
 import ErrorPre from '../../components/Error'
+import Pagination from '../../components/Pagination'
 import RotateButton from '../../components/RotateButton'
 
 import { getTokensAndNetwork } from '../../api'
 
-import { shortenHash, tokenListToName, setURLFilterParams, formatTime, queryLineMaker } from '../../utils'
-import { FIXED_DECIMALS, GRAPH_URL } from '../../globals'
+import { useGraphQuery } from '../../hooks'
+
+import { shortenHash, tokenListToName, /* setURLFilterParams,  */formatTime, urlParams2Object } from '../../utils'
+import { FIXED_DECIMALS } from '../../globals'
 
 import { from } from 'rxjs'
-
-function tokenFromURL(url) {
-	if (!url || (url.search('sellToken') === -1 || url.search('buyToken') === -1 || url.search('auctionIndex') === -1)) return false 
-
-	const [[, sellToken], [, buyToken], [, auctionIndex]] = url
-		.split('?')[1]
-		.split('&')
-		.map(item => item.split('='))	
-
-	return { sellToken, buyToken, auctionIndex }
-}
 
 function PastAuctionTrades({ web3 }) {
   // DefaultState
   const defaultState = {
     // Tokens
-    sellTokenFilter: tokenFromURL(window.location.href) && tokenFromURL(window.location.href).sellToken ? tokenFromURL(window.location.href).sellToken : '',
-    buyTokenFilter: tokenFromURL(window.location.href) && tokenFromURL(window.location.href).buyToken ? tokenFromURL(window.location.href).buyToken : '',
-    specificAuction: tokenFromURL(window.location.href) && tokenFromURL(window.location.href).auctionIndex ? tokenFromURL(window.location.href).auctionIndex : '',
+    sellTokenFilter: urlParams2Object(window.location.href).sellToken || '',
+    buyTokenFilter: urlParams2Object(window.location.href).buyToken || '',
+    specificAuction: urlParams2Object(window.location.href).auctionIndex || '',
     // numberOfTraders: 50,
     numberOfBuyOrders: 20,
     numberOfSellOrders: 20,
   }
 
   // State + Setters
-  const [trades, setTrades]                         = useState([])
   const [network, setNetwork]                       = useState(undefined)
   const [availableTokens, setAvailableTokens]       = useState([])
   // Data Filters
@@ -76,90 +66,45 @@ function PastAuctionTrades({ web3 }) {
     }
   }, [])
 
-  // mount logic
-  // 1. load endpoint PastAuctionTrades data
-  // 2. set to state
-  useEffect(() => {
-    setError(undefined)
-    // load data
-    async function graphQLDataFetch() {
-      try {
-        const query = `{
-          auctions(
-            where: {
-              ${queryLineMaker(sellTokenFilter, 'sellToken')}
-              ${queryLineMaker(buyTokenFilter, 'buyToken')}
-              ${queryLineMaker(specificAuction, 'auctionIndex')}
-            }
-          ) {
-            id
-            sellOrders(
-              first: ${numberOfSellOrders}, 
-              orderBy: timestamp
-            ) {
-              trader {
-                id
-              }
-              amount
-              timestamp
-              transactionHash
-            }
-            buyOrders(
-              first: ${numberOfBuyOrders}, 
-              orderBy: timestamp
-            ) {
-              trader {
-                id
-              }
-              amount
-              timestamp
-              transactionHash
-            }
-          }
-        }`
-
-        const { data : { data } } = await axios.post(GRAPH_URL, { query })
-
-        if (!data.auctions || !data.auctions.length) throw new Error('Range too large/small or no record of data at set params - please try a different filter combination')
- 
-        // Cache auctions
-        const { auctions } = data
-        console.log("TCL: graphQLDataFetch -> auctions", auctions)
-        
-        // Auto sort new choices DESC
-        // auctions.sort((a, b) => b.auctionIndex - a.auctionIndex)
-
-        return auctions
-      } catch (error) {
-        const err = new Error(error.message)
-        console.error(err)
-        throw err
-      }
-    }
-
-    setLoading(true)
-
-    const tradesSub = from(graphQLDataFetch())
-    .subscribe({
-      next: (auctions) => {
-        setTrades(auctions)
-        
-        setURLFilterParams(`?${sellTokenFilter ? `sellToken=${sellTokenFilter}&` : ''}${buyTokenFilter ? `buyToken=${buyTokenFilter}&` : ''}${specificAuction ? `auctionIndex=${specificAuction}&` : ''}`)
-      },
-      error: appError => {
-        setError(appError)
-        setLoading(false)
-      },
-      complete: () => {
-        setError(undefined)
-        setLoading(false)
-      },
-    })
-
-    return () => {
-      tradesSub && tradesSub.unsubscribe()
-    }
-  }, [sellTokenFilter, buyTokenFilter, numberOfBuyOrders, numberOfSellOrders, specificAuction])
+  const { graphData, paginationData, error: graphQueryError, nextPage, prevPage } = useGraphQuery({
+    rootQueries: ["auctions"],
+    rootArguments: [
+      { queryString: "orderBy", queryCondition: "startTime" },
+      { queryString: "orderDirection", queryCondition: "desc" },
+    ],
+    whereQueries: [
+      { queryString: "sellToken", queryCondition: sellTokenFilter }, 
+      { queryString: "buyToken", queryCondition: buyTokenFilter },
+      { queryString: "auctionIndex", queryCondition: specificAuction },
+    ],
+    responseProperties: [
+      "id", 
+      `sellOrders(
+        first: ${numberOfSellOrders}, 
+        orderBy: timestamp
+      ) {
+        trader {
+          id
+        }
+        amount
+        timestamp
+        transactionHash
+      }`,
+      `buyOrders(
+        first: ${numberOfBuyOrders}, 
+        orderBy: timestamp
+      ) {
+        trader {
+          id
+        }
+        amount
+        timestamp
+        transactionHash
+      }`
+    ],
+    paginationSize: 50,
+    effectChangeConditions: [sellTokenFilter, buyTokenFilter, specificAuction],
+  })
 
   const handleRotateButton = () => {
     setSellTokenFilter(buyTokenFilter)
@@ -347,26 +292,42 @@ function PastAuctionTrades({ web3 }) {
         }
       </>
 
-      {error 
+      {error || graphQueryError
         ?
-      <ErrorPre error={error} errorTitle=""/>
+      <ErrorPre error={error || graphQueryError} errorTitle=""/>
         :
       loading
         ?
       <Loading />
         :
-      <Table responsive hover>
-        <thead>
-          <tr>
-            <th>Market</th>
-            <th>Buy Order</th>
-            <th>Sell Orders</th>
-          </tr>
-        </thead>
-        <tbody>
-          {trades && trades.map(trade => renderTrades(trade))}
-        </tbody>
-      </Table>}
+      <>
+        {/* Pagination Control */}
+        <Pagination
+          canPaginate={paginationData.canPaginate}
+          skipAmount={paginationData.paginationSkip}
+          nextPageHandler={nextPage}
+          prevPageHandler={prevPage}
+        />
+        <Table responsive hover>
+          <thead>
+            <tr>
+              <th>Market</th>
+              <th>Buy Order</th>
+              <th>Sell Orders</th>
+            </tr>
+          </thead>
+          <tbody>
+            {graphData && graphData.auctions && graphData.auctions.map(trade => renderTrades(trade))}
+          </tbody>
+        </Table>
+        {/* Pagination Control */}
+        <Pagination
+          canPaginate={paginationData.canPaginate}
+          skipAmount={paginationData.paginationSkip}
+          nextPageHandler={nextPage}
+          prevPageHandler={prevPage}
+        />
+      </>}
     </PageWrapper>
   )
 }

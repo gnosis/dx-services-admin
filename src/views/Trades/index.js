@@ -17,7 +17,7 @@ import RotateButton from '../../components/RotateButton'
 
 import { getTokensAndNetwork } from '../../api'
 
-import { queryLineMaker, shortenHash, tokenListToName, setURLFilterParams, formatTime, rZC } from '../../utils'
+import { queryLineMaker, shortenHash, tokenListToName, setURLFilterParams, formatTime, rZC, urlParams2Object } from '../../utils'
 import { FIXED_DECIMALS, GRAPH_URL } from '../../globals'
 
 import { from } from 'rxjs'
@@ -26,9 +26,9 @@ function Trades({ web3 }) {
   // DefaultState
   const defaultState = {
     // Tokens
-    sellTokenFilter: tokenFromURL(window.location.href) && tokenFromURL(window.location.href).sellToken ? tokenFromURL(window.location.href).sellToken : '',
-    buyTokenFilter: tokenFromURL(window.location.href) && tokenFromURL(window.location.href).buyToken ? tokenFromURL(window.location.href).buyToken : '',
-    specificAuction: tokenFromURL(window.location.href) && tokenFromURL(window.location.href).auctionIndex,
+    sellTokenFilter: urlParams2Object(window.location.href).sellToken || '',
+    buyTokenFilter: urlParams2Object(window.location.href).buyToken || '',
+    specificAuction: urlParams2Object(window.location.href).auctionIndex || '',
     paginationSize: 50,
     canPaginate: false,
     orderType: 'All',
@@ -427,7 +427,7 @@ function combineAndSortOrders(sOrders, bOrders, sortOptions = { prop: 'timestamp
       .sort((a,b) => sortOptions.order === 'dsc' ? b[sortOptions.prop] - a[sortOptions.prop] : a[sortOptions.prop] - b[sortOptions.prop]))
 }
 
-function tokenFromURL(url) {
+/* function tokensFromURL(url) {
 	if (!url || (url.search('sellToken') === -1 || url.search('buyToken') === -1 || url.search('auctionIndex') === -1)) return false 
 
 	const [[, sellToken], [, buyToken], [, auctionIndex]] = url
@@ -436,6 +436,6 @@ function tokenFromURL(url) {
 		.map(item => item.split('='))	
 
 	return { sellToken, buyToken, auctionIndex }
-}
+} */
 
 export default ErrorHOC(Web3HOC(Trades))
