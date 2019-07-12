@@ -32,6 +32,8 @@ function Trades({ web3 }) {
     paginationSize: 50,
     canPaginate: false,
     orderType: 'All',
+    timeSort: { order: false, focused: true },
+    amountSort: { order: false, focused: false }
   }
 
   // State + Setters
@@ -52,9 +54,10 @@ function Trades({ web3 }) {
   const [buyTokenFilter, setBuyTokenFilter]         = useState(defaultState.buyTokenFilter)
   const [sellTokenFilter, setSellTokenFilter]       = useState(defaultState.sellTokenFilter)
   const [specificAuction, setSpecificAuction]       = useState(defaultState.specificAuction)
-  const [timeSort, setTimeSort]                     = useState(false)
-  const [amountSort, setAmountSort]                 = useState(false)
+  const [timeSort, setTimeSort]                     = useState(defaultState.timeSort)
+  const [amountSort, setAmountSort]                 = useState(defaultState.amountSort)
   
+  /* MOUNT ONLY */
   useEffect(() => {
     setLoading(true)
 
@@ -73,7 +76,7 @@ function Trades({ web3 }) {
     }
   }, [])
 
-  // mount logic
+  // Main Query and business logic effect
   // 1. load endpoint Trades dataed
   // 2. set to state
   useEffect(() => {
@@ -173,53 +176,22 @@ function Trades({ web3 }) {
     }
   }, [sellTokenFilter, buyTokenFilter, paginationSize, skipAmount, specificAuction])
 
+  /* Sort Effects */
+
+  // Sort by Amount
   useEffect(() => {
-    const filteredTrades = trades.tradesCombined.filter((trade) => {
-      if (orderType === 'All') return trade
-      
-      return trade.type === orderType
-    })
+    setTrades(prev => ({ ...prev.buyOrders, ...prev.sellOrders, tradesCombined: trades.tradesCombined.sort((a, b) => amountSort.order ? a.amount - b.amount : b.amount - a.amount) }))
+  }, [amountSort.order])
 
-    setTrades(prev => ({ ...prev, tradesCombined: filteredTrades }))
-  }, [orderType])
-
+  // Sort by Timestamp
   useEffect(() => {
-    const filteredTrades = trades.tradesCombined.sort((a, b) => timeSort ? a.timestamp - b.timestamp : b.timestamp - a.timestamp)
+    setTrades(prev => ({ ...prev.buyOrders, ...prev.sellOrders, tradesCombined: trades.tradesCombined.sort((a, b) => timeSort.order ? a.timestamp - b.timestamp : b.timestamp - a.timestamp) }))
+  }, [timeSort.order])
 
-    setTrades(prev => ({ ...prev, tradesCombined: filteredTrades }))
-  }, [timeSort])
-
-  useEffect(() => {
-    const filteredTrades = trades.tradesCombined.sort((a, b) => amountSort ? a.amount - b.amount : b.amount - a.amount)
-
-    setTrades(prev => ({ ...prev, tradesCombined: filteredTrades }))
-  }, [amountSort])
-
-  // Grabs token name from availableTokens
-  function getTokenInfo(type = sellTokenFilter, prop = 'symbol') {
-    const token = availableTokens.find(token => token.address === type)
-
-    return token && token[prop]
-  }
-
-  const handleRotateButton = () => {
-    setSellTokenFilter(buyTokenFilter)
-    setBuyTokenFilter(sellTokenFilter)
-  }
-
-  const handleResetButton = () => {
-    setSellTokenFilter('')
-    setBuyTokenFilter('')
-    setSpecificAuction('')
-  }
-
-  const handleColumnSort = type => {
-    if (type === 'Amount') return setAmountSort(!amountSort)
-    if (type === 'Timestamp') return setTimeSort(!timeSort)
-  }
-
+  /* Renders anchor tag to Etherscan based on address type */
   const renderEtherscanLink = (address, section, text, type = 'address', style) => <a href={`https://${network == '4' ? 'rinkeby.etherscan' : 'etherscan'}.io/${type}/${address}${section ? '#' + section : ''}`} target="_blank" rel="noopener noreferrer" style={style}>{text || address}</a>
 
+  /* Main table row render for GraphQL data */
   const renderTrades = ({
     amount,
     id: tradeID,
@@ -234,16 +206,16 @@ function Trades({ web3 }) {
 
     return (
       <tr key={tradeID} style={{ backgroundColor: type === 'Sell Order' ? "#f0f8ff" : "#fff0fc" }}>
-        {/* Market */}
-        <td>
-          <Badge color="success" pill>{sellSymbol}-{buySymbol}-{auctionIndex}</Badge>
-        </td>
+        {/* Trader Acct */}
+        <td><code title={traderID} style={{cursor: 'pointer'}}>{renderEtherscanLink(traderID, null, shortenHash(traderID, 37), 'address')}</code></td>
         {/* Amount */}
         <td>{rZC((amount/10**(type === 'Sell Order' ? sellDecimal : buyDecimal)), FIXED_DECIMALS)}</td>
         {/* Sell or Buy Order */}
         <td><code>{type}</code></td>
-        {/* Trader Acct */}
-        <td><code title={traderID} style={{cursor: 'pointer'}}>{renderEtherscanLink(traderID, null, shortenHash(traderID, 37), 'address')}</code></td>
+        {/* Market */}
+        <td>
+          <Badge color="success" pill>{sellSymbol}-{buySymbol}-{auctionIndex}</Badge>
+        </td>
         {/* Tx Hash */}
         <td><code title={transactionHash} style={{cursor: 'pointer'}}>{renderEtherscanLink(transactionHash, null, shortenHash(transactionHash), 'tx')}</code></td>
         {/* When */}
@@ -251,16 +223,16 @@ function Trades({ web3 }) {
       </tr>
     )
   }
-  
-  // Filters current data stream
-  // const filteredTrades = trades.tradesCombined.filter((trade) => {
-  //   if (orderType === 'All') return trade
     
-  //   return trade.type === orderType
-  // })
-    // .sort((a, b) => timeSort ? a.timestamp - b.timestamp : b.timestamp - a.timestamp)
-    // .sort((a, b) => amountSort ? a.amount - b.amount : b.amount - a.amount)
+  // Filters current data stream
+  let filteredTrades = trades.tradesCombined
+  filteredTrades = filteredTrades.filter((trade) => {
+    if (orderType === 'All') return trade
+    
+    return trade.type === orderType
+  })
 
+  /* RENDER */
   return (
     <PageWrapper pageTitle="DutchX Past Auctions">
       <AttentionBanner title="MAINNET ONLY" subText="This feature is currently only available for Mainnet. Please check back later for data on other networks."/>
@@ -401,28 +373,53 @@ function Trades({ web3 }) {
         <Table responsive hover>
           <thead>
             <tr>
-              <th>Market</th>
-              <th onClick={() => handleColumnSort('Amount')} style={{ cursor: 'pointer' }}>Amount [{amountSort ? 'ASC' : 'DSC'}]</th>
-              <th>Type</th>
               <th>Trader</th>
+              <th onClick={() => handleColumnSort('Amount')} style={{ cursor: 'pointer' }}>Amount {amountSort.focused ? amountSort.order ? '[ASC]' : '[DSC]' : null}</th>
+              <th>Type</th>
+              <th>Market</th>
               <th>TX Hash</th>
-              <th onClick={() => handleColumnSort('Timestamp')} style={{ cursor: 'pointer' }}>Timestamp [{timeSort ? 'ASC' : 'DSC'}]</th>
+              <th onClick={() => handleColumnSort('Timestamp')} style={{ cursor: 'pointer' }}>Timestamp {timeSort.focused ? timeSort.order ? '[ASC]' : '[DSC]' : null}</th>
             </tr>
           </thead>
           <tbody>
-            {trades.tradesCombined && trades.tradesCombined.map(trade => renderTrades(trade))}
+            {filteredTrades && filteredTrades.map(trade => renderTrades(trade))}
           </tbody>
         </Table>
       </>}
     </PageWrapper>
   )
+
+  function handleRotateButton() {
+    setSellTokenFilter(buyTokenFilter)
+    setBuyTokenFilter(sellTokenFilter)
+  }
+
+  function handleResetButton () {
+    setSellTokenFilter('')
+    setBuyTokenFilter('')
+    setSpecificAuction('')
+    setAmountSort(defaultState.amountSort)
+    setTimeSort(defaultState.timeSort)
+  }
+
+  function handleColumnSort(type) {
+    if (type === 'Amount')    return setTimeSort({ focused: false }), setAmountSort({ order: !amountSort.order, focused: true })
+    if (type === 'Timestamp') return setAmountSort({ focused: false }), setTimeSort({ order: !timeSort.order, focused: true })
+  }
+  
+  // Grabs token name from availableTokens
+  function getTokenInfo(type = sellTokenFilter, prop = 'symbol') {
+    const token = availableTokens.find(token => token.address === type)
+
+    return token && token[prop]
+  }
 }
 
 function combineAndSortOrders(sOrders, bOrders, sortOptions = { prop: 'timestamp', order: 'dsc' }) {
 	return (
     bOrders.map(orders => ({ ...orders, type: 'Buy Order' }))
       .concat(sOrders.map(orders => ({ ...orders, type: 'Sell Order' })))
-      .sort((a,b) => sortOptions.order === 'dsc' ? a[sortOptions.prop] - b[sortOptions.prop] : b[sortOptions.prop] - a[sortOptions.prop]))
+      .sort((a,b) => sortOptions.order === 'dsc' ? b[sortOptions.prop] - a[sortOptions.prop] : a[sortOptions.prop] - b[sortOptions.prop]))
 }
 
 function tokenFromURL(url) {
