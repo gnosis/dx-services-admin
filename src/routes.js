@@ -13,6 +13,8 @@ const PastAuctions = React.lazy(() => import('./views/PastAuctions'));
 const PastAuctionsTrades = React.lazy(() => import('./views/PastAuctions/PastAuctionsTrades.js'));
 const Trades = React.lazy(() => import('./views/Trades'));
 
+const Test = React.lazy(() => import('./views/Test'));
+
 // https://github.com/ReactTraining/react-router/tree/master/packages/react-router-config
 const routes = [
   { path: '/', exact: true, name: 'Home', component: DefaultLayout },
@@ -27,6 +29,7 @@ const routes = [
   { path: '/trades', exact: true, name: 'Trades', component: Trades },
   { path: '/past-auctions', exact: true, name: 'Past Auctions', component: PastAuctions },
   { path: '/past-auctions-trades', exact: true, name: 'Past Auctions Trades', component: PastAuctionsTrades },
+  { path: '/test-page', exact: true, name: 'Test Page', component: Test },
 ];
 
 export default routes;

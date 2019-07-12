@@ -45,6 +45,10 @@ const navArray = [
     url: '/accounts',
     icon: 'fa fa-money',
   },
+  {
+    name: 'Test Page',
+    url: '/test-page',
+  },
 ]
 
 // Regular admin page
