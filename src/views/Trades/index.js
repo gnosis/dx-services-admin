@@ -403,8 +403,13 @@ function Trades({ web3 }) {
   }
 
   function handleColumnSort(type) {
-    if (type === 'Amount')    return setTimeSort({ focused: false }), setAmountSort({ order: !amountSort.order, focused: true })
-    if (type === 'Timestamp') return setAmountSort({ focused: false }), setTimeSort({ order: !timeSort.order, focused: true })
+    if (type === 'Amount')    {
+      setTimeSort({ focused: false }) 
+      return setAmountSort({ order: !amountSort.order, focused: true })
+    }
+    
+    setAmountSort({ focused: false }) 
+    return setTimeSort({ order: !timeSort.order, focused: true })
   }
   
   // Grabs token name from availableTokens
