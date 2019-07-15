@@ -131,7 +131,7 @@ function Trades({ web3 }) {
         {/* Trader Acct */}
         <td><code title={traderID} style={{cursor: 'pointer'}}>{renderEtherscanLink(traderID, null, shortenHash(traderID, 37), 'address')}</code></td>
         {/* Amount */}
-        <td>{rZC((amount/10**(type === 'Sell Order' ? sellDecimal : buyDecimal)), FIXED_DECIMALS)}</td>
+        <td>{rZC((amount/10**(type === 'Sell Order' ? sellDecimal : buyDecimal)), FIXED_DECIMALS)} <strong>{(type === 'Sell Order' ? sellSymbol : buySymbol)}</strong></td>
         {/* Sell or Buy Order */}
         <td><code>{type}</code></td>
         {/* Market */}
@@ -209,22 +209,12 @@ function Trades({ web3 }) {
             <PageFilterSubmit
               type="number"
               title="Specific auction to show"
-              // showWhat={numberOfTraders}
               submitFunction={setSpecificAuction}
               inputName="trades"
             />
           </Col>
           {/* Filter Sell/Buy Orders */}
           <Col sm={6} className="py-2">
-              {/* Orders */}
-              {/* <PageFilter
-                type="select"
-                title="Number of orders to show"
-                showWhat={paginationSize}
-                filterWhat={[50, 100, 150, 200]}
-                changeFunction={(e) => setPaginationSize(e.target.value / 2)}
-                inputName="trades"
-              /> */}
               {/* Order Type */}
               <PageFilter
                 type="select"
@@ -278,13 +268,6 @@ function Trades({ web3 }) {
               filterTitle = "Selected Auction"
             />
           }
-          {/* {paginationSize && 
-            <FilterLabel 
-              onClickHandler={() => setPaginationSize(defaultState.paginationSize)}
-              filterData={paginationSize}
-              filterTitle = "Number of Orders"
-            />
-          } */}
           {(sellTokenFilter || buyTokenFilter || specificAuction) 
             && 
           <PrimaryButton 
