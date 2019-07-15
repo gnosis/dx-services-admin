@@ -1,6 +1,6 @@
 import React from 'react'
 import { Card, CardBody, CardHeader, Col, Row } from 'reactstrap'
-import AttentionBanner from '../../components/AttentionBanner';
+import AttentionBanner from '../../components/AttentionBanner'
 
 const disclaimerParagraph = {
     whiteSpace: 'normal',
