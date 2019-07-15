@@ -63,7 +63,14 @@ function PastAuctions({ web3 }) {
   // mount logic
   // 1. load endpoint Past Auctions data
   // 2. set to state
-  const { graphData, paginationData, error: graphQueryError, nextPage, prevPage } = useGraphQuery({
+  const { 
+    graphData, 
+    paginationData, 
+    error: graphQueryError, 
+    nextPage, 
+    prevPage, 
+    resetPaginationSkip 
+  } = useGraphQuery({
     rootQueries: ["auctions"],
     rootArguments: [
       { queryString: "orderBy", queryCondition: "startTime" },
@@ -164,7 +171,7 @@ function PastAuctions({ web3 }) {
                 title="Sell Token"
                 showWhat={sellTokenFilter}
                 changeFunction={(event) => {
-                  // setSkipAmount(0)
+                  resetPaginationSkip()
                   setSellTokenFilter(event.target.value)
                 }}
                 inputName="trades"
@@ -176,7 +183,7 @@ function PastAuctions({ web3 }) {
                 title="Buy Token"
                 showWhat={buyTokenFilter}
                 changeFunction={(event) => {
-                  // setSkipAmount(0)
+                  resetPaginationSkip()
                   setBuyTokenFilter(event.target.value)
                 }}
                 inputName="trades"
