@@ -100,6 +100,10 @@ export const useGraphQuery = ({
     prevPage: useCallback(() => setPaginationData(prevState => ({
       ...prevState,
       paginationSkip: prevState.paginationSkip - paginationData.paginationSize
+    }))),
+    resetPaginationSkip: useCallback(() => setPaginationData(prevState => ({
+      ...prevState,
+      paginationSkip: 0
     })))
   }
 }
