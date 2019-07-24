@@ -1,10 +1,8 @@
 /* eslint-disable eqeqeq */
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 
 import { Col, Table, Badge, FormGroup, Form } from 'reactstrap'
 import { PageFilter, PageFilterSubmit, FilterLabel, PageWrapper } from '../../containers'
-
-import { from } from 'rxjs'
 
 import ErrorHOC from '../../HOCs/ErrorHOC'
 import Web3HOC from '../../HOCs/Web3HOC'
@@ -13,11 +11,10 @@ import AttentionBanner from '../../components/AttentionBanner'
 import ErrorPre from '../../components/Error'
 import Loading from '../../components/Loading'
 import Pagination from '../../components/Pagination'
-import PrimaryButton from '../../components/PrimaryButton';
+import PrimaryButton from '../../components/PrimaryButton'
 import RotateButton from '../../components/RotateButton'
 
-import { getTokensAndNetwork } from '../../api'
-import { useGraphQuery } from '../../hooks'
+import { useDataSort, useGraphQuery, useTokenNetworkMount } from '../../hooks'
 
 import { shortenHash, tokenListToName, formatTime, rZC, urlParams2Object } from '../../utils'
 import { FIXED_DECIMALS } from '../../globals'
@@ -30,49 +27,18 @@ function Trades({ web3 }) {
     sellTokenFilter: urlParams2Object(window.location.href).sellToken || '',
     buyTokenFilter: urlParams2Object(window.location.href).buyToken || '',
     specificAuction: urlParams2Object(window.location.href).auctionIndex || '',
-    orderType: 'All',
-    timeSort: { order: false, focused: true },
-    amountSort: { order: false, focused: false }
   }
-
-  // State + Setters
-  const [network, setNetwork]                       = useState(undefined)
-  const [availableTokens, setAvailableTokens]       = useState([])
-  // App
-  const [error, setError]                           = useState(undefined)
-  const [loading, setLoading]                       = useState(false)
   
   // Data Filters
-  const [orderType, setOrderType]                   = useState(defaultState.orderType)
   const [buyTokenFilter, setBuyTokenFilter]         = useState(defaultState.buyTokenFilter)
   const [sellTokenFilter, setSellTokenFilter]       = useState(defaultState.sellTokenFilter)
   const [specificAuction, setSpecificAuction]       = useState(defaultState.specificAuction)
-  const [timeSort, setTimeSort]                     = useState(defaultState.timeSort)
-  const [amountSort, setAmountSort]                 = useState(defaultState.amountSort)
   
-  /* MOUNT ONLY */
-  useEffect(() => {
-    setLoading(true)
+  // MOUNT
+  const { availableTokens, network, loading: mountLoading, error: mountError } = useTokenNetworkMount(web3)
 
-    const mountSubscription = from(getTokensAndNetwork(web3, network))
-      .subscribe({
-        next: ({ tokens, bcNetwork }) => {
-          setNetwork(bcNetwork)
-          setAvailableTokens(tokens)
-        },
-        error: appError => setError(appError),
-        complete: () => setLoading(false),
-      })
-
-    return () => {
-      mountSubscription && mountSubscription.unsubscribe()
-    }
-  }, [])
-
-  // Main Query and business logic effect
-  // 1. load endpoint Trades dataed
-  // 2. set to state
-  const { graphData, paginationData, error: graphQueryError, nextPage, prevPage, resetPaginationSkip } = useGraphQuery({
+  // GRAPH QUERY
+  const { graphData, paginationData, error: graphQueryError, nextPage, prevPage, resetPaginationSkip, loading: graphLoading } = useGraphQuery({
     rootQueries: ['sellOrders', 'buyOrders'],
     rootArguments: [
       { queryString: "orderBy", queryCondition: "timestamp" },
@@ -95,20 +61,19 @@ function Trades({ web3 }) {
         id
       }`
     ],
-    effectChangeConditions: [sellTokenFilter, buyTokenFilter, specificAuction]
+    effectChangeConditions: [sellTokenFilter, buyTokenFilter, specificAuction],
   })
 
-  /* Sort Effects */
+  let combinedSellAndBuyOrders = React.useMemo(() => combineAndSortOrders(graphData, { prop: 'timestamp', order: 'dsc' }), [graphData])
+  
+  const { 
+    sortedGQLData: sortedData, 
+    dataSort, setDataSort, 
+    orderType, setOrderType 
+  } = useDataSort(combinedSellAndBuyOrders)
 
-  // Sort by Amount
-  /* useEffect(() => {
-    setTrades(prev => ({ ...prev.buyOrders, ...prev.sellOrders, tradesCombined: trades.tradesCombined.sort((a, b) => amountSort.order ? a.amount - b.amount : b.amount - a.amount) }))
-  }, [amountSort.order])
-
-  // Sort by Timestamp
-  useEffect(() => {
-    setTrades(prev => ({ ...prev.buyOrders, ...prev.sellOrders, tradesCombined: trades.tradesCombined.sort((a, b) => timeSort.order ? a.timestamp - b.timestamp : b.timestamp - a.timestamp) }))
-  }, [timeSort.order]) */
+  /* Action handler */
+  const handleColumnSort = type => setDataSort({ key: type, direction: dataSort.direction === 'asc' ? 'dsc' : 'asc' }) 
 
   /* Renders anchor tag to Etherscan based on address type */
   const renderEtherscanLink = (address, section, text, type = 'address', style) => <a href={`https://${network == '4' ? 'rinkeby.etherscan' : 'etherscan'}.io/${type}/${address}${section ? '#' + section : ''}`} target="_blank" rel="noopener noreferrer" style={style}>{text || address}</a>
@@ -144,19 +109,6 @@ function Trades({ web3 }) {
         <td>{formatTime(timestamp)}</td>
       </tr>
     )
-  }
-
-  let filteredTrades
-  if (graphData) {
-    const { buyOrders, sellOrders } = graphData
-    const tradesCombined = combineAndSortOrders(sellOrders, buyOrders, { prop: 'timestamp', order: 'dsc' })
-
-    // Filters current data
-    filteredTrades = tradesCombined.slice().filter((trade) => {
-      if (orderType === 'All') return trade
-      
-      return trade.type === orderType
-    })
   }
 
   /* RENDER */
@@ -228,11 +180,11 @@ function Trades({ web3 }) {
         </FormGroup>
       </Form>
 
-      {error || graphQueryError
+      {mountError || graphQueryError
         ?
-      <ErrorPre error={error || graphQueryError} errorTitle=""/>
+      <ErrorPre error={mountError || graphQueryError} errorTitle=""/>
         :
-      loading
+        mountLoading || graphLoading
         ?
       <Loading />
         :
@@ -284,15 +236,23 @@ function Trades({ web3 }) {
           <thead>
             <tr>
               <th>Trader</th>
-              <th onClick={() => handleColumnSort('Amount')} style={{ cursor: 'pointer' }}>Amount {amountSort.focused ? amountSort.order ? '[ASC]' : '[DSC]' : null}</th>
+              <th 
+                onClick={() => handleColumnSort('amount')} style={{ cursor: 'pointer' }}
+              >
+                Amount {dataSort && dataSort.key === 'amount' ? dataSort && dataSort.direction === 'dsc' ? '[DSC]' : '[ASC]' : null}
+              </th>
               <th>Type</th>
               <th>Market</th>
               <th>TX Hash</th>
-              <th onClick={() => handleColumnSort('Timestamp')} style={{ cursor: 'pointer' }}>Timestamp {timeSort.focused ? timeSort.order ? '[ASC]' : '[DSC]' : null}</th>
+              <th 
+                onClick={() => handleColumnSort('timestamp')} style={{ cursor: 'pointer' }}
+              >
+                Timestamp {dataSort && dataSort.key === 'timestamp' ? dataSort && dataSort.direction === 'dsc' ? '[DSC]' : '[ASC]' : null}
+              </th>
             </tr>
           </thead>
           <tbody>
-            {filteredTrades && filteredTrades.map(trade => renderTrades(trade))}
+            {sortedData && sortedData.map(trade => renderTrades(trade))}
           </tbody>
         </Table>
         {/* Pagination Control */}
@@ -315,18 +275,6 @@ function Trades({ web3 }) {
     setSellTokenFilter('')
     setBuyTokenFilter('')
     setSpecificAuction('')
-    setAmountSort(defaultState.amountSort)
-    setTimeSort(defaultState.timeSort)
-  }
-
-  function handleColumnSort(type) {
-    if (type === 'Amount')    {
-      setTimeSort({ focused: false }) 
-      return setAmountSort({ order: !amountSort.order, focused: true })
-    }
-    
-    setAmountSort({ focused: false }) 
-    return setTimeSort({ order: !timeSort.order, focused: true })
   }
   
   // Grabs token name from availableTokens
@@ -337,7 +285,10 @@ function Trades({ web3 }) {
   }
 }
 
-function combineAndSortOrders(sOrders, bOrders, sortOptions = { prop: 'timestamp', order: 'dsc' }) {
+function combineAndSortOrders(inputData, sortOptions = { prop: 'timestamp', order: 'dsc' }) {
+  if (!inputData || !Object.keys(inputData).length) return []
+
+  const { sellOrders: sOrders, buyOrders: bOrders } = inputData
 	return (
     bOrders.map(orders => ({ ...orders, type: 'Buy Order' }))
       .concat(sOrders.map(orders => ({ ...orders, type: 'Sell Order' })))
