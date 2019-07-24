@@ -8,29 +8,29 @@ import { GRAPH_URL } from '../globals'
 const makeCustomQuery = ({
   rootQueries,
   rootArguments,
-  whereQueries ,
+  whereQueries,
   responseProperties,
   pagination: { paginationSize, paginationSkip },
 }) =>
   `{ 
     ${rootQueries.map(root => (
-      `${root}(
+    `${root}(
           first: ${paginationSize + 1}
           skip: ${paginationSkip}
           ${rootArguments.map(argument => (
-            `${argument.queryString}: ${argument.queryCondition}`
-          )).join('\n\t\t\t')}
+      `${argument.queryString}: ${argument.queryCondition}`
+    )).join('\n\t\t\t')}
           where: {
             ${whereQueries.map(condition => (
-              queryLineMaker(condition.queryCondition, condition.queryString)
-            )).join('\n\t\t\t')}
+      queryLineMaker(condition.queryCondition, condition.queryString)
+    )).join('\n\t\t\t')}
           }
       ) {
         ${responseProperties.map(prop => prop.toString()).join('\n\t\t')}
       }`
-    ))
+  ))
     .join('\n\t')
-    }
+  }
   }`
 
 export const useGraphQuery = ({
@@ -40,7 +40,8 @@ export const useGraphQuery = ({
   whereQueries = [],
   responseProperties = ["id"],
   paginationSize = 50,
-  effectChangeConditions = []
+  effectChangeConditions = [],
+  // filterOption = { key: undefined, direction: undefined },
 }) => {
   const [graphData, setGraphData] = useState(undefined)
   const [paginationData, setPaginationData] = useState({
@@ -65,13 +66,17 @@ export const useGraphQuery = ({
     }
   }
 
+  const [loading, setLoading] = useState(false)
+
   useEffect(() => {
     // reset error state
     setError(undefined)
+    setLoading(true)
 
     const dataSubscription = from(graphQLDataFetch())
       .subscribe({
         next: (data) => {
+          setLoading(false)
           setGraphData(data)
           setPaginationData(state => ({
             ...state,
@@ -81,6 +86,7 @@ export const useGraphQuery = ({
         error: error => {
           console.error(error)
           setError(error)
+          setLoading(false)
         },
       })
 
@@ -91,6 +97,7 @@ export const useGraphQuery = ({
 
   return {
     graphData,
+    loading,
     paginationData,
     error,
     nextPage: useCallback(() => setPaginationData(prevState => ({
