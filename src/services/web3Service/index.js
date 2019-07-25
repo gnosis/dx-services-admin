@@ -10,9 +10,8 @@ let appWeb3
 let contractsMap = {}
 
 export const getWeb3API = async () => {
-    if (appWeb3) return (console.debug('CACHED WEB3'), appWeb3)
+    if (appWeb3) return appWeb3
     
-    console.debug('NEW WEB3')
     appWeb3 = await init()
     return appWeb3
 }

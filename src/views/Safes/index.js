@@ -145,8 +145,6 @@ function Safes({ web3 }) {
               <tr key={`safe-${safeAddress}`}>
                 {/* Safe Name */}
                 <td><Badge color="primary" className="p-2" pill>{name}</Badge></td>
-                {/* <td>{markets.map(({ tokenA, tokenB }) => [<p><Badge key={`safe-market-${tokenA}-${tokenB}`}>{`${tokenA}-${tokenB}`}</Badge></p>])}</td>
-                            <td>{renderAccountLink(safeAddress)}</td> */}
                 {/* Type */}
                 <td><Badge color="success" className="p-2" pill>{safeModuleType}</Badge></td>
                 {/* Safe Info */}

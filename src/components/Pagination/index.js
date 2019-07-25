@@ -6,7 +6,7 @@ const Pagination = ({
     canPaginate,
     // clickHandlers
     nextPageHandler,
-    previousPageHandler,
+    prevPageHandler,
     // misc
     skipAmount,
 }) =>
@@ -19,16 +19,16 @@ const Pagination = ({
         canPaginate && skipAmount > 0
             ?
             <div>
-                <PrimaryButton text="Previous" onClickHandler={previousPageHandler} />
+                <PrimaryButton text="Previous" onClickHandler={prevPageHandler} />
                 <PrimaryButton text="Next" onClickHandler={nextPageHandler} />
             </div>
             :
             // Previous only
             !canPaginate && skipAmount > 0
                 ?
-                <div><PrimaryButton text="Previous" onClickHandler={previousPageHandler} /></div>
+                <div><PrimaryButton text="Previous" onClickHandler={prevPageHandler} /></div>
                 :
                 // Next only
                 <div><PrimaryButton text="Next" onClickHandler={nextPageHandler} /></div>
-
+                    
 export default Pagination
