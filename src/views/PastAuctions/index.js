@@ -1,5 +1,5 @@
 /* eslint-disable eqeqeq */
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import moment from 'moment'
 
 import { Col, Table, Badge, FormGroup, Form } from 'reactstrap'
@@ -15,14 +15,10 @@ import Loading from '../../components/Loading'
 import Pagination from '../../components/Pagination'
 import RotateButton from '../../components/RotateButton'
 
-import { useGraphQuery } from '../../hooks'
-
-import { getTokensAndNetwork } from '../../api'
+import { useGraphQuery, useTokenNetworkMount } from '../../hooks'
 
 import { FIXED_DECIMALS } from '../../globals'
-import { setURLFilterParams, rZC, formatTime, tokenListToName, urlParams2Object } from '../../utils'
-
-import { from } from 'rxjs'
+import { /* setURLFilterParams, */ rZC, formatTime, tokenListToName, urlParams2Object } from '../../utils'
 
 function PastAuctions({ web3 }) {
   const defaultState = {
@@ -30,35 +26,12 @@ function PastAuctions({ web3 }) {
     buyTokenFilter: (urlParams2Object(window.location.href).buyToken) || '',
   }
 
-  // // Data
-  const [availableTokens, setAvailableTokens] = useState([])
-  const [network, setNetwork]                 = useState(undefined)
   // Data Selection
   const [sellTokenFilter, setSellTokenFilter] = useState(defaultState.sellTokenFilter)
   const [buyTokenFilter, setBuyTokenFilter]   = useState(defaultState.buyTokenFilter)
   const [specificAuction, setSpecificAuction] = useState(undefined)
-  // App
-  const [loading, setLoading]                 = useState(false)
-  const [error, setError]                     = useState(undefined)
 
-  useEffect(() => {
-    setLoading(true)
-
-    const mountSubscription = from(getTokensAndNetwork(web3, network))
-      .subscribe({
-        next: ({ bcNetwork, tokens }) => {
-          sellTokenFilter && setURLFilterParams(`?sellToken=${sellTokenFilter}&buyToken=${buyTokenFilter}`)
-          setNetwork(bcNetwork)
-          setAvailableTokens(tokens)
-        },
-        error: appError => setError(appError),
-        complete: () => setLoading(false),
-      })
-
-    return () => {
-      mountSubscription && mountSubscription.unsubscribe()
-    }
-  }, [])
+  const { availableTokens, loading, error } = useTokenNetworkMount(web3)
 
   // mount logic
   // 1. load endpoint Past Auctions data
@@ -66,6 +39,7 @@ function PastAuctions({ web3 }) {
   const { 
     graphData, 
     paginationData, 
+    loading: graphLoading,
     error: graphQueryError, 
     nextPage, 
     prevPage, 
@@ -218,7 +192,7 @@ function PastAuctions({ web3 }) {
         ?
         <ErrorPre error={error || graphQueryError} errorTitle="" />
         :
-        loading
+        loading || graphLoading
           ?
           // Data Loading
           <Loading />

@@ -1,5 +1,5 @@
 /* eslint-disable eqeqeq */
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 
 import { Col, Table, Badge, FormGroup, Form } from 'reactstrap'
 import { PageFilter, PageFilterSubmit, FilterLabel, PageWrapper } from '../../containers'
@@ -13,14 +13,10 @@ import ErrorPre from '../../components/Error'
 import Pagination from '../../components/Pagination'
 import RotateButton from '../../components/RotateButton'
 
-import { getTokensAndNetwork } from '../../api'
-
-import { useGraphQuery } from '../../hooks'
+import { useGraphQuery, useTokenNetworkMount } from '../../hooks'
 
 import { shortenHash, tokenListToName, /* setURLFilterParams,  */formatTime, urlParams2Object } from '../../utils'
 import { FIXED_DECIMALS } from '../../globals'
-
-import { from } from 'rxjs'
 
 function PastAuctionTrades({ web3 }) {
   // DefaultState
@@ -35,8 +31,6 @@ function PastAuctionTrades({ web3 }) {
   }
 
   // State + Setters
-  const [network, setNetwork]                       = useState(undefined)
-  const [availableTokens, setAvailableTokens]       = useState([])
   // Data Filters
   const [buyTokenFilter, setBuyTokenFilter]         = useState(defaultState.buyTokenFilter)
   const [sellTokenFilter, setSellTokenFilter]       = useState(defaultState.sellTokenFilter)
@@ -44,29 +38,10 @@ function PastAuctionTrades({ web3 }) {
   const [specificAuction, setSpecificAuction]       = useState(defaultState.specificAuction)
   const [numberOfBuyOrders, setNumberOfBuyOrders]   = useState(defaultState.numberOfBuyOrders)
   const [numberOfSellOrders, setNumberOfSellOrders] = useState(defaultState.numberOfSellOrders)
-  // App
-  const [error, setError]                           = useState(undefined)
-  const [loading, setLoading]                       = useState(false)
 
-  useEffect(() => {
-    setLoading(true)
+  const { availableTokens, network, loading, error } = useTokenNetworkMount(web3)
 
-    const mountSubscription = from(getTokensAndNetwork(web3, network))
-      .subscribe({
-        next: ({ tokens, bcNetwork }) => {
-          setNetwork(bcNetwork)
-          setAvailableTokens(tokens)
-        },
-        error: appError => setError(appError),
-        complete: () => setLoading(false),
-      })
-
-    return () => {
-      mountSubscription && mountSubscription.unsubscribe()
-    }
-  }, [])
-
-  const { graphData, paginationData, error: graphQueryError, nextPage, prevPage } = useGraphQuery({
+  const { graphData, paginationData, loading: graphLoading, error: graphQueryError, nextPage, prevPage } = useGraphQuery({
     rootQueries: ["auctions"],
     rootArguments: [
       { queryString: "orderBy", queryCondition: "startTime" },
@@ -223,13 +198,6 @@ function PastAuctionTrades({ web3 }) {
           </div>
           {/* Filter Number of Traders/Specific Auction Range Type */}
           <Col sm={6} className="py-2">
-            {/* <PageFilterSubmit
-              type="number"
-              title="Number of traders to show"
-              showWhat={numberOfTraders}
-              submitFunction={setNumberOfTraders}
-              inputName="trades"
-            /> */}
             <PageFilterSubmit
               type="number"
               title="Specific auction to show"
@@ -269,13 +237,6 @@ function PastAuctionTrades({ web3 }) {
             filterTitle = "Selected Auction"
           />
         }
-        {/* {numberOfTraders && 
-          <FilterLabel 
-            onClickHandler={() => setNumberOfTraders(defaultState.numberOfTraders)}
-            filterData={numberOfTraders}
-            filterTitle = "Number of Traders"
-          />
-        } */}
         {numberOfBuyOrders && 
           <FilterLabel 
             onClickHandler={() => setNumberOfBuyOrders(defaultState.numberOfBuyOrders)}
@@ -296,7 +257,7 @@ function PastAuctionTrades({ web3 }) {
         ?
       <ErrorPre error={error || graphQueryError} errorTitle=""/>
         :
-      loading
+      loading || graphLoading
         ?
       <Loading />
         :
