@@ -24,12 +24,13 @@ function PastAuctions({ web3 }) {
   const defaultState = {
     sellTokenFilter: (urlParams2Object(window.location.href).sellToken) || '',
     buyTokenFilter: (urlParams2Object(window.location.href).buyToken) || '',
+    specificAuction: (urlParams2Object(window.location.href).auctionIndex) || '',
   }
 
   // Data Selection
   const [sellTokenFilter, setSellTokenFilter] = useState(defaultState.sellTokenFilter)
   const [buyTokenFilter, setBuyTokenFilter]   = useState(defaultState.buyTokenFilter)
-  const [specificAuction, setSpecificAuction] = useState(undefined)
+  const [specificAuction, setSpecificAuction] = useState(defaultState.specificAuction)
 
   const { availableTokens, loading, error } = useTokenNetworkMount(web3)
 
