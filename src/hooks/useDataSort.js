@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 
-function useDataSort(graphQLData) {
+export function useDataSort(graphQLData) {
     const [dataSort, setDataSort] = useState({ key: 'timestamp', direction: 'dsc' })
     const [orderType, setOrderType] = useState('All')
 

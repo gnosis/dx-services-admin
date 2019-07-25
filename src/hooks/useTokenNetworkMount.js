@@ -4,7 +4,7 @@ import { from } from 'rxjs'
 import { getTokensAndNetwork } from '../api'
 
 /* MOUNT ONLY */
-function useTokenNetworkMount(web3) {
+export function useTokenNetworkMount(web3) {
     const [network, setNetwork]                       = useState(undefined)
     const [availableTokens, setAvailableTokens]       = useState([])
     
