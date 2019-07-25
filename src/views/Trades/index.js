@@ -38,7 +38,18 @@ function Trades({ web3 }) {
   const { availableTokens, network, loading: mountLoading, error: mountError } = useTokenNetworkMount(web3)
 
   // GRAPH QUERY
-  const { graphData, paginationData, error: graphQueryError, nextPage, prevPage, resetPaginationSkip, loading: graphLoading } = useGraphQuery({
+  const { 
+    // Graph State
+    graphData, 
+    paginationData, 
+    // Pagination Actions
+    nextPage, 
+    prevPage, 
+    resetPaginationSkip, 
+    // Error/Loading
+    error: graphQueryError, 
+    loading: graphLoading 
+  } = useGraphQuery({
     rootQueries: ['sellOrders', 'buyOrders'],
     rootArguments: [
       { queryString: "orderBy", queryCondition: "timestamp" },
@@ -61,6 +72,7 @@ function Trades({ web3 }) {
         id
       }`
     ],
+    urlSearchParamsString: `?${sellTokenFilter ? `sellToken=${sellTokenFilter}&` : ''}${buyTokenFilter ? `buyToken=${buyTokenFilter}&` : ''}${specificAuction ? `auctionIndex=${specificAuction}&` : ''}`,
     effectChangeConditions: [sellTokenFilter, buyTokenFilter, specificAuction],
   })
 

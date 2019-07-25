@@ -18,7 +18,7 @@ import RotateButton from '../../components/RotateButton'
 import { useGraphQuery, useTokenNetworkMount } from '../../hooks'
 
 import { FIXED_DECIMALS } from '../../globals'
-import { /* setURLFilterParams, */ rZC, formatTime, tokenListToName, urlParams2Object } from '../../utils'
+import { rZC, formatTime, tokenListToName, urlParams2Object } from '../../utils'
 
 function PastAuctions({ web3 }) {
   const defaultState = {
@@ -41,6 +41,7 @@ function PastAuctions({ web3 }) {
     paginationData, 
     loading: graphLoading,
     error: graphQueryError, 
+    // State setters
     nextPage, 
     prevPage, 
     resetPaginationSkip 
@@ -66,6 +67,7 @@ function PastAuctions({ web3 }) {
       "totalFeesPaid"
     ],
     paginationSize: 50,
+    urlSearchParamsString: `?${sellTokenFilter ? `sellToken=${sellTokenFilter}&` : ''}${buyTokenFilter ? `buyToken=${buyTokenFilter}&` : ''}${specificAuction ? `auctionIndex=${specificAuction}&` : ''}`,
     effectChangeConditions: [sellTokenFilter, buyTokenFilter, specificAuction],
   })
 

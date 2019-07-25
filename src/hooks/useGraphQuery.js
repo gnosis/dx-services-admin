@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { post } from 'axios'
 import { from } from 'rxjs'
 
-import { queryLineMaker } from '../utils'
+import { queryLineMaker, setURLFilterParams } from '../utils'
 import { GRAPH_URL } from '../globals'
 
 const makeCustomQuery = ({
@@ -39,6 +39,7 @@ export const useGraphQuery = ({
   rootArguments = [],
   whereQueries = [],
   responseProperties = ["id"],
+  urlSearchParamsString,
   paginationSize = 50,
   effectChangeConditions = [],
   // filterOption = { key: undefined, direction: undefined },
@@ -77,6 +78,8 @@ export const useGraphQuery = ({
       .subscribe({
         next: (data) => {
           setLoading(false)
+          
+          urlSearchParamsString && setURLFilterParams(urlSearchParamsString)
           setGraphData(data)
           setPaginationData(state => ({
             ...state,
