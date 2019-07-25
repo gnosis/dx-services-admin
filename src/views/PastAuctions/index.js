@@ -32,11 +32,10 @@ function PastAuctions({ web3 }) {
   const [buyTokenFilter, setBuyTokenFilter]   = useState(defaultState.buyTokenFilter)
   const [specificAuction, setSpecificAuction] = useState(defaultState.specificAuction)
 
+  // Mount logic
   const { availableTokens, loading, error } = useTokenNetworkMount(web3)
 
-  // mount logic
-  // 1. load endpoint Past Auctions data
-  // 2. set to state
+  // Data Fetching Logic
   const { 
     graphData, 
     paginationData, 
@@ -178,7 +177,10 @@ function PastAuctions({ web3 }) {
             <PageFilterSubmit
               type="number"
               title="Specific auction to show"
-              submitFunction={setSpecificAuction}
+              submitFunction={(value) => {
+                resetPaginationSkip()
+                setSpecificAuction(value)
+              }}
               inputName="trades"
             />
           </Col>

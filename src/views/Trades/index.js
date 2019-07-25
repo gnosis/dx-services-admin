@@ -173,7 +173,10 @@ function Trades({ web3 }) {
             <PageFilterSubmit
               type="number"
               title="Specific auction to show"
-              submitFunction={setSpecificAuction}
+              submitFunction={(value) => {
+                resetPaginationSkip()
+                setSpecificAuction(value)
+              }}
               inputName="trades"
             />
           </Col>
